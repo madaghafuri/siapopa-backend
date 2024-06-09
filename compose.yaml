@@ -38,14 +38,14 @@ services:
   #       db:
   #         condition: service_healthy
   db:
-    image: postgres
+    image: postgis/postgis:15-3.4-alpine
     restart: always
     user: postgres
     environment:
       - POSTGRES_DB=siapopa-dev
       - POSTGRES_PASSWORD=postgres
-    expose:
-      - 5432
+    ports:
+      - "5432:5432/tcp"
     healthcheck:
       test: ["CMD", "pg_isready"]
       interval: 10s
@@ -54,4 +54,5 @@ services:
 # secrets:
 #   db-password:
 #     file: db/password.txt
-
+volumes:
+  pgdata:
