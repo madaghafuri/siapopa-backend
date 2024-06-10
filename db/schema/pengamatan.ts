@@ -15,7 +15,7 @@ import { user } from "./user";
 export const pengamatan = pgTable("pengamatan", {
   id: serial("id").primaryKey(),
   tanaman_id: integer("tanaman_id").references(() => tanaman.id),
-  lokasi_id: integer("lokasi_id").references(() => lokasi.id),
+  lokasi_id: text("lokasi_id").references(() => lokasi.id),
   hari_ke: integer("hari_ke").notNull(),
   blok: text("blok"),
   luas_hamparan: integer("luas_hamparan"),
@@ -32,5 +32,7 @@ export const pengamatan = pgTable("pengamatan", {
   sign_pic: text("sign_pic"), // path ke foto tanda tangan
   tanggal_pengamatan: date("tanggal_pengamatan").defaultNow(),
   point_pengamatan: geometry("point_pengamatan", { type: "point" }),
-  status_laporan_harian: boolean("status_laporan_harian"),
+  status_laporan_harian: boolean("status_laporan_harian").default(false),
 });
+
+export type Pengamatan = typeof pengamatan.$inferSelect;

@@ -21,4 +21,7 @@ export const validasiLaporan = pgTable("validasi_laporan", {
   sign_satpel: text("sign_satpel"),
   sign_kortikab: text("sign_kortikab"),
   sign_bptph: text("sign_bptph"),
+  note_satpel: text("note_satpel"),
+  note_kortikab: text("note_kortikab"),
+  note_bptph: text("note_bptph"),
 });

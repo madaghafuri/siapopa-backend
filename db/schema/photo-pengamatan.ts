@@ -6,3 +6,5 @@ export const photoPengamatan = pgTable("photo_pengamatan", {
   path: text("path"),
   pengamatan_id: integer("pengamatan_id").references(() => pengamatan.id),
 });
+
+export type PhotoPengamatan = typeof photoPengamatan.$inferSelect;

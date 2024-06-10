@@ -19,3 +19,5 @@ export const detailRumpun = pgTable("detail_rumpun", {
   hama_id: integer("hama_id").references(() => makhlukAsing.id),
   jumlah_hama: integer("jumlah_hama"),
 });
+
+export type DetailRumpun = typeof detailRumpun.$inferSelect;

@@ -25,7 +25,11 @@ export const laporanSb = pgTable("laporan_sb", {
   freq_pengendalian: integer("freq_pengendalian"),
   freq_nabati: integer("freq_nabati"),
   note: text("note"),
-  status_laporan_sb: boolean("status_laporan_sb"),
   pic_id: integer("pic_id").references(() => user.id),
   sign_pic: text("sign_pic"),
+  status_laporan_bulanan: boolean("status_laporan_bulanan").default(false),
+  start_date: date("start_date"),
+  end_date: date("end_date"),
 });
+
+export type LaporanSb = typeof laporanSb.$inferSelect;

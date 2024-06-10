@@ -12,3 +12,5 @@ export const desa = pgTable("desa", {
   kabkot_id: text("kabkot_id").references(() => kabupatenKota.id),
   kecamatan_id: text("kecamatan_id").references(() => kecamatan.id),
 });
+
+export type Desa = typeof desa.$inferSelect;

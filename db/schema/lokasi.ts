@@ -6,7 +6,7 @@ import { desa } from "./desa";
 import { user } from "./user";
 
 export const lokasi = pgTable("lokasi", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   alamat: text("alamat"),
   kode_post: text("kode_post"),
   provinsi_id: text("provinsi_id").references(() => provinsi.id),
@@ -15,3 +15,5 @@ export const lokasi = pgTable("lokasi", {
   desa_id: text("desa_id").references(() => desa.id),
   pic_id: integer("pic_id").references(() => user.id),
 });
+
+export type Lokasi = typeof lokasi.$inferSelect;

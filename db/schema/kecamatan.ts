@@ -10,3 +10,5 @@ export const kecamatan = pgTable("kecamatan", {
   provinsi_id: text("provinsi_id").references(() => provinsi.id),
   kabkot_id: text("kabkot_id").references(() => kabupatenKota.id),
 });
+
+export type Kecamatan = typeof kecamatan.$inferSelect;

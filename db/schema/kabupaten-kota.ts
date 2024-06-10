@@ -8,3 +8,5 @@ export const kabupatenKota = pgTable("kabupaten_kota", {
   area_kabkot: geometry("area_kabkot", { type: "polygon" }),
   provinsi_id: text("provinsi_id").references(() => provinsi.id),
 });
+
+export type KabupatenKota = typeof kabupatenKota.$inferSelect;
