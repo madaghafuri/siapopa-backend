@@ -8,7 +8,7 @@ import { and, eq } from "drizzle-orm";
 export const rumpun = new Hono<{ Variables: JwtVariables }>();
 
 rumpun.post(
-  "/",
+  "/rumpun",
   validator("json", (value, c) => {
     const { pengamatan_id, rumpun_ke, jumlah_anakan } = value;
 
@@ -45,7 +45,7 @@ rumpun.post(
     }
   }
 );
-rumpun.get("/", async (c) => {
+rumpun.get("/rumpun", async (c) => {
   const { pengamatan_id, page, per_page } = c.req.query();
 
   if (!pengamatan_id) {
@@ -81,7 +81,7 @@ rumpun.get("/", async (c) => {
   });
 });
 rumpun.put(
-  "/:rumpunId",
+  "/rumpun/:rumpunId",
   validator("json", (value, c) => {
     const { rumpun_ke, jumlah_anakan } = value;
 
@@ -111,7 +111,7 @@ rumpun.put(
     });
   }
 );
-rumpun.delete("/:rumpunId", async (c) => {
+rumpun.delete("/rumpun/:rumpunId", async (c) => {
   const pengamatanId = c.req.query("pengamatan_id");
   const rumpunId = c.req.param("rumpunId");
 

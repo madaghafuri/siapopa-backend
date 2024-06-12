@@ -11,7 +11,7 @@ import { eq } from "drizzle-orm";
 export const detailRumpun = new Hono<{ Variables: JwtVariables }>();
 
 detailRumpun.post(
-  "/",
+  "/detail_rumpun",
   validator("json", (value, c) => {
     const { rumpun_id } = value;
 
@@ -68,7 +68,7 @@ detailRumpun.post(
   }
 );
 detailRumpun.get(
-  "/",
+  "/detail_rumpun",
   validator("query", (value, c) => {
     const { rumpun_id } = value;
 
@@ -113,7 +113,7 @@ detailRumpun.get(
     });
   }
 );
-detailRumpun.delete("/:detailRumpunId", async (c) => {
+detailRumpun.delete("/detail_rumpun/:detailRumpunId", async (c) => {
   const detailRumpunId = c.req.param("detailRumpunId");
 
   try {
@@ -137,7 +137,7 @@ detailRumpun.delete("/:detailRumpunId", async (c) => {
   });
 });
 detailRumpun.put(
-  "/:detailRumpunId",
+  "/detail_rumpun/:detailRumpunId",
   validator("json", (value, c) => {
     const {
       detail_rumpun_id,
