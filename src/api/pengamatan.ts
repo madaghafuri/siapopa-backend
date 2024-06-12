@@ -307,7 +307,7 @@ pengamatan.get(
       .$dynamic();
 
     try {
-      const finalQuery = withQueries(pengamatanQuery, queries)
+      const finalQuery = withQueries(pengamatanQuery, queries, "=")
         .limit(parseInt(per_page) || 10)
         .offset(offsetPage);
       var selectedPengamatan = await finalQuery;
