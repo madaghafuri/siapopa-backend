@@ -1,12 +1,28 @@
-import { integer, pgTable, serial } from "drizzle-orm/pg-core";
-import { kategoriSerangan } from "./kategori-serangan";
-import { kategoriKerusakan } from "./kategori-kerusakan";
+import { integer, pgEnum, pgTable, serial } from "drizzle-orm/pg-core";
 import { laporanSb } from "./laporan-sb";
+
+export const serangan = pgEnum("kategori_serangan", [
+  "sisa serangan",
+  "tambah serangan",
+  "keadaan serangan",
+]);
+export const kategoriKerusakan = pgEnum("kategori_kerusakan", [
+  "ringan",
+  "sedang",
+  "berat",
+  "puso",
+]);
 
 export const luasKerusakanSb = pgTable("luas_kerusakan_sb", {
   id: serial("id").primaryKey(),
-  serangan_id: integer("serangan_id").references(() => kategoriSerangan.id),
-  kerusakan_id: integer("kerusakan_id").references(() => kategoriKerusakan.id),
+  kategori_serangan: serangan("kategori_serangan"),
+  kategori_kerusakan: kategoriKerusakan("kategori_kerusakan"),
   luas_kerusakan: integer("luas_kerusakan"),
   laporan_sb_id: integer("laporan_sb_id").references(() => laporanSb.id),
 });
+
+export type KategoriSerangan =
+  | "sisa serangan"
+  | "tambah serangan"
+  | "keadaan serangan";
+export type KategoriKerusakan = "ringan" | "sedang" | "berat" | "puso";

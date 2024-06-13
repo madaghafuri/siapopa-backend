@@ -33,3 +33,4 @@ export const laporanSb = pgTable("laporan_sb", {
 });
 
 export type LaporanSb = typeof laporanSb.$inferSelect;
+export type InsertLaporanSb = typeof laporanSb.$inferInsert;

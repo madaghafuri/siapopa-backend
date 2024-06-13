@@ -9,9 +9,7 @@ import { jwt } from "hono/jwt";
 import * as desa from "../db/schema/desa";
 import * as detailRumpun from "../db/schema/detail-rumpun";
 import * as kabupatenKota from "../db/schema/kabupaten-kota";
-import * as kategoriKerusakan from "../db/schema/kategori-kerusakan";
 import * as kategoriLaporan from "../db/schema/kategori-laporan";
-import * as kategoriSerangan from "../db/schema/kategori-serangan";
 import * as kecamatan from "../db/schema/kecamatan";
 import * as laporanBulanan from "../db/schema/laporan-bulanan";
 import * as laporanHarian from "../db/schema/laporan-harian";
@@ -40,9 +38,7 @@ export const db = drizzle(client, {
     ...desa,
     ...detailRumpun,
     ...kabupatenKota,
-    ...kategoriKerusakan,
     ...kategoriLaporan,
-    ...kategoriSerangan,
     ...kecamatan,
     ...laporanBulanan,
     ...laporanHarian,
