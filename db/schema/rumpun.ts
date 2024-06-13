@@ -7,3 +7,5 @@ export const rumpun = pgTable("rumpun", {
   rumpun_ke: integer("rumpun_ke"),
   jumlah_anakan: integer("jumlah_anakan"),
 });
+
+export type InsertRumpun = typeof rumpun.$inferInsert;

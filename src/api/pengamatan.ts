@@ -17,8 +17,8 @@ import { provinsi } from "../../db/schema/provinsi";
 import { kabupatenKota } from "../../db/schema/kabupaten-kota";
 import { kecamatan } from "../../db/schema/kecamatan";
 import { desa } from "../../db/schema/desa";
-import { detailRumpun } from "../../db/schema/detail-rumpun";
-import { rumpun } from "../../db/schema/rumpun";
+import { Kerusakan, detailRumpun } from "../../db/schema/detail-rumpun";
+import { InsertRumpun, rumpun as rumpunSchema } from "../../db/schema/rumpun";
 import { tanaman } from "../../db/schema/tanaman";
 import { user } from "../../db/schema/user";
 import { withQueries } from "./helper";
@@ -34,6 +34,17 @@ pengamatan.post(
         coordinates: [number, number];
       };
       bukti_pengamatan: string[];
+      rumpun: {
+        rumpun_ke: number;
+        jumlah_anakan: number;
+        detail_rumpun: {
+          opt_id: number;
+          jumlah_opt: number;
+          skala_kerusakan: Kerusakan;
+          hama_id: number;
+          jumlah_hama: number;
+        }[];
+      }[];
     };
 
     if (!lokasi_id || !tanaman_id) {
@@ -51,7 +62,7 @@ pengamatan.post(
   }),
   // Context Route Handler
   async (c) => {
-    const { lokasi_pengamatan, bukti_pengamatan, lokasi_id, ...rest } =
+    const { lokasi_pengamatan, bukti_pengamatan, lokasi_id, rumpun, ...rest } =
       c.req.valid("json");
 
     const [lat, long] = lokasi_pengamatan.coordinates;
@@ -68,28 +79,36 @@ pengamatan.post(
         .values({ ...rest, point_pengamatan: [lat, long] })
         .returning();
 
-      await db.insert(photoPengamatan).values(photoValue).returning();
+      if (rumpun.length > 0) {
+        const rumpunData: InsertRumpun[] = rumpun.map(
+          ({ rumpun_ke, jumlah_anakan }) => ({
+            rumpun_ke,
+            jumlah_anakan,
+            pengamatan_id: insertedData[0].id,
+          })
+        );
+
+        var insertRumpun = await db
+          .insert(rumpunSchema)
+          .values(rumpunData)
+          .returning();
+
+        const detailRumpunData = rumpun.flatMap((val) => {
+          const dataRumpun = insertRumpun.find(
+            (val) => val.rumpun_ke === val.rumpun_ke
+          );
+          const li = val.detail_rumpun.map((val) => {
+            return { ...val, rumpun_id: dataRumpun?.id };
+          });
+          return li;
+        });
+
+        await db.insert(detailRumpun).values(detailRumpunData);
+      }
+
+      await db.insert(photoPengamatan).values(photoValue);
     } catch (error) {
       console.error(error);
-      return c.json(
-        {
-          status: 500,
-          message: "internal server error",
-        },
-        500
-      );
-    }
-
-    const dataLokasi = await db
-      .select()
-      .from(lokasi)
-      .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
-      .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
-      .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
-      .leftJoin(desa, eq(desa.id, lokasi.desa_id))
-      .where(eq(lokasi.id, lokasi_id));
-
-    if (dataLokasi.length === 0) {
       return c.json(
         {
           status: 500,
@@ -102,20 +121,7 @@ pengamatan.post(
     return c.json({
       status: 200,
       message: "Berhasil membuat data pengamatan",
-      data: {
-        ...insertedData[0],
-        lokasi_pengamatan: {
-          type: "Point",
-          coordinates: [lat, long],
-        },
-        bukti_pengamatan,
-        lokasi: {
-          provinsi: dataLokasi[0].provinsi?.nama_provinsi,
-          kabkot: dataLokasi[0].kabupaten_kota?.nama_kabkot,
-          kecamatan: dataLokasi[0].kecamatan?.nama_kecamatan,
-          desa: dataLokasi[0].desa?.nama_desa,
-        },
-      },
+      data: insertedData[0],
     });
   }
 );
@@ -261,8 +267,11 @@ pengamatan.get("/pengamatan/:pengamatanId", async (c) => {
     .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
     .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
     .leftJoin(desa, eq(lokasi.desa_id, desa.id))
-    .leftJoin(rumpun, eq(rumpun.pengamatan_id, parseInt(pengamatanId)))
-    .leftJoin(detailRumpun, eq(detailRumpun.rumpun_id, rumpun.id))
+    .leftJoin(
+      rumpunSchema,
+      eq(rumpunSchema.pengamatan_id, parseInt(pengamatanId))
+    )
+    .leftJoin(detailRumpun, eq(detailRumpun.rumpun_id, rumpunSchema.id))
     .leftJoin(tanaman, eq(tanaman.id, pengamatanSchema.tanaman_id))
     .leftJoin(user, eq(user.id, pengamatanSchema.pic_id))
     .where(eq(pengamatanSchema.id, parseInt(pengamatanId)));

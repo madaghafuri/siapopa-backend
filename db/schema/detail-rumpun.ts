@@ -3,12 +3,21 @@ import { rumpun } from "./rumpun";
 import { opt } from "./opt";
 import { makhlukAsing } from "./makhluk-asing";
 
-export const kerusakan = pgEnum("kerusakan", [
+const ListKerusakan = [
   "mutlak",
   "tidak mutlak",
   "ekor/rumpun",
   "ekor/m2",
-]);
+] as const;
+
+const ObjKerusakan = {
+  mutlak: "mutlak",
+  "tidak mutlak": "tidak mutlak",
+  "ekor/rumpun": "ekor/rumpun",
+  "ekor/m2": "ekor/m2",
+} as const;
+
+export const kerusakan = pgEnum("kerusakan", ListKerusakan);
 
 export const detailRumpun = pgTable("detail_rumpun", {
   id: serial("id").primaryKey(),
@@ -21,3 +30,4 @@ export const detailRumpun = pgTable("detail_rumpun", {
 });
 
 export type DetailRumpun = typeof detailRumpun.$inferSelect;
+export type Kerusakan = keyof typeof ObjKerusakan;

@@ -17,9 +17,9 @@ export const laporanBulanan = pgTable("laporan_bulanan", {
   laporan_musiman_id: integer("laporan_musiman_id").references(
     () => laporanMusiman.id
   ),
-  tanggal: date("tanggal").defaultNow(),
+  tanggal_laporan_bulanan: date("tanggal_laporan_bulanan").defaultNow(),
   point: geometry("point", { type: "point" }),
-  periode: integer("periode"),
+  periode_laporan_bulanan: integer("periode_laporan_bulanan"),
   note: text("note"),
   pic_id: integer("pic_id").references(() => user.id),
   sign_pic: text("sign_pic"),
@@ -29,3 +29,4 @@ export const laporanBulanan = pgTable("laporan_bulanan", {
 });
 
 export type LaporanBulanan = typeof laporanBulanan.$inferSelect;
+export type InsertLaporanBulanan = typeof laporanBulanan.$inferInsert;
