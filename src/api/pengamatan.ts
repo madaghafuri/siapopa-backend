@@ -8,7 +8,7 @@ import {
 import { db } from "..";
 import { Lokasi, lokasi } from "../../db/schema/lokasi";
 import { PgColumn, PgPointTuple } from "drizzle-orm/pg-core";
-import { SQL, and, eq, or, sql } from "drizzle-orm";
+import { SQL, and, eq, inArray, or, sql } from "drizzle-orm";
 import {
   PhotoPengamatan,
   photoPengamatan,
@@ -17,11 +17,19 @@ import { provinsi } from "../../db/schema/provinsi";
 import { kabupatenKota } from "../../db/schema/kabupaten-kota";
 import { kecamatan } from "../../db/schema/kecamatan";
 import { desa } from "../../db/schema/desa";
-import { Kerusakan, detailRumpun } from "../../db/schema/detail-rumpun";
-import { InsertRumpun, rumpun as rumpunSchema } from "../../db/schema/rumpun";
+import {
+  DetailRumpun,
+  Kerusakan,
+  detailRumpun,
+} from "../../db/schema/detail-rumpun";
+import {
+  InsertRumpun,
+  rumpun,
+  rumpun as rumpunSchema,
+} from "../../db/schema/rumpun";
 import { tanaman } from "../../db/schema/tanaman";
 import { user } from "../../db/schema/user";
-import { withQueries } from "./helper";
+import { withPagination, withQueries } from "./helper";
 
 export const pengamatan = new Hono<{ Variables: JwtVariables }>();
 
@@ -147,7 +155,10 @@ pengamatan.put(
           type: "Point" | "Polygon";
           coordinates: [number, number];
         };
-        bukti_pengamatan: string[];
+        bukti_pengamatan: {
+          bukti_pengamatan_id: number;
+          photo_pengamatan: string;
+        }[];
       };
 
     if (!lokasi_id || !lokasi_pengamatan || !pic_id) {
@@ -167,26 +178,35 @@ pengamatan.put(
     const pengamatanId = c.req.param("pengamatanId");
     const { lokasi_pengamatan, bukti_pengamatan, point_pengamatan, ...rest } =
       c.req.valid("json");
-
-    // const dataPhoto: typeof photoPengamatan.$inferInsert[] = bukti_pengamatan.map(
-    //   (val) => ({
-    //     path: val,
-    //     pengamatan_id: pengamatanId,
-    //   })
-    // );
     const [lat, long] = lokasi_pengamatan.coordinates;
 
     try {
-      var insertedData = await db
+      var updatedData = await db
         .update(pengamatanSchema)
         .set({ point_pengamatan: [lat, long], ...rest })
         .where(eq(pengamatanSchema.id, parseInt(pengamatanId)))
         .returning();
 
-      // const inertedPhoto = await db
-      //   .update(photoPengamatan)
-      //   .set({ path: sql`when id = ` })
-      //   .where(eq(photoPengamatan.pengamatan_id, parseInt(pengamatanId)));
+      const sqlChunks: SQL[] = [];
+      const ids: number[] = [];
+      sqlChunks.push(sql`(case`);
+      for (const input of bukti_pengamatan) {
+        sqlChunks.push(
+          sql`when id = ${input.bukti_pengamatan_id} then ${input.photo_pengamatan}`
+        );
+        ids.push(input.bukti_pengamatan_id);
+      }
+      sqlChunks.push(sql`end)`);
+
+      await db
+        .update(photoPengamatan)
+        .set({ path: sql.join(sqlChunks, sql.raw(" ")) })
+        .where(
+          and(
+            inArray(photoPengamatan.id, ids),
+            eq(photoPengamatan.pengamatan_id, parseInt(pengamatanId))
+          )
+        );
     } catch (error) {
       console.error(error);
       return c.json({
@@ -197,7 +217,8 @@ pengamatan.put(
 
     return c.json({
       status: 200,
-      message: "Hold on",
+      message: "success",
+      data: updatedData[0],
     });
   }
 );
@@ -227,56 +248,31 @@ pengamatan.delete("/pengamatan/:pengamatanId", async (c) => {
 pengamatan.get("/pengamatan/:pengamatanId", async (c) => {
   const pengamatanId = c.req.param("pengamatanId");
 
-  const bro = pengamatanSchema.$inferSelect;
-
-  const data = await db
-    .select({
-      id_pengamatan: pengamatanSchema.id,
-      tanaman_id: pengamatanSchema.tanaman_id,
-      tanaman: tanaman.nama_tanaman,
-      lokasi_id: pengamatanSchema.lokasi_id,
-      hari_ke: pengamatanSchema.hari_ke,
-      blok: pengamatanSchema.blok,
-      luas_hamparan: pengamatanSchema.luas_hamparan,
-      luas_diamati: pengamatanSchema.luas_diamati,
-      luas_hasil_panen: pengamatanSchema.luas_hasil_panen,
-      luas_persemaian: pengamatanSchema.luas_persemaian,
-      ph_tanah: pengamatanSchema.ph_tanah,
-      komoditas: pengamatanSchema.komoditas,
-      variatas: pengamatanSchema.varietas,
-      dari_umur: pengamatanSchema.dari_umur,
-      hingga_umur: pengamatanSchema.hingga_umur,
-      pola_tanam: pengamatanSchema.pola_tanam,
-      pic_id: pengamatanSchema.pic_id,
-      pic_name: user.name,
-      sign_pic: pengamatanSchema.sign_pic,
-      tanggal_pengamatan: pengamatanSchema.tanggal_pengamatan,
-      status_laporan_harian: pengamatanSchema.status_laporan_harian,
-      lokasi_pengamatan: {
-        type: sql`TEXT`,
-        coordinates: pengamatanSchema.point_pengamatan,
-      },
-    })
+  const data = db
+    .select({ pengamatan: pengamatanSchema, detail_rumpun: detailRumpun })
     .from(pengamatanSchema)
-    .leftJoin(
-      photoPengamatan,
-      eq(photoPengamatan.pengamatan_id, pengamatanSchema.id)
-    )
-    .leftJoin(lokasi, eq(lokasi.id, pengamatanSchema.lokasi_id))
-    .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
-    .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
-    .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
-    .leftJoin(desa, eq(lokasi.desa_id, desa.id))
-    .leftJoin(
-      rumpunSchema,
-      eq(rumpunSchema.pengamatan_id, parseInt(pengamatanId))
-    )
-    .leftJoin(detailRumpun, eq(detailRumpun.rumpun_id, rumpunSchema.id))
-    .leftJoin(tanaman, eq(tanaman.id, pengamatanSchema.tanaman_id))
-    .leftJoin(user, eq(user.id, pengamatanSchema.pic_id))
+    .leftJoin(rumpun, eq(rumpun.pengamatan_id, pengamatanSchema.id))
+    .leftJoin(detailRumpun, eq(detailRumpun.rumpun_id, rumpun.id))
     .where(eq(pengamatanSchema.id, parseInt(pengamatanId)));
 
-  if (data.length === 0) {
+  const result = (await data).reduce<
+    Record<number, { pengamatan: Pengamatan; detail_rumpun: DetailRumpun[] }>
+  >((acc, row) => {
+    const pengamatan = row.pengamatan;
+    const detail = row.detail_rumpun;
+
+    if (!acc[pengamatan.id]) {
+      acc[pengamatan.id] = { pengamatan, detail_rumpun: [] };
+    }
+
+    if (detail) {
+      acc[pengamatan.id].detail_rumpun.push(detail);
+    }
+
+    return acc;
+  }, {});
+
+  if (!result) {
     return c.json({
       status: 404,
       message: "data tidak ditemukan",
@@ -286,65 +282,61 @@ pengamatan.get("/pengamatan/:pengamatanId", async (c) => {
   return c.json({
     status: 200,
     message: "success",
-    data: data[0],
+    data: result,
   });
 });
-pengamatan.get(
-  "/pengamatan",
-  validator("query", (value, c) => {
-    const { lokasi_id, user_id, tanggal_pengamatan } = value;
-
-    return value;
-  }),
-  async (c) => {
-    const { page, per_page, ...rest } = c.req.query() as Record<
+pengamatan.get("/pengamatan", async (c) => {
+  const { page, per_page, lokasi_id, user_id, tanggal_pengamatan } =
+    c.req.query() as Record<
       "lokasi_id" | "user_id" | "tanggal_pengamatan" | "page" | "per_page",
       string
     >;
 
-    const queries = Object.entries(rest);
-    const offsetPage = ((parseInt(page) || 1) - 1) * parseInt(per_page) || 10;
+  const pengamatanQuery = db
+    .select()
+    .from(pengamatanSchema)
+    .where(
+      and(
+        !!lokasi_id ? eq(pengamatanSchema.lokasi_id, lokasi_id) : undefined,
+        !!user_id ? eq(pengamatanSchema.pic_id, parseInt(user_id)) : undefined,
+        !!tanggal_pengamatan
+          ? eq(pengamatanSchema.tanggal_pengamatan, tanggal_pengamatan)
+          : undefined
+      )
+    )
+    .$dynamic();
 
-    const pengamatanQuery = db
-      .select()
-      .from(pengamatanSchema)
-      .leftJoin(lokasi, eq(lokasi.id, pengamatanSchema.lokasi_id))
-      .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
-      .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
-      .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
-      .leftJoin(desa, eq(desa.id, lokasi.desa_id))
-      .$dynamic();
-
-    try {
-      const finalQuery = withQueries(pengamatanQuery, queries, "=")
-        .limit(parseInt(per_page) || 10)
-        .offset(offsetPage);
-      var selectedPengamatan = await finalQuery;
-    } catch (error) {
-      console.error(error);
-      return c.json(
-        {
-          status: 500,
-          message: "internal server error",
-        },
-        500
-      );
-    }
-
-    if (selectedPengamatan.length === 0) {
-      return c.json(
-        {
-          status: 404,
-          message: "Data tidak ditemukan",
-        },
-        404
-      );
-    }
-
-    return c.json({
-      status: 200,
-      message: "success",
-      data: selectedPengamatan[0],
-    });
+  try {
+    const finalQuery = withPagination(
+      pengamatanQuery,
+      parseInt(page),
+      parseInt(per_page)
+    );
+    var selectedPengamatan = await finalQuery;
+  } catch (error) {
+    console.error(error);
+    return c.json(
+      {
+        status: 500,
+        message: "internal server error",
+      },
+      500
+    );
   }
-);
+
+  if (selectedPengamatan.length === 0) {
+    return c.json(
+      {
+        status: 404,
+        message: "Data tidak ditemukan",
+      },
+      404
+    );
+  }
+
+  return c.json({
+    status: 200,
+    message: "success",
+    data: selectedPengamatan,
+  });
+});
