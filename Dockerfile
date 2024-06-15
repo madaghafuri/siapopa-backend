@@ -20,12 +20,13 @@ RUN adduser --system --uid 1001 hono
 COPY --from=builder --chown=hono:nodejs /app/node_modules /app/node_modules
 # COPY --from=builder --chown=hono:nodejs /app/dist /app/dist
 COPY --from=builder --chown=hono:nodejs /app/package.json /app/package.json
+# DEV ONLY
 COPY . .
 
 USER hono
 EXPOSE 3000
 
 # FOR PRODUCTION
-# CMD ["node", "/app/dist/index.js"]
+# CMD ["node", "/app/dist/src/index.js"]
 
 CMD npm run dev
