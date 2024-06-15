@@ -3,12 +3,12 @@ import { validator } from "hono/validator";
 import {
   InsertLaporanBulanan,
   laporanBulanan as laporanBulananSchema,
-} from "../../db/schema/laporan-bulanan";
+} from "../db/schema/laporan-bulanan";
 import { db } from "..";
 import { and, eq, gte, lte } from "drizzle-orm";
-import { laporanSb } from "../../db/schema/laporan-sb";
-import { user } from "../../db/schema/user";
-import { lokasi } from "../../db/schema/lokasi";
+import { laporanSb } from "../db/schema/laporan-sb";
+import { user } from "../db/schema/user";
+import { lokasi } from "../db/schema/lokasi";
 
 export const laporanBulanan = new Hono();
 
@@ -27,7 +27,7 @@ laporanBulanan.post(
           status: 401,
           message: "missing required data",
         },
-        401
+        401,
       );
     }
 
@@ -49,7 +49,7 @@ laporanBulanan.post(
           status: 500,
           message: "internal server error",
         },
-        500
+        500,
       );
     }
 
@@ -58,7 +58,7 @@ laporanBulanan.post(
       message: "success",
       data: insertLaporan[0],
     });
-  }
+  },
 );
 laporanBulanan.put(
   "/laporan_bulanan/:laporanBulananId",
@@ -91,7 +91,7 @@ laporanBulanan.put(
           status: 500,
           message: "internal server error",
         },
-        500
+        500,
       );
     }
 
@@ -100,7 +100,7 @@ laporanBulanan.put(
       message: "success",
       data: updatedData[0],
     });
-  }
+  },
 );
 laporanBulanan.delete("/laporan_bulanan/:laporanBulananId", async (c) => {
   const laporanBulananId = c.req.param("laporanBulananId");
@@ -116,7 +116,7 @@ laporanBulanan.delete("/laporan_bulanan/:laporanBulananId", async (c) => {
         status: 500,
         message: "internal server error",
       },
-      500
+      500,
     );
   }
 
@@ -134,7 +134,7 @@ laporanBulanan.get("/laporan_bulanan/:laporanBulananId", async (c) => {
       .from(laporanBulananSchema)
       .leftJoin(
         laporanSb,
-        eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id)
+        eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id),
       )
       .where(eq(laporanBulananSchema.id, parseInt(laporanBulananId)));
   } catch (error) {
@@ -144,7 +144,7 @@ laporanBulanan.get("/laporan_bulanan/:laporanBulananId", async (c) => {
         status: 500,
         message: "internal server error",
       },
-      500
+      500,
     );
   }
 
@@ -154,7 +154,7 @@ laporanBulanan.get("/laporan_bulanan/:laporanBulananId", async (c) => {
         status: 404,
         message: "Data laporan bulanan tidak ditemukan",
       },
-      404
+      404,
     );
   }
 
@@ -178,7 +178,7 @@ laporanBulanan.get("/laporan_bulanan", async (c) => {
       .leftJoin(user, eq(user.id, laporanBulananSchema.pic_id))
       .leftJoin(
         laporanSb,
-        eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id)
+        eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id),
       )
       .where(
         and(
@@ -187,8 +187,8 @@ laporanBulanan.get("/laporan_bulanan", async (c) => {
           !!start_date
             ? gte(laporanBulananSchema.start_date, start_date)
             : undefined,
-          !!end_date ? lte(laporanBulananSchema.end_date, end_date) : undefined
-        )
+          !!end_date ? lte(laporanBulananSchema.end_date, end_date) : undefined,
+        ),
       );
   } catch (error) {
     console.error(error);
@@ -197,7 +197,7 @@ laporanBulanan.get("/laporan_bulanan", async (c) => {
         status: 500,
         message: "internal server error",
       },
-      500
+      500,
     );
   }
 
@@ -207,7 +207,7 @@ laporanBulanan.get("/laporan_bulanan", async (c) => {
         status: 404,
         message: "Laporan bulanan tidak ditemukan",
       },
-      404
+      404,
     );
   }
 

@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { JwtVariables } from "hono/jwt";
 import { validator } from "hono/validator";
 import { db } from "..";
-import { rumpun as dataRumpun } from "../../db/schema/rumpun";
+import { rumpun as dataRumpun } from "../db/schema/rumpun";
 import { and, eq } from "drizzle-orm";
 
 export const rumpun = new Hono<{ Variables: JwtVariables }>();
@@ -18,7 +18,7 @@ rumpun.post(
           status: 401,
           message: "Gagal melakukan input data rumpun",
         },
-        401
+        401,
       );
     }
     return value as Record<
@@ -40,10 +40,10 @@ rumpun.post(
           status: 500,
           message: "Server mengalami gangguan. Coba beberapa saat lagi",
         },
-        500
+        500,
       );
     }
-  }
+  },
 );
 rumpun.get("/rumpun", async (c) => {
   const { pengamatan_id, page, per_page } = c.req.query();
@@ -54,7 +54,7 @@ rumpun.get("/rumpun", async (c) => {
         status: 401,
         message: "parameter_id tidak ada",
       },
-      401
+      401,
     );
   }
 
@@ -109,7 +109,7 @@ rumpun.put(
       message: "berhasil melakukan update",
       data: updatedRumpun,
     });
-  }
+  },
 );
 rumpun.delete("/rumpun/:rumpunId", async (c) => {
   const pengamatanId = c.req.query("pengamatan_id");
@@ -121,7 +121,7 @@ rumpun.delete("/rumpun/:rumpunId", async (c) => {
         status: 401,
         message: "kolom pengamatan_id tidak ada",
       },
-      401
+      401,
     );
   }
 
@@ -131,8 +131,8 @@ rumpun.delete("/rumpun/:rumpunId", async (c) => {
       .where(
         and(
           eq(dataRumpun.pengamatan_id, parseInt(pengamatanId)),
-          eq(dataRumpun.id, parseInt(rumpunId))
-        )
+          eq(dataRumpun.id, parseInt(rumpunId)),
+        ),
       );
   } catch (error) {
     console.error(error);
@@ -141,7 +141,7 @@ rumpun.delete("/rumpun/:rumpunId", async (c) => {
         status: 500,
         message: "internal server error",
       },
-      500
+      500,
     );
   }
 

@@ -4,7 +4,7 @@ import { validator } from "hono/validator";
 import {
   DetailRumpun,
   detailRumpun as detailRumpunSchema,
-} from "../../db/schema/detail-rumpun";
+} from "../db/schema/detail-rumpun";
 import { db } from "..";
 import { eq } from "drizzle-orm";
 
@@ -22,7 +22,7 @@ detailRumpun.post(
           message:
             "Tidak dapat melanjutkan permintaan. Data rumpun_id dibutuhkan",
         },
-        401
+        401,
       );
     }
 
@@ -56,7 +56,7 @@ detailRumpun.post(
           status: 500,
           message: "internal server error",
         },
-        500
+        500,
       );
     }
 
@@ -65,7 +65,7 @@ detailRumpun.post(
       message: "Berhasil input data OPT",
       data: insertedData[0],
     });
-  }
+  },
 );
 detailRumpun.get(
   "/detail_rumpun",
@@ -79,7 +79,7 @@ detailRumpun.get(
           message:
             "Permintaan tidak dapat dilanjutkan. Data rumpun_id tidak adak",
         },
-        401
+        401,
       );
     }
     return value as Record<"rumpun_id" | "page" | "per_page", string>;
@@ -102,7 +102,7 @@ detailRumpun.get(
           status: 404,
           message: "Detail rumpun tidak ditemukan",
         },
-        404
+        404,
       );
     }
 
@@ -111,7 +111,7 @@ detailRumpun.get(
       message: "success",
       data: listDetailRumpun,
     });
-  }
+  },
 );
 detailRumpun.delete("/detail_rumpun/:detailRumpunId", async (c) => {
   const detailRumpunId = c.req.param("detailRumpunId");
@@ -127,7 +127,7 @@ detailRumpun.delete("/detail_rumpun/:detailRumpunId", async (c) => {
         status: 500,
         message: "internal server error",
       },
-      500
+      500,
     );
   }
 
@@ -167,7 +167,7 @@ detailRumpun.put(
           status: 500,
           message: "internal server error",
         },
-        500
+        500,
       );
     }
 
@@ -176,5 +176,5 @@ detailRumpun.put(
       message: "Berhasil update data OPT",
       data: updatedDetailRumpun[0],
     });
-  }
+  },
 );

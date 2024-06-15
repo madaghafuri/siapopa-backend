@@ -4,31 +4,31 @@ import { validator } from "hono/validator";
 import {
   Pengamatan,
   pengamatan as pengamatanSchema,
-} from "../../db/schema/pengamatan";
+} from "../db/schema/pengamatan";
 import { db } from "..";
-import { Lokasi, lokasi } from "../../db/schema/lokasi";
+import { Lokasi, lokasi } from "../db/schema/lokasi";
 import { PgColumn, PgPointTuple } from "drizzle-orm/pg-core";
 import { SQL, and, eq, inArray, or, sql } from "drizzle-orm";
 import {
   PhotoPengamatan,
   photoPengamatan,
-} from "../../db/schema/photo-pengamatan";
-import { provinsi } from "../../db/schema/provinsi";
-import { kabupatenKota } from "../../db/schema/kabupaten-kota";
-import { kecamatan } from "../../db/schema/kecamatan";
-import { desa } from "../../db/schema/desa";
+} from "../db/schema/photo-pengamatan";
+import { provinsi } from "../db/schema/provinsi";
+import { kabupatenKota } from "../db/schema/kabupaten-kota";
+import { kecamatan } from "../db/schema/kecamatan";
+import { desa } from "../db/schema/desa";
 import {
   DetailRumpun,
   Kerusakan,
   detailRumpun,
-} from "../../db/schema/detail-rumpun";
+} from "../db/schema/detail-rumpun";
 import {
   InsertRumpun,
   rumpun,
   rumpun as rumpunSchema,
-} from "../../db/schema/rumpun";
-import { tanaman } from "../../db/schema/tanaman";
-import { user } from "../../db/schema/user";
+} from "../db/schema/rumpun";
+import { tanaman } from "../db/schema/tanaman";
+import { user } from "../db/schema/user";
 import { withPagination, withQueries } from "./helper";
 
 export const pengamatan = new Hono<{ Variables: JwtVariables }>();
@@ -61,7 +61,7 @@ pengamatan.post(
           status: 401,
           message: "lokasi_id tidak ditemukan",
         },
-        401
+        401,
       );
     }
     const parsedValue = { lokasi_id, tanaman_id, ...rest };
@@ -79,7 +79,7 @@ pengamatan.post(
       (val) => ({
         path: val,
         pengamatan_id: insertedData[0].id,
-      })
+      }),
     );
     try {
       var insertedData = await db
@@ -93,7 +93,7 @@ pengamatan.post(
             rumpun_ke,
             jumlah_anakan,
             pengamatan_id: insertedData[0].id,
-          })
+          }),
         );
 
         var insertRumpun = await db
@@ -103,7 +103,7 @@ pengamatan.post(
 
         const detailRumpunData = rumpun.flatMap((val) => {
           const dataRumpun = insertRumpun.find(
-            (val) => val.rumpun_ke === val.rumpun_ke
+            (val) => val.rumpun_ke === val.rumpun_ke,
           );
           const li = val.detail_rumpun.map((val) => {
             return { ...val, rumpun_id: dataRumpun?.id };
@@ -122,7 +122,7 @@ pengamatan.post(
           status: 500,
           message: "internal server error",
         },
-        500
+        500,
       );
     }
 
@@ -131,7 +131,7 @@ pengamatan.post(
       message: "Berhasil membuat data pengamatan",
       data: insertedData[0],
     });
-  }
+  },
 );
 pengamatan.put(
   "/pengamatan/:pengamatanId",
@@ -143,7 +143,7 @@ pengamatan.put(
           status: 401,
           message: "parameter pengamatan_id harus berada di url",
         },
-        401
+        401,
       );
     return pengamatanId;
   }),
@@ -168,7 +168,7 @@ pengamatan.put(
           message:
             "Permintaan harus memiliki lokasi_id, lokasi_pengamatan, dan pic_id",
         },
-        401
+        401,
       );
     }
 
@@ -192,7 +192,7 @@ pengamatan.put(
       sqlChunks.push(sql`(case`);
       for (const input of bukti_pengamatan) {
         sqlChunks.push(
-          sql`when id = ${input.bukti_pengamatan_id} then ${input.photo_pengamatan}`
+          sql`when id = ${input.bukti_pengamatan_id} then ${input.photo_pengamatan}`,
         );
         ids.push(input.bukti_pengamatan_id);
       }
@@ -204,8 +204,8 @@ pengamatan.put(
         .where(
           and(
             inArray(photoPengamatan.id, ids),
-            eq(photoPengamatan.pengamatan_id, parseInt(pengamatanId))
-          )
+            eq(photoPengamatan.pengamatan_id, parseInt(pengamatanId)),
+          ),
         );
     } catch (error) {
       console.error(error);
@@ -220,7 +220,7 @@ pengamatan.put(
       message: "success",
       data: updatedData[0],
     });
-  }
+  },
 );
 pengamatan.delete("/pengamatan/:pengamatanId", async (c) => {
   const pengamatanId = c.req.param("pengamatanId");
@@ -236,7 +236,7 @@ pengamatan.delete("/pengamatan/:pengamatanId", async (c) => {
         status: 500,
         message: "internal server error",
       },
-      500
+      500,
     );
   }
 
@@ -301,8 +301,8 @@ pengamatan.get("/pengamatan", async (c) => {
         !!user_id ? eq(pengamatanSchema.pic_id, parseInt(user_id)) : undefined,
         !!tanggal_pengamatan
           ? eq(pengamatanSchema.tanggal_pengamatan, tanggal_pengamatan)
-          : undefined
-      )
+          : undefined,
+      ),
     )
     .$dynamic();
 
@@ -310,7 +310,7 @@ pengamatan.get("/pengamatan", async (c) => {
     const finalQuery = withPagination(
       pengamatanQuery,
       parseInt(page),
-      parseInt(per_page)
+      parseInt(per_page),
     );
     var selectedPengamatan = await finalQuery;
   } catch (error) {
@@ -320,7 +320,7 @@ pengamatan.get("/pengamatan", async (c) => {
         status: 500,
         message: "internal server error",
       },
-      500
+      500,
     );
   }
 
@@ -330,7 +330,7 @@ pengamatan.get("/pengamatan", async (c) => {
         status: 404,
         message: "Data tidak ditemukan",
       },
-      404
+      404,
     );
   }
 

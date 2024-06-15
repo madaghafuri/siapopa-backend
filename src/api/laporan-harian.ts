@@ -3,14 +3,14 @@ import { validator } from "hono/validator";
 import {
   InsertLaporanHarian,
   laporanHarian as laporanHarianSchema,
-} from "../../db/schema/laporan-harian";
+} from "../db/schema/laporan-harian";
 import { db } from "..";
 import { and, eq, gte, lte } from "drizzle-orm";
-import { lokasi } from "../../db/schema/lokasi";
-import { pengamatan } from "../../db/schema/pengamatan";
-import { rumpun } from "../../db/schema/rumpun";
-import { detailRumpun } from "../../db/schema/detail-rumpun";
-import { provinsi } from "../../db/schema/provinsi";
+import { lokasi } from "../db/schema/lokasi";
+import { pengamatan } from "../db/schema/pengamatan";
+import { rumpun } from "../db/schema/rumpun";
+import { detailRumpun } from "../db/schema/detail-rumpun";
+import { provinsi } from "../db/schema/provinsi";
 import { withPagination, withQueries, withQuery } from "./helper";
 
 export const laporanHarian = new Hono();
@@ -31,7 +31,7 @@ laporanHarian.post(
           message:
             "Tidak dapat melanjutkan permintaan. pengamatan_id, opt_id, lokasi_id tidak ditemukan",
         },
-        401
+        401,
       );
     }
 
@@ -53,7 +53,7 @@ laporanHarian.post(
           status: 500,
           message: "internal server error",
         },
-        500
+        500,
       );
     }
 
@@ -63,7 +63,7 @@ laporanHarian.post(
           status: 404,
           message: "Data tidak ditemukan",
         },
-        404
+        404,
       );
     }
 
@@ -72,7 +72,7 @@ laporanHarian.post(
       message: "success",
       data: { ...insertedData[0], lokasi_id },
     });
-  }
+  },
 );
 laporanHarian.put(
   "/laporan_harian/:laporanHarianId",
@@ -105,7 +105,7 @@ laporanHarian.put(
           status: 500,
           message: "internal server error",
         },
-        500
+        500,
       );
     }
 
@@ -113,7 +113,7 @@ laporanHarian.put(
       status: 200,
       message: "Berhasil mengupdate laporan harian",
     });
-  }
+  },
 );
 laporanHarian.delete("/laporan_harian/:laporanHarianId", async (c) => {
   const laporanHarianId = c.req.param("laporanHarianId");
@@ -129,7 +129,7 @@ laporanHarian.delete("/laporan_harian/:laporanHarianId", async (c) => {
         status: 500,
         message: "internal server error",
       },
-      500
+      500,
     );
   }
 
@@ -149,7 +149,7 @@ laporanHarian.get("/laporan_harian/:laporanHarianId", async (c) => {
       .from(laporanHarianSchema)
       .leftJoin(
         pengamatan,
-        eq(pengamatan.id, laporanHarianSchema.pengamatan_id)
+        eq(pengamatan.id, laporanHarianSchema.pengamatan_id),
       )
       .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
       .leftJoin(rumpun, eq(rumpun.pengamatan_id, pengamatan.id))
@@ -162,7 +162,7 @@ laporanHarian.get("/laporan_harian/:laporanHarianId", async (c) => {
         status: 500,
         message: "internal server error",
       },
-      500
+      500,
     );
   }
 
@@ -172,7 +172,7 @@ laporanHarian.get("/laporan_harian/:laporanHarianId", async (c) => {
         status: 404,
         message: "Data tidak ditemukan",
       },
-      404
+      404,
     );
   }
 
@@ -214,7 +214,7 @@ laporanHarian.get(
         .from(laporanHarianSchema)
         .leftJoin(
           pengamatan,
-          eq(pengamatan.id, laporanHarianSchema.pengamatan_id)
+          eq(pengamatan.id, laporanHarianSchema.pengamatan_id),
         )
         .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
         .where(
@@ -231,14 +231,14 @@ laporanHarian.get(
               : undefined,
             !!end_date
               ? lte(laporanHarianSchema.tanggal_laporan_harian, end_date)
-              : undefined
-          )
+              : undefined,
+          ),
         )
         .$dynamic();
       const final = withPagination(
         preQuery,
         parseInt(per_page),
-        parseInt(page)
+        parseInt(page),
       );
       var selectData = await final;
     } catch (error) {
@@ -255,7 +255,7 @@ laporanHarian.get(
           status: 404,
           message: "Data laporan harian tidak ditemukan",
         },
-        404
+        404,
       );
     }
 
@@ -264,5 +264,5 @@ laporanHarian.get(
       message: "success",
       data: selectData,
     });
-  }
+  },
 );

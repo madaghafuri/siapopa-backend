@@ -1,11 +1,11 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import { db } from "..";
-import { user } from "../../db/schema/user";
+import { user } from "../db/schema/user";
 import { and, eq } from "drizzle-orm";
 import { JwtVariables, sign } from "hono/jwt";
-import { userGroup } from "../../db/schema/user-group";
-import { lokasi } from "../../db/schema/lokasi";
+import { userGroup } from "../db/schema/user-group";
+import { lokasi } from "../db/schema/lokasi";
 
 export const auth = new Hono<{ Variables: JwtVariables }>();
 
@@ -19,7 +19,7 @@ auth.post(
           status: 400,
           message: "email atau password belum diisi",
         },
-        400
+        400,
       );
     }
     return value;
@@ -37,7 +37,7 @@ auth.post(
           status: 404,
           message: "email atau password tidak ditemukan",
         },
-        404
+        404,
       );
     }
 
@@ -65,7 +65,7 @@ auth.post(
         location: getLocation,
       },
     });
-  }
+  },
 );
 
 // auth.post(

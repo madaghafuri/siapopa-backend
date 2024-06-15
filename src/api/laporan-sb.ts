@@ -3,16 +3,16 @@ import { validator } from "hono/validator";
 import {
   InsertLaporanSb,
   laporanSb as laporanSbSchema,
-} from "../../db/schema/laporan-sb";
+} from "../db/schema/laporan-sb";
 import {
   KategoriKerusakan,
   KategoriSerangan,
   luasKerusakanSb,
-} from "../../db/schema/luas-kerusakan-sb";
+} from "../db/schema/luas-kerusakan-sb";
 import { db } from "..";
 import { SQL, and, eq, gte, inArray, lte, sql } from "drizzle-orm";
-import { laporanHarian } from "../../db/schema/laporan-harian";
-import { pengamatan } from "../../db/schema/pengamatan";
+import { laporanHarian } from "../db/schema/laporan-harian";
+import { pengamatan } from "../db/schema/pengamatan";
 
 export const laporanSb = new Hono();
 
@@ -38,7 +38,7 @@ laporanSb.post(
           status: 401,
           message: "missing required parameter opt_id, lokasi_id, pic_id",
         },
-        401
+        401,
       );
     }
     return { opt_id, lokasi_id, pic_id, ...rest };
@@ -59,7 +59,7 @@ laporanSb.post(
           status: 500,
           message: "internal server error",
         },
-        500
+        500,
       );
     }
 
@@ -68,7 +68,7 @@ laporanSb.post(
       message: "success",
       data: insertedData[0],
     });
-  }
+  },
 );
 laporanSb.put(
   "/laporan_sb/:laporanSbId",
@@ -108,13 +108,13 @@ laporanSb.put(
     kerusakanChunks.push(sql`(case`);
     for (const input of luas_kerusakan) {
       luasChunks.push(
-        sql`when id = ${input.luas_kerusakan_sb_id} then ${input.luas_kerusakan}`
+        sql`when id = ${input.luas_kerusakan_sb_id} then ${input.luas_kerusakan}`,
       );
       seranganChunks.push(
-        sql`when id = ${input.luas_kerusakan_sb_id} then ${input.kategori_serangan}`
+        sql`when id = ${input.luas_kerusakan_sb_id} then ${input.kategori_serangan}`,
       );
       kerusakanChunks.push(
-        sql`when id = ${input.luas_kerusakan_sb_id} then ${input.kategori_kerusakan}`
+        sql`when id = ${input.luas_kerusakan_sb_id} then ${input.kategori_kerusakan}`,
       );
       ids.push(input.luas_kerusakan_sb_id);
     }
@@ -145,7 +145,7 @@ laporanSb.put(
           status: 500,
           message: "internal server error",
         },
-        500
+        500,
       );
     }
 
@@ -157,7 +157,7 @@ laporanSb.put(
         luas_kerusakan: updatedLuasKerusakan,
       },
     });
-  }
+  },
 );
 laporanSb.delete("/laporan_sb/:laporanSbId", async (c) => {
   const laporanSbId = c.req.param("laporanSbId");
@@ -188,7 +188,7 @@ laporanSb.get("/laporan_sb/:laporanSbId", async (c) => {
       .from(laporanSbSchema)
       .leftJoin(
         luasKerusakanSb,
-        eq(luasKerusakanSb.laporan_sb_id, laporanSbSchema.id)
+        eq(luasKerusakanSb.laporan_sb_id, laporanSbSchema.id),
       )
       .where(eq(laporanSbSchema.id, parseInt(laporanSbId)));
   } catch (error) {
@@ -198,7 +198,7 @@ laporanSb.get("/laporan_sb/:laporanSbId", async (c) => {
         status: 500,
         message: "internal server error",
       },
-      500
+      500,
     );
   }
 
@@ -208,7 +208,7 @@ laporanSb.get("/laporan_sb/:laporanSbId", async (c) => {
         status: 404,
         message: "Laporan setengah bulan tidak ditemukan",
       },
-      404
+      404,
     );
   }
 
@@ -231,11 +231,11 @@ laporanSb.get("/laporan_sb", async (c) => {
       .from(laporanSbSchema)
       .leftJoin(
         luasKerusakanSb,
-        eq(luasKerusakanSb.laporan_sb_id, laporanSbSchema.id)
+        eq(luasKerusakanSb.laporan_sb_id, laporanSbSchema.id),
       )
       .leftJoin(
         laporanHarian,
-        eq(laporanHarian.id_laporan_sb, laporanSbSchema.id)
+        eq(laporanHarian.id_laporan_sb, laporanSbSchema.id),
       )
       .leftJoin(pengamatan, eq(pengamatan.id, laporanHarian.pengamatan_id))
       .where(
@@ -245,8 +245,8 @@ laporanSb.get("/laporan_sb", async (c) => {
           !!start_date
             ? gte(laporanSbSchema.start_date, start_date)
             : undefined,
-          !!end_date ? lte(laporanSbSchema.end_date, end_date) : undefined
-        )
+          !!end_date ? lte(laporanSbSchema.end_date, end_date) : undefined,
+        ),
       );
   } catch (error) {
     console.error(error);
@@ -255,7 +255,7 @@ laporanSb.get("/laporan_sb", async (c) => {
         status: 500,
         message: "internal server error",
       },
-      500
+      500,
     );
   }
 
@@ -265,7 +265,7 @@ laporanSb.get("/laporan_sb", async (c) => {
         status: 404,
         message: "Laporan setengah bulan tidak ditemukan",
       },
-      404
+      404,
     );
   }
 
