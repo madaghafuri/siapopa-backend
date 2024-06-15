@@ -7,8 +7,9 @@
     "skipLibCheck": true,
     "types": ["node"],
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
-    "outDir": "./dist"
+    "jsxImportSource": "typed-htmx/typed-html",
+    "outDir": "./dist",
+    "plugins": [{ "name": "typescript-lit-html-plugin" }]
   },
   "exclude": ["node_modules"]
 }
