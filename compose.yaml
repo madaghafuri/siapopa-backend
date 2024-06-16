@@ -13,12 +13,20 @@ services:
       context: .
     ports:
       - 3000:3000
+    environment:
+      - API_TOKEN=siapopa-dev
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - ./:/app
-
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src
+          target: /app/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
   # The commented out section below is an example of how to define a PostgreSQL
   # database that your application can use. `depends_on` tells Docker Compose to
   # start the database before your application. The `db-data` volume persists the

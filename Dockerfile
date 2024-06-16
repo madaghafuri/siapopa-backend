@@ -7,8 +7,9 @@ WORKDIR /app
 
 COPY package*json tsconfig.json src ./
 
-RUN npm ci
-    # npm run build && \
+RUN npm ci 
+    # npm run build:css
+    # npm run build
     # npm prune --production
 
 FROM base AS runner
@@ -23,10 +24,10 @@ COPY --from=builder --chown=hono:nodejs /app/package.json /app/package.json
 # DEV ONLY
 COPY . .
 
-USER hono
+USER root
 EXPOSE 3000
 
 # FOR PRODUCTION
 # CMD ["node", "/app/dist/src/index.js"]
 
-CMD npm run dev
+CMD npm run build:css && npm run dev
