@@ -10,8 +10,7 @@ import { lokasi } from "../db/schema/lokasi";
 import { pengamatan } from "../db/schema/pengamatan";
 import { rumpun } from "../db/schema/rumpun";
 import { detailRumpun } from "../db/schema/detail-rumpun";
-import { provinsi } from "../db/schema/provinsi";
-import { withPagination, withQueries, withQuery } from "./helper";
+import { withPagination } from "./helper";
 
 export const laporanHarian = new Hono();
 

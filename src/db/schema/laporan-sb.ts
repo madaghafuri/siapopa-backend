@@ -10,12 +10,14 @@ import {
 import { opt } from "./opt";
 import { user } from "./user";
 import { laporanBulanan } from "./laporan-bulanan";
+import { relations } from "drizzle-orm";
+import { laporanHarian } from "./laporan-harian";
 
 export const laporanSb = pgTable("laporan_sb", {
   id: serial("id").primaryKey(),
   opt_id: integer("opt_id").references(() => opt.id),
   laporan_bulanan_id: integer("laporan_bulanan_id").references(
-    () => laporanBulanan.id
+    () => laporanBulanan.id,
   ),
   tanggal_laporan_sb: date("tanggal_laporan_sb").defaultNow(),
   point_laporan_sb: geometry("point_laporan_sb", { type: "point" }),
@@ -31,6 +33,14 @@ export const laporanSb = pgTable("laporan_sb", {
   start_date: date("start_date"),
   end_date: date("end_date"),
 });
+
+export const laporanSbRelations = relations(laporanSb, ({ many, one }) => ({
+  laporanHarian: many(laporanHarian),
+  laporanBulanan: one(laporanBulanan, {
+    fields: [laporanSb.laporan_bulanan_id],
+    references: [laporanBulanan.id],
+  }),
+}));
 
 export type LaporanSb = typeof laporanSb.$inferSelect;
 export type InsertLaporanSb = typeof laporanSb.$inferInsert;

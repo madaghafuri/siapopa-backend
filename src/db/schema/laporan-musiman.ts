@@ -9,6 +9,8 @@ import {
 } from "drizzle-orm/pg-core";
 import { opt } from "./opt";
 import { user } from "./user";
+import { relations } from "drizzle-orm";
+import { laporanBulanan } from "./laporan-bulanan";
 
 export const laporanMusiman = pgTable("laporan_musiman", {
   id: serial("id").primaryKey(),
@@ -23,4 +25,12 @@ export const laporanMusiman = pgTable("laporan_musiman", {
   end_date: date("end_date"),
 });
 
+export const laporanMusimanRelations = relations(
+  laporanMusiman,
+  ({ many }) => ({
+    laporanBulanan: many(laporanBulanan),
+  }),
+);
+
 export type LaporanMusiman = typeof laporanMusiman.$inferSelect;
+export type InsertLaporanMusiman = typeof laporanMusiman.$inferInsert;

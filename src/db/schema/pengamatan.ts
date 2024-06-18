@@ -11,6 +11,8 @@ import {
 import { tanaman } from "./tanaman";
 import { lokasi } from "./lokasi";
 import { user } from "./user";
+import { relations } from "drizzle-orm";
+import { laporanHarian } from "./laporan-harian";
 
 export const pengamatan = pgTable("pengamatan", {
   id: serial("id").primaryKey(),
@@ -34,5 +36,9 @@ export const pengamatan = pgTable("pengamatan", {
   point_pengamatan: geometry("point_pengamatan", { type: "point" }),
   status_laporan_harian: boolean("status_laporan_harian").default(false),
 });
+
+export const pengamatanRelations = relations(pengamatan, ({ one }) => ({
+  laporanHarian: one(laporanHarian),
+}));
 
 export type Pengamatan = typeof pengamatan.$inferSelect;

@@ -8,6 +8,8 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { userGroup } from "./user-group";
+import { relations } from "drizzle-orm";
+import { lokasi } from "./lokasi";
 
 export const user = pgTable(
   "users",
@@ -23,5 +25,15 @@ export const user = pgTable(
   },
   (table) => ({
     emailIndex: uniqueIndex("emailIndex").on(table.email),
-  })
+  }),
 );
+
+export const usersRelations = relations(user, ({ many, one }) => ({
+  lokasis: many(lokasi),
+  userGroup: one(userGroup, {
+    fields: [user.usergroup_id],
+    references: [userGroup.id],
+  }),
+}));
+
+export type SelectUser = typeof user.$inferSelect;

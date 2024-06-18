@@ -1,11 +1,9 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
-import { db } from "..";
+import { API_TOKEN, db } from "..";
 import { user } from "../db/schema/user";
 import { and, eq } from "drizzle-orm";
-import { JwtVariables, sign } from "hono/jwt";
-import { userGroup } from "../db/schema/user-group";
-import { lokasi } from "../db/schema/lokasi";
+import { JwtVariables } from "hono/jwt";
 
 export const auth = new Hono<{ Variables: JwtVariables }>();
 
@@ -28,6 +26,10 @@ auth.post(
     const { email, password } = c.req.valid("form") as Record<string, string>;
 
     const findUser = await db.query.user.findFirst({
+      with: {
+        lokasi: true,
+        userGroup: true,
+      },
       where: and(eq(user.email, email), eq(user.password, password)),
     });
 
@@ -35,35 +37,16 @@ auth.post(
       return c.json(
         {
           status: 404,
-          message: "email atau password tidak ditemukan",
+          message: "user tidak ditemukan",
         },
         404,
       );
     }
 
-    const findUserGroup = await db.query.userGroup.findFirst({
-      where: eq(userGroup.id, findUser.id),
-    });
-
-    const getLocation = await db
-      .select()
-      .from(lokasi)
-      .where(eq(lokasi.pic_id, findUser.id));
-
-    const token = await sign(c.req.valid("form"), findUser.id.toString());
-
     return c.json({
       status: 200,
       message: "login user berhasil",
-      data: {
-        user_id: findUser.id,
-        phone: findUser.phone,
-        name: findUser.name,
-        photo: findUser.photo,
-        user_group: findUserGroup?.group_name || "",
-        token: token,
-        location: getLocation,
-      },
+      data: { ...findUser, token: API_TOKEN },
     });
   },
 );

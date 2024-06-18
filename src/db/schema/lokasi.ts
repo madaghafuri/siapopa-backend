@@ -4,6 +4,7 @@ import { kabupatenKota } from "./kabupaten-kota";
 import { kecamatan } from "./kecamatan";
 import { desa } from "./desa";
 import { user } from "./user";
+import { relations } from "drizzle-orm";
 
 export const lokasi = pgTable("lokasi", {
   id: text("id").primaryKey(),
@@ -15,5 +16,12 @@ export const lokasi = pgTable("lokasi", {
   desa_id: text("desa_id").references(() => desa.id),
   pic_id: integer("pic_id").references(() => user.id),
 });
+
+export const lokasiRelations = relations(lokasi, ({ one }) => ({
+  user: one(user, {
+    fields: [lokasi.pic_id],
+    references: [user.id],
+  }),
+}));
 
 export type Lokasi = typeof lokasi.$inferSelect;

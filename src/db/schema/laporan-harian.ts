@@ -11,6 +11,7 @@ import { pengamatan } from "./pengamatan";
 import { opt } from "./opt";
 import { user } from "./user";
 import { laporanSb } from "./laporan-sb";
+import { relations } from "drizzle-orm";
 
 export const laporanHarian = pgTable("laporan_harian", {
   id: serial("id").primaryKey(),
@@ -25,6 +26,17 @@ export const laporanHarian = pgTable("laporan_harian", {
   sign_pic: text("sign_pic"),
   status_laporan_sb: boolean("status_laporan_sb").default(false),
 });
+
+export const laporanHarianRelations = relations(laporanHarian, ({ one }) => ({
+  pengamatan: one(pengamatan, {
+    fields: [laporanHarian.pengamatan_id],
+    references: [pengamatan.id],
+  }),
+  laporanSb: one(laporanSb, {
+    fields: [laporanHarian.id_laporan_sb],
+    references: [laporanSb.id],
+  }),
+}));
 
 export type LaporanHarian = typeof laporanHarian.$inferSelect;
 export type InsertLaporanHarian = typeof laporanHarian.$inferInsert;
