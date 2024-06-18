@@ -62,6 +62,8 @@ export const db = drizzle(client, {
 
 const app = new Hono();
 
+export var API_TOKEN = process.env.API_TOKEN || "siapopa-dev";
+
 app.use(logger());
 app.use(
   "/assets/*",

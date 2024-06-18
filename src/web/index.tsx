@@ -1,8 +1,8 @@
 import { Hono } from "hono";
-import { DefaultLayout } from "./layouts/default-layout";
+import DashboardPage from "./pages/dashboard";
 
 export const web = new Hono();
 
 web.get("/", async (c) => {
-  return c.html(<DefaultLayout></DefaultLayout>);
+  return c.html(<DashboardPage></DashboardPage>);
 });
