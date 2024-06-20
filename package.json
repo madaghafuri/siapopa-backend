@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc && tailwindcss -i ./src/style.css -o ./dist/output.css",
+    "build": "tsc",
     "build:css": "tailwindcss -i ./src/style.css -o ./dist/output.css"
   },
   "type": "module",
