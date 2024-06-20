@@ -9,9 +9,10 @@ COPY package*json tsconfig.json tailwind.config.js ./
 COPY assets ./assets
 COPY drizzle ./drizzle
 COPY src ./src
-COPY drizzle ./drizzle
+COPY run.sh ./run.sh
 
 RUN npm ci
+    # PROD ONLY
     # npm run build && \
     # npm run build:css && \
     # npm prune --production
@@ -33,10 +34,17 @@ COPY . .
 # PROD ONLY
 # RUN npm run build:css
 
+RUN mkdir -p /data && chown -R hono:nodejs /data
+
+# PROD ONLY
+# COPY --from=builder /app/drizzle ./drizzle
+# COPY --from=builder /app/run.sh ./run.sh
+# RUN chmod +x run.sh
+
 USER root
 EXPOSE 3000
 
 # FOR PRODUCTION
-# CMD ["node", "/app/dist/index.js"]
+# CMD ["sh", "run.sh"]
 
 CMD npm run build:css && npm run dev
