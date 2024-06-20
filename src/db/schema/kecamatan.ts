@@ -1,6 +1,6 @@
-import { geometry, integer, pgTable, serial, text } from "drizzle-orm/pg-core";
-import { provinsi } from "./provinsi";
-import { kabupatenKota } from "./kabupaten-kota";
+import { geometry, pgTable, text } from "drizzle-orm/pg-core";
+import { provinsi } from "./provinsi.js";
+import { kabupatenKota } from "./kabupaten-kota.js";
 
 export const kecamatan = pgTable("kecamatan", {
   id: text("id").primaryKey(),

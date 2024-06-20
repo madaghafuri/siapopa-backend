@@ -1,8 +1,8 @@
-import { geometry, integer, pgTable, serial, text } from "drizzle-orm/pg-core";
-import { provinsi } from "./provinsi";
+import { geometry, pgTable, text } from "drizzle-orm/pg-core";
+import { provinsi } from "./provinsi.js";
 
 export const kabupatenKota = pgTable("kabupaten_kota", {
-  id: text("id").primaryKey(),
+  id: text("id").primaryKey().notNull(),
   nama_kabkot: text("nama_kabkot"),
   point_kabkot: geometry("point_kabkot", { type: "point" }),
   area_kabkot: geometry("area_kabkot", { type: "polygon" }),

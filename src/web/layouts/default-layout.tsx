@@ -1,4 +1,4 @@
-import { MainLayout } from "./main-layout";
+import { MainLayout } from "./main-layout.js";
 
 export const DefaultLayout = ({ children }: { children?: any }) => (
   <MainLayout>

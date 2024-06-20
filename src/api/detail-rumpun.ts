@@ -4,8 +4,8 @@ import { validator } from "hono/validator";
 import {
   DetailRumpun,
   detailRumpun as detailRumpunSchema,
-} from "../db/schema/detail-rumpun";
-import { db } from "..";
+} from "../db/schema/detail-rumpun.js";
+import { db } from "../index.js";
 import { eq } from "drizzle-orm";
 
 export const detailRumpun = new Hono<{ Variables: JwtVariables }>();

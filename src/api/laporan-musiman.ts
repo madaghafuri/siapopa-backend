@@ -4,15 +4,18 @@ import {
   InsertLaporanMusiman,
   LaporanMusiman,
   laporanMusiman as laporanMusimanSchema,
-} from "../db/schema/laporan-musiman";
-import { db } from "..";
+} from "../db/schema/laporan-musiman.js";
+import { db } from "../index.js";
 import { and, eq, gte, lte } from "drizzle-orm";
-import { LaporanBulanan, laporanBulanan } from "../db/schema/laporan-bulanan";
-import { user } from "../db/schema/user";
-import { laporanSb } from "../db/schema/laporan-sb";
-import { laporanHarian } from "../db/schema/laporan-harian";
-import { pengamatan } from "../db/schema/pengamatan";
-import { Lokasi, lokasi } from "../db/schema/lokasi";
+import {
+  LaporanBulanan,
+  laporanBulanan,
+} from "../db/schema/laporan-bulanan.js";
+import { user } from "../db/schema/user.js";
+import { laporanSb } from "../db/schema/laporan-sb.js";
+import { laporanHarian } from "../db/schema/laporan-harian.js";
+import { pengamatan } from "../db/schema/pengamatan.js";
+import { Lokasi, lokasi } from "../db/schema/lokasi.js";
 
 export const laporanMusiman = new Hono();
 

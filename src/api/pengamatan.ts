@@ -4,32 +4,24 @@ import { validator } from "hono/validator";
 import {
   Pengamatan,
   pengamatan as pengamatanSchema,
-} from "../db/schema/pengamatan";
-import { db } from "..";
-import { Lokasi, lokasi } from "../db/schema/lokasi";
-import { PgColumn, PgPointTuple } from "drizzle-orm/pg-core";
-import { SQL, and, eq, inArray, or, sql } from "drizzle-orm";
+} from "../db/schema/pengamatan.js";
+import { db } from "../index.js";
+import { SQL, and, eq, inArray, sql } from "drizzle-orm";
 import {
   PhotoPengamatan,
   photoPengamatan,
-} from "../db/schema/photo-pengamatan";
-import { provinsi } from "../db/schema/provinsi";
-import { kabupatenKota } from "../db/schema/kabupaten-kota";
-import { kecamatan } from "../db/schema/kecamatan";
-import { desa } from "../db/schema/desa";
+} from "../db/schema/photo-pengamatan.js";
 import {
   DetailRumpun,
   Kerusakan,
   detailRumpun,
-} from "../db/schema/detail-rumpun";
+} from "../db/schema/detail-rumpun.js";
 import {
   InsertRumpun,
   rumpun,
   rumpun as rumpunSchema,
-} from "../db/schema/rumpun";
-import { tanaman } from "../db/schema/tanaman";
-import { user } from "../db/schema/user";
-import { withPagination, withQueries } from "./helper";
+} from "../db/schema/rumpun.js";
+import { withPagination } from "./helper.js";
 
 export const pengamatan = new Hono<{ Variables: JwtVariables }>();
 

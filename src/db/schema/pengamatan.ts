@@ -8,11 +8,11 @@ import {
   serial,
   text,
 } from "drizzle-orm/pg-core";
-import { tanaman } from "./tanaman";
-import { lokasi } from "./lokasi";
-import { user } from "./user";
+import { tanaman } from "./tanaman.js";
+import { lokasi } from "./lokasi.js";
+import { user } from "./user.js";
 import { relations } from "drizzle-orm";
-import { laporanHarian } from "./laporan-harian";
+import { laporanHarian } from "./laporan-harian.js";
 
 export const pengamatan = pgTable("pengamatan", {
   id: serial("id").primaryKey(),

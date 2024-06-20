@@ -1,9 +1,9 @@
 import { boolean, integer, pgTable, serial, text } from "drizzle-orm/pg-core";
-import { laporanHarian } from "./laporan-harian";
-import { laporanSb } from "./laporan-sb";
-import { laporanBulanan } from "./laporan-bulanan";
-import { laporanMusiman } from "./laporan-musiman";
-import { kategoriLaporan } from "./kategori-laporan";
+import { laporanHarian } from "./laporan-harian.js";
+import { laporanSb } from "./laporan-sb.js";
+import { laporanBulanan } from "./laporan-bulanan.js";
+import { laporanMusiman } from "./laporan-musiman.js";
+import { kategoriLaporan } from "./kategori-laporan.js";
 
 export const validasiLaporan = pgTable("validasi_laporan", {
   id: serial("id").primaryKey(),
@@ -13,7 +13,7 @@ export const validasiLaporan = pgTable("validasi_laporan", {
     .references(() => laporanBulanan.id)
     .references(() => laporanMusiman.id),
   kategori_laporan_id: integer("kategori_laporan_id").references(
-    () => kategoriLaporan.id
+    () => kategoriLaporan.id,
   ),
   validasi_satpel: boolean("validasi_satpel"),
   validasi_kortikab: boolean("validasi_kortikab"),

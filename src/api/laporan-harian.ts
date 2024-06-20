@@ -3,14 +3,14 @@ import { validator } from "hono/validator";
 import {
   InsertLaporanHarian,
   laporanHarian as laporanHarianSchema,
-} from "../db/schema/laporan-harian";
-import { db } from "..";
+} from "../db/schema/laporan-harian.js";
+import { db } from "../index.js";
 import { and, eq, gte, lte } from "drizzle-orm";
-import { lokasi } from "../db/schema/lokasi";
-import { pengamatan } from "../db/schema/pengamatan";
-import { rumpun } from "../db/schema/rumpun";
-import { detailRumpun } from "../db/schema/detail-rumpun";
-import { withPagination } from "./helper";
+import { lokasi } from "../db/schema/lokasi.js";
+import { pengamatan } from "../db/schema/pengamatan.js";
+import { rumpun } from "../db/schema/rumpun.js";
+import { detailRumpun } from "../db/schema/detail-rumpun.js";
+import { withPagination } from "./helper.js";
 
 export const laporanHarian = new Hono();
 

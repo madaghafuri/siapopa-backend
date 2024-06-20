@@ -1,5 +1,4 @@
 import {
-  boolean,
   date,
   geometry,
   integer,
@@ -7,10 +6,10 @@ import {
   serial,
   text,
 } from "drizzle-orm/pg-core";
-import { opt } from "./opt";
-import { user } from "./user";
+import { opt } from "./opt.js";
+import { user } from "./user.js";
 import { relations } from "drizzle-orm";
-import { laporanBulanan } from "./laporan-bulanan";
+import { laporanBulanan } from "./laporan-bulanan.js";
 
 export const laporanMusiman = pgTable("laporan_musiman", {
   id: serial("id").primaryKey(),

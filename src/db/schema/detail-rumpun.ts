@@ -1,7 +1,7 @@
 import { integer, pgEnum, pgTable, serial } from "drizzle-orm/pg-core";
-import { rumpun } from "./rumpun";
-import { opt } from "./opt";
-import { makhlukAsing } from "./makhluk-asing";
+import { rumpun } from "./rumpun.js";
+import { opt } from "./opt.js";
+import { makhlukAsing } from "./makhluk-asing.js";
 
 const ListKerusakan = [
   "mutlak",

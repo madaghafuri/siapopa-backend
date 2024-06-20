@@ -1,6 +1,7 @@
-import { DefaultLayout } from "../layouts/default-layout";
+import { FC } from "hono/jsx";
+import { DefaultLayout } from "../layouts/default-layout.js";
 
-const DashboardPage = () => {
+const DashboardPage: FC = () => {
   return (
     <DefaultLayout>
       <div class="p-3">

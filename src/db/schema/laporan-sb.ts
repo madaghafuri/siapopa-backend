@@ -7,11 +7,11 @@ import {
   serial,
   text,
 } from "drizzle-orm/pg-core";
-import { opt } from "./opt";
-import { user } from "./user";
-import { laporanBulanan } from "./laporan-bulanan";
+import { opt } from "./opt.js";
+import { user } from "./user.js";
+import { laporanBulanan } from "./laporan-bulanan.js";
 import { relations } from "drizzle-orm";
-import { laporanHarian } from "./laporan-harian";
+import { laporanHarian } from "./laporan-harian.js";
 
 export const laporanSb = pgTable("laporan_sb", {
   id: serial("id").primaryKey(),

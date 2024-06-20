@@ -1,9 +1,9 @@
-import { integer, pgTable, serial, text } from "drizzle-orm/pg-core";
-import { provinsi } from "./provinsi";
-import { kabupatenKota } from "./kabupaten-kota";
-import { kecamatan } from "./kecamatan";
-import { desa } from "./desa";
-import { user } from "./user";
+import { integer, pgTable, text } from "drizzle-orm/pg-core";
+import { provinsi } from "./provinsi.js";
+import { kabupatenKota } from "./kabupaten-kota.js";
+import { kecamatan } from "./kecamatan.js";
+import { desa } from "./desa.js";
+import { user } from "./user.js";
 import { relations } from "drizzle-orm";
 
 export const lokasi = pgTable("lokasi", {

@@ -1,7 +1,7 @@
 // Organisme Penggerek Tanaman
 
 import { integer, pgTable, serial, text } from "drizzle-orm/pg-core";
-import { tanaman } from "./tanaman";
+import { tanaman } from "./tanaman.js";
 
 export const opt = pgTable("opt", {
   id: serial("id").primaryKey(),

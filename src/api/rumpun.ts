@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { JwtVariables } from "hono/jwt";
 import { validator } from "hono/validator";
-import { db } from "..";
-import { rumpun as dataRumpun } from "../db/schema/rumpun";
+import { db } from "../index.js";
+import { rumpun as dataRumpun } from "../db/schema/rumpun.js";
 import { and, eq } from "drizzle-orm";
 
 export const rumpun = new Hono<{ Variables: JwtVariables }>();

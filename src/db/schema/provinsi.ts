@@ -1,4 +1,4 @@
-import { geometry, pgTable, serial, text } from "drizzle-orm/pg-core";
+import { geometry, pgTable, text } from "drizzle-orm/pg-core";
 
 export const provinsi = pgTable("provinsi", {
   id: text("id").primaryKey(),

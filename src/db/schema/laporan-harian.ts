@@ -7,10 +7,10 @@ import {
   serial,
   text,
 } from "drizzle-orm/pg-core";
-import { pengamatan } from "./pengamatan";
-import { opt } from "./opt";
-import { user } from "./user";
-import { laporanSb } from "./laporan-sb";
+import { pengamatan } from "./pengamatan.js";
+import { opt } from "./opt.js";
+import { user } from "./user.js";
+import { laporanSb } from "./laporan-sb.js";
 import { relations } from "drizzle-orm";
 
 export const laporanHarian = pgTable("laporan_harian", {

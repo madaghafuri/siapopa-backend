@@ -7,9 +7,9 @@ import {
   uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
-import { userGroup } from "./user-group";
+import { userGroup } from "./user-group.js";
 import { relations } from "drizzle-orm";
-import { lokasi } from "./lokasi";
+import { lokasi } from "./lokasi.js";
 
 export const user = pgTable(
   "users",

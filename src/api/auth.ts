@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
-import { API_TOKEN, db } from "..";
-import { user } from "../db/schema/user";
+import { API_TOKEN, db } from "../index.js";
+import { user } from "../db/schema/user.js";
 import { and, eq } from "drizzle-orm";
 import { JwtVariables } from "hono/jwt";
 
@@ -27,7 +27,7 @@ auth.post(
 
     const findUser = await db.query.user.findFirst({
       with: {
-        lokasi: true,
+        lokasis: true,
         userGroup: true,
       },
       where: and(eq(user.email, email), eq(user.password, password)),

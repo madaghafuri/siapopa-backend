@@ -3,16 +3,16 @@ import { validator } from "hono/validator";
 import {
   InsertLaporanSb,
   laporanSb as laporanSbSchema,
-} from "../db/schema/laporan-sb";
+} from "../db/schema/laporan-sb.js";
 import {
   KategoriKerusakan,
   KategoriSerangan,
   luasKerusakanSb,
-} from "../db/schema/luas-kerusakan-sb";
-import { db } from "..";
+} from "../db/schema/luas-kerusakan-sb.js";
+import { db } from "../index.js";
 import { SQL, and, eq, gte, inArray, lte, sql } from "drizzle-orm";
-import { laporanHarian } from "../db/schema/laporan-harian";
-import { pengamatan } from "../db/schema/pengamatan";
+import { laporanHarian } from "../db/schema/laporan-harian.js";
+import { pengamatan } from "../db/schema/pengamatan.js";
 
 export const laporanSb = new Hono();
 
