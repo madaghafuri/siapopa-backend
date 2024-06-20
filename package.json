@@ -2,7 +2,9 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "build:css": "tailwindcss -i ./src/style.css -o ./dist/output.css"
+    "build:css": "tailwindcss -i ./src/style.css -o ./dist/output.css",
+    "db:migrate": "tsx src/db/migration.ts",
+    "db:migrate:prod": "node /app/dist/db/migration.js"
   },
   "type": "module",
   "dependencies": {

@@ -1,6 +1,11 @@
+### Install Docker Desktop on Windows
+
+[Here](https://www.docker.com/products/docker-desktop/)
+
+## Run the local development using Docker
+
 ```
-npm install
-npm run dev
+docker compose up --build --watch
 ```
 
 ```

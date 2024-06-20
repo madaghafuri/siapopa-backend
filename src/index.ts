@@ -30,7 +30,7 @@ import web from "./web/route.js";
 import { serveStatic } from "@hono/node-server/serve-static";
 const { Client } = pg;
 
-const client = new Client({
+export const client = new Client({
   user: "postgres",
   password: "postgres",
   host: "db",
