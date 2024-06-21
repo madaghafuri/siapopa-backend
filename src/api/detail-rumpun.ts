@@ -5,10 +5,13 @@ import {
   DetailRumpun,
   detailRumpun as detailRumpunSchema,
 } from "../db/schema/detail-rumpun.js";
-import { db } from "../index.js";
+import { API_TOKEN, db } from "../index.js";
 import { eq } from "drizzle-orm";
+import { bearerAuth } from "hono/bearer-auth";
 
 export const detailRumpun = new Hono<{ Variables: JwtVariables }>();
+
+detailRumpun.use("/detail_rumpun/*", bearerAuth({ token: "siapopa-dev" }));
 
 detailRumpun.post(
   "/detail_rumpun",
