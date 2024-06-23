@@ -1,7 +1,7 @@
 import "typed-htmx";
 
-declare module "hono/jsx" {
-  namespace JSX {
+declare global {
+  namespace Hono {
     interface HTMLAttributes extends HtmxAttributes {}
   }
 }

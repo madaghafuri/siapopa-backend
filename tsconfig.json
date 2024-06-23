@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "Node16",
-    "moduleResolution": "Node16",
+    "target": "ES2021",
+    "module": "ES2022",
+    "moduleResolution": "node",
     "strict": false,
     "skipLibCheck": true,
     "types": ["typed-htmx", "node"],
@@ -10,7 +10,8 @@
     "jsxImportSource": "hono/jsx",
     "outDir": "./dist",
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "plugins": [{ "name": "typescript-lit-html-plugin" }]
   },
   "exclude": ["node_modules"]
 }
