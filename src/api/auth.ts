@@ -4,6 +4,7 @@ import { API_TOKEN, db } from "../index.js";
 import { InsertUser, user } from "../db/schema/user.js";
 import { and, eq } from "drizzle-orm";
 import { JwtVariables } from "hono/jwt";
+import bcrypt from "bcrypt";
 
 export const auth = new Hono<{ Variables: JwtVariables }>();
 
@@ -25,12 +26,27 @@ auth.post(
   async (c) => {
     const { email, password } = c.req.valid("json") as Record<string, string>;
 
+    let hashedPassword = "";
+
+    bcrypt.hash(password, 10, function (err, hash) {
+      if (err) {
+        return c.json(
+          {
+            status: 500,
+            message: "internal server error" + err,
+          },
+          500,
+        );
+      }
+      hashedPassword = hash;
+    });
+
     const findUser = await db.query.user.findFirst({
       with: {
         lokasis: true,
         userGroup: true,
       },
-      where: and(eq(user.email, email), eq(user.password, password)),
+      where: and(eq(user.email, email), eq(user.password, hashedPassword)),
     });
 
     if (!findUser) {
@@ -70,11 +86,15 @@ auth.post(
   }),
   async (c) => {
     const data = c.req.valid("json");
+    let hashedPassword = "";
+    bcrypt.hash(data.password, 10, function (err, hash) {
+      hashedPassword = hash;
+    });
 
     try {
       await db
         .insert(user)
-        .values({ ...data })
+        .values({ ...data, password: hashedPassword })
         .returning();
     } catch (error) {
       console.error(error);

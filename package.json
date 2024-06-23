@@ -9,6 +9,8 @@
   "type": "module",
   "dependencies": {
     "@hono/node-server": "^1.11.2",
+    "@types/bcrypt": "^5.0.2",
+    "bcrypt": "^5.1.1",
     "drizzle-orm": "^0.31.2",
     "hono": "^4.4.4",
     "pg": "^8.12.0"
