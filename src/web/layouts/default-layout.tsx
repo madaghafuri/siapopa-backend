@@ -19,20 +19,25 @@ export const DefaultLayout = ({
     </div>
     <div class="flex min-h-[93vh]">
       <section class="flex w-2/12 flex-col gap-4 border-r-2 px-5 py-10">
-        <a href="/app/dashboard">
+        <a href="/dashboard">
           <button
             class={`rounded-md px-4 py-2 text-left ${route === "dashboard" ? "bg-primary text-white" : ""}`}
           >
             Dashboard
           </button>
         </a>
-        <button class="rounded-md px-4 py-2 text-left">Charts</button>
-        <button class="rounded-md px-4 py-2 text-left">Laporan</button>
-        <a href="/app/data-lokasi">
+        <a href="/input-data">
+          <button
+            class={`rounded-md px-4 py-2 text-left ${route === "input-data" ? "bg-primary text-white" : ""}`}
+          >
+            Input Data
+          </button>
+        </a>
+        <a href="/data-lokasi">
           <button
             class={`rounded-md px-4 py-2 text-left ${route === "data-lokasi" ? "bg-primary text-white" : ""}`}
           >
-            Data Lokasi
+            Laporan
           </button>
         </a>
       </section>

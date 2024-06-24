@@ -10,7 +10,7 @@ const DashboardPage: FC = ({ route }: { route: string }) => {
           id="map"
           class="min-h-[60vh]"
           x-init="
-          const map = L.map('map').setView([51.505, -0.09], 13);
+          const map = L.map('map').setView([-6.765742, 107.0514767], 13);
           L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
           }).addTo(map);
