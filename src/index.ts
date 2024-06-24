@@ -28,6 +28,9 @@ import * as userGroup from "./db/schema/user-group.js";
 import * as validasiLaporan from "./db/schema/validasi-laporan.js";
 import web from "./web/route.js";
 import { serveStatic } from "@hono/node-server/serve-static";
+import { CookieStore, Session, sessionMiddleware } from "hono-sessions";
+import { auth } from "./web/auth.js";
+import { authorize } from "./middleware.js";
 const { Client } = pg;
 
 export const client = new Client({
@@ -65,11 +68,15 @@ export const db = drizzle(client, {
   },
 });
 
-const app = new Hono();
+const app = new Hono<{
+  Variables: {
+    session: Session;
+    session_key_rotation: boolean;
+  };
+}>();
 
 export var API_TOKEN = process.env.API_TOKEN || "siapopa-dev";
-
-console.log(API_TOKEN);
+const store = new CookieStore();
 
 app.use(logger());
 app.use(
@@ -86,10 +93,25 @@ app.use(
     rewriteRequestPath: (path) => path.replace(/^\/dist/, "/dist"),
   }),
 );
+app.use(
+  "*",
+  sessionMiddleware({
+    store,
+    encryptionKey: "password_at_least_32_characters_long",
+    expireAfterSeconds: 900,
+    cookieOptions: {
+      sameSite: "Lax",
+      path: "/",
+      httpOnly: true,
+    },
+  }),
+);
+app.use("/app/*", authorize);
 
 app.get("/", (c) => c.redirect("/app"));
 app.route("/api/v1", api);
 app.route("/app", web);
+app.route("/", auth);
 
 const port = 3000;
 console.log(`Server is running on port ${port}`);
