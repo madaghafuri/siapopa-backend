@@ -76,7 +76,9 @@ auth.post(
 auth.post("/logout", async (c) => {
   const session = c.get("session");
   session.deleteSession();
-  return c.redirect("/login");
+  return c.text("success", 200, {
+    "HX-Redirect": "/login",
+  });
 });
 
 auth.get("/register", async (c) => {

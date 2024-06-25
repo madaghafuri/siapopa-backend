@@ -3,18 +3,20 @@ import { MainLayout } from "./main-layout.js";
 export const DefaultLayout = ({
   children,
   route,
+  authNavigation,
 }: {
   children?: any;
   route: string;
+  authNavigation?: any;
 }) => (
   <MainLayout>
-    <div class="grid min-h-[7vh] grid-cols-6 items-center justify-center gap-5 border-b-2 px-10 py-2">
+    <div class="grid min-h-[7vh] grid-cols-12 items-center justify-center gap-5 border-b-2 px-10 py-2">
       <button>
         <i class="fa-solid fa-bars"></i>
       </button>
-      <img src="/assets/logo@2x.svg" alt="" />
-      <div class="col-span-4 grid grid-cols-subgrid items-center gap-5">
-        <button class="border-1 col-start-4 rounded-md">Avatar</button>
+      <img class="col-span-2" src="/assets/logo@2x.svg" alt="" />
+      <div class="col-start-12 grid grid-cols-subgrid items-center gap-5">
+        {authNavigation || null}
       </div>
     </div>
     <div class="flex min-h-[93vh]">
@@ -26,14 +28,14 @@ export const DefaultLayout = ({
             Dashboard
           </button>
         </a>
-        <a href="/input-data">
+        <a>
           <button
             class={`rounded-md px-4 py-2 text-left ${route === "input-data" ? "bg-primary text-white" : ""}`}
           >
             Input Data
           </button>
         </a>
-        <a href="/data-lokasi">
+        <a>
           <button
             class={`rounded-md px-4 py-2 text-left ${route === "data-lokasi" ? "bg-primary text-white" : ""}`}
           >
