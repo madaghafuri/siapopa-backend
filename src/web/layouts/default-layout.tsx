@@ -21,20 +21,36 @@ export const DefaultLayout = ({
     </div>
     <div class="flex min-h-[93vh]">
       <section class="flex w-2/12 flex-col gap-4 border-r-2 px-5 py-10">
-        <a href="/dashboard">
+        <a href="/app/dashboard">
           <button
             class={`rounded-md px-4 py-2 text-left ${route === "dashboard" ? "bg-primary text-white" : ""}`}
           >
             Dashboard
           </button>
         </a>
-        <a>
+        <div class="rounded-md border">
           <button
-            class={`rounded-md px-4 py-2 text-left ${route === "input-data" ? "bg-primary text-white" : ""}`}
+            class={`flex w-full items-center justify-between gap-5 border-b-2 px-4 py-2 text-left ${route === "input-data" ? "bg-primary text-white" : ""}`}
+            type="button"
+            _="on click toggle between .hidden and .flex on #input-dropdown then toggle between .rotate-90 and .-rotate-90 on #dropdown-icon"
           >
             Input Data
+            <i id="dropdown-icon" class="fa-solid fa-caret-right"></i>
           </button>
-        </a>
+          <div
+            id="input-dropdown"
+            class="opening expanding hidden flex-col gap-3 p-5"
+          >
+            <a
+              href="/app/input/tanaman"
+              class={`rounded-md px-4 py-2 text-left ${route === "input-tanaman" ? "bg-primary text-white" : ""}`}
+            >
+              Tanaman
+            </a>
+            <a href="">Tanaman</a>
+            <a href="">Tanaman</a>
+          </div>
+        </div>
         <a>
           <button
             class={`rounded-md px-4 py-2 text-left ${route === "data-lokasi" ? "bg-primary text-white" : ""}`}
