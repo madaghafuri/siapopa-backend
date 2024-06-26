@@ -1,4 +1,4 @@
-import { MainLayout } from "../layouts/main-layout";
+import { MainLayout } from "../layouts/main-layout.js";
 
 const LoginPage = () => {
   return (
@@ -13,7 +13,7 @@ const LoginPage = () => {
           class="flex flex-col gap-5"
         >
           <div class="flex flex-col gap-3">
-            <label htmlFor="">Email</label>
+            <label>Email</label>
             <input
               type="email"
               placeholder="example@email.com"
@@ -23,7 +23,7 @@ const LoginPage = () => {
             />
           </div>
           <div class="flex flex-col gap-3">
-            <label htmlFor="">Password</label>
+            <label>Password</label>
             <input
               type="password"
               name="password"
@@ -33,7 +33,7 @@ const LoginPage = () => {
           </div>
           <div class="flex gap-3">
             <input type="checkbox" class="rounded border p-2" />
-            <label htmlFor="">Remember me</label>
+            <label>Remember me</label>
           </div>
           <div id="error-result"></div>
           <button type="submit" class="rounded bg-primary px-2 py-1 text-white">

@@ -26,30 +26,27 @@ auth.post(
   async (c) => {
     const { email, password } = c.req.valid("json") as Record<string, string>;
 
-    let hashedPassword = "";
-
-    bcrypt.hash(password, 10, function (err, hash) {
-      if (err) {
-        return c.json(
-          {
-            status: 500,
-            message: "internal server error" + err,
-          },
-          500,
-        );
-      }
-      hashedPassword = hash;
-    });
-
     const findUser = await db.query.user.findFirst({
       with: {
         lokasis: true,
         userGroup: true,
       },
-      where: and(eq(user.email, email), eq(user.password, hashedPassword)),
+      where: and(eq(user.email, email)),
     });
 
     if (!findUser) {
+      return c.json(
+        {
+          status: 404,
+          message: "user tidak ditemukan",
+        },
+        404,
+      );
+    }
+
+    const comparePass = bcrypt.compareSync(password, findUser.password);
+
+    if (!comparePass) {
       return c.json(
         {
           status: 404,
@@ -86,15 +83,15 @@ auth.post(
   }),
   async (c) => {
     const data = c.req.valid("json");
-    let hashedPassword = "";
-    bcrypt.hash(data.password, 10, function (err, hash) {
-      hashedPassword = hash;
-    });
+
+    const hPass = bcrypt.hashSync(data.password, 10);
+
+    console.log(hPass);
 
     try {
       await db
         .insert(user)
-        .values({ ...data, password: hashedPassword })
+        .values({ ...data, password: hPass })
         .returning();
     } catch (error) {
       console.error(error);

@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { Session } from "hono-sessions";
-import LoginPage from "./pages/login";
-import RegisterPage from "./pages/register";
+import LoginPage from "./pages/login.js";
+import RegisterPage from "./pages/register.js";
 import { validator } from "hono/validator";
 import { InsertUser, user } from "../db/schema/user.js";
-import { db } from "..";
+import { db } from "../index.js";
 import { and, eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
@@ -39,26 +39,28 @@ auth.post(
     const session = c.get("session");
     const { email, password } = c.req.valid("form");
 
-    console.log(session);
-
-    let hashedPass = "";
-    bcrypt.hash(password as string, 10, function (err, hash) {
-      console.error(err);
-      hashedPass = hash;
-    });
-
     try {
       var selectUser = await db.query.user.findFirst({
-        where: and(
-          eq(user.email, email as string),
-          eq(user.password, hashedPass),
-        ),
+        where: and(eq(user.email, email as string)),
       });
     } catch (error) {
       console.error(error);
     }
 
     if (!selectUser) {
+      return c.html(
+        <span class="text-sm text-red-500">
+          email atau password yang dimasukkan salah
+        </span>,
+      );
+    }
+
+    const comparePass = bcrypt.compareSync(
+      password as string,
+      selectUser.password,
+    );
+
+    if (!comparePass) {
       return c.html(
         <span class="text-sm text-red-500">
           email atau password yang dimasukkan salah
@@ -84,3 +86,39 @@ auth.post("/logout", async (c) => {
 auth.get("/register", async (c) => {
   return c.html(<RegisterPage />);
 });
+auth.post(
+  "/register",
+  validator("form", (value, c) => {
+    const { email, password, name, ...rest } = value as unknown as InsertUser;
+
+    if (!email || !password || !name) {
+      return c.html(
+        <span class="text-sm text-red-500">
+          email atau password belum dimasukkan
+        </span>,
+      );
+    }
+
+    return { email, password, name, ...rest };
+  }),
+  async (c) => {
+    const data = c.req.valid("form");
+    const hashedPassword = bcrypt.hashSync(data.password, 10);
+
+    const insertedUser = await db
+      .insert(user)
+      .values({ ...data, password: hashedPassword })
+      .returning();
+
+    if (insertedUser.length === 0) {
+      return c.html(
+        <span class="text-sm text-red-500">
+          terjadi kesalahan pada sistem, silahkan coba lagi
+        </span>,
+        500,
+      );
+    }
+
+    return c.text("success", 200, { "HX-Redirect": "/login" });
+  },
+);

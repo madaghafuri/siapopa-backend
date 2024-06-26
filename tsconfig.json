@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "types": ["typed-htmx", "node"],
     "jsx": "react-jsx",
-    "jsxImportSource": "typed-htmx/typed-html",
+    "jsxImportSource": "hono/jsx",
     "outDir": "./dist",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

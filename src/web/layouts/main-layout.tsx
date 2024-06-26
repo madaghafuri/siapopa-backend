@@ -31,7 +31,7 @@ export const MainLayout = ({ children }: { children?: any }) => {
           crossorigin="anonymous"
         ></script>
         <script
-          defer="true"
+          defer
           src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"
         ></script>
         <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>

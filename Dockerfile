@@ -31,8 +31,6 @@ COPY --from=builder --chown=hono:nodejs /app/package.json /app/package.json
 # COPY --from=builder --chown=hono:nodejs /app/assets /app/assets
 # DEV ONLY
 COPY . .
-# PROD ONLY
-# RUN npm run build:css
 
 RUN mkdir -p /data && chown -R hono:nodejs /data
 

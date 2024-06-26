@@ -28,9 +28,15 @@ const Profile = ({ user }: { user: AuthenticatedUser }) => {
       </div>
       <div
         id="dropdown-menu"
-        class="absolute z-auto hidden rounded-lg border bg-white p-5"
+        class="absolute z-auto hidden rounded-lg border bg-white"
       >
-        Hihi
+        <button
+          class="rounded-lg px-2 py-1 hover:bg-slate-500 hover:text-white"
+          type="button"
+          hx-post="/logout"
+        >
+          Logout
+        </button>
       </div>
     </div>
   );
