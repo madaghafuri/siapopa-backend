@@ -1,7 +1,7 @@
 import { integer, pgEnum, pgTable, serial } from "drizzle-orm/pg-core";
 import { rumpun } from "./rumpun.js";
 import { opt } from "./opt.js";
-import { makhlukAsing } from "./makhluk-asing.js";
+import { hama } from "./makhluk-asing.js";
 
 const ListKerusakan = [
   "mutlak",
@@ -25,7 +25,7 @@ export const detailRumpun = pgTable("detail_rumpun", {
   opt_id: integer("opt_id").references(() => opt.id),
   jumlah_opt: integer("jumlah_opt"),
   skala_kerusakan: kerusakan("skala_kerusakan"),
-  hama_id: integer("hama_id").references(() => makhlukAsing.id),
+  hama_id: integer("hama_id").references(() => hama.id),
   jumlah_hama: integer("jumlah_hama"),
 });
 

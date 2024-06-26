@@ -1,5 +1,5 @@
 {
-  "id": "8792a3f5-7d42-4381-ae21-1f3bad080c5f",
+  "id": "cb52f551-08eb-432c-8385-61e99739ebe5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -172,10 +172,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "detail_rumpun_hama_id_makhluk_asing_id_fk": {
-          "name": "detail_rumpun_hama_id_makhluk_asing_id_fk",
+        "detail_rumpun_hama_id_hama_id_fk": {
+          "name": "detail_rumpun_hama_id_hama_id_fk",
           "tableFrom": "detail_rumpun",
-          "tableTo": "makhluk_asing",
+          "tableTo": "hama",
           "columnsFrom": [
             "hama_id"
           ],
@@ -1019,8 +1019,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.makhluk_asing": {
-      "name": "makhluk_asing",
+    "public.hama": {
+      "name": "hama",
       "schema": "",
       "columns": {
         "id": {
@@ -1029,14 +1029,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "opt": {
-          "name": "opt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ma": {
-          "name": "ma",
+        "hama": {
+          "name": "hama",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1050,9 +1044,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "makhluk_asing_tanaman_id_tanaman_id_fk": {
-          "name": "makhluk_asing_tanaman_id_tanaman_id_fk",
-          "tableFrom": "makhluk_asing",
+        "hama_tanaman_id_tanaman_id_fk": {
+          "name": "hama_tanaman_id_tanaman_id_fk",
+          "tableFrom": "hama",
           "tableTo": "tanaman",
           "columnsFrom": [
             "tanaman_id"
@@ -1085,9 +1079,16 @@
         },
         "status": {
           "name": "status",
-          "type": "text",
+          "type": "status",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
+        },
+        "kode_opt": {
+          "name": "kode_opt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         },
         "tanaman_id": {
           "name": "tanaman_id",
@@ -1113,7 +1114,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "opt_kode_opt_unique": {
+          "name": "opt_kode_opt_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "kode_opt"
+          ]
+        }
+      }
     },
     "public.pengamatan": {
       "name": "pengamatan",
@@ -1728,6 +1737,14 @@
         "sisa serangan",
         "tambah serangan",
         "keadaan serangan"
+      ]
+    },
+    "public.status": {
+      "name": "status",
+      "schema": "public",
+      "values": [
+        "mutlak",
+        "tidak mutlak"
       ]
     }
   },

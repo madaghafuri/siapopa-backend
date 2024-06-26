@@ -16,6 +16,12 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "public"."status" AS ENUM('mutlak', 'tidak mutlak');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "desa" (
 	"id" text PRIMARY KEY NOT NULL,
 	"nama_desa" text,
@@ -138,18 +144,19 @@ CREATE TABLE IF NOT EXISTS "luas_kerusakan_sb" (
 	"laporan_sb_id" integer
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "makhluk_asing" (
+CREATE TABLE IF NOT EXISTS "hama" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"opt" text,
-	"ma" text,
+	"hama" text,
 	"tanaman_id" integer
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "opt" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"nama_opt" text,
-	"status" text,
-	"tanaman_id" integer
+	"status" "status",
+	"kode_opt" text NOT NULL,
+	"tanaman_id" integer,
+	CONSTRAINT "opt_kode_opt_unique" UNIQUE("kode_opt")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "pengamatan" (
@@ -263,7 +270,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "detail_rumpun" ADD CONSTRAINT "detail_rumpun_hama_id_makhluk_asing_id_fk" FOREIGN KEY ("hama_id") REFERENCES "public"."makhluk_asing"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "detail_rumpun" ADD CONSTRAINT "detail_rumpun_hama_id_hama_id_fk" FOREIGN KEY ("hama_id") REFERENCES "public"."hama"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -395,7 +402,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "makhluk_asing" ADD CONSTRAINT "makhluk_asing_tanaman_id_tanaman_id_fk" FOREIGN KEY ("tanaman_id") REFERENCES "public"."tanaman"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "hama" ADD CONSTRAINT "hama_tanaman_id_tanaman_id_fk" FOREIGN KEY ("tanaman_id") REFERENCES "public"."tanaman"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

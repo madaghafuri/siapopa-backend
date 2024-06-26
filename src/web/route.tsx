@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import DashboardPage from "./pages/dashboard.js";
-import DataLokasiPage from "./pages/data-lokasi.js";
 import { Session } from "hono-sessions";
 import { db } from "../index.js";
 import { eq } from "drizzle-orm";
@@ -10,6 +9,10 @@ import Profile, { AuthenticatedUser } from "./components/profile.js";
 import InputTanaman from "./pages/input/tanaman.js";
 import { validator } from "hono/validator";
 import { InsertTanaman, tanaman } from "../db/schema/tanaman.js";
+import InputOPT from "./pages/input/opt.js";
+import { InsertOPT, opt } from "../db/schema/opt.js";
+import InputHama from "./pages/input/hama.js";
+import { InsertHama, hama } from "../db/schema/makhluk-asing.js";
 
 const web = new Hono<{
   Variables: {
@@ -91,14 +94,14 @@ input.post(
       console.error(error);
       return c.html(
         <span>Terjadi kesalahan dalam input data. Silahkan coba lagi</span>,
+        500,
       );
     }
 
     return c.html(<span>Berhasil input tanaman</span>);
   },
 );
-
-web.get("/input-data", async (c) => {
+input.get("/opt", async (c) => {
   const session = c.get("session");
   const userId = session.get("user_id") as string;
 
@@ -113,17 +116,100 @@ web.get("/input-data", async (c) => {
       console.error(err);
     });
 
+  const selectTanaman = await db.select().from(tanaman);
+
   return c.html(
     <DefaultLayout
-      route="input-data"
+      route="input-opt"
       authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
-    ></DefaultLayout>,
+    >
+      <InputOPT listTanaman={selectTanaman} />
+    </DefaultLayout>,
   );
 });
+input.post(
+  "/opt",
+  validator("form", (value, c) => {
+    const { kode_opt, nama_opt, status, tanaman_id } =
+      value as unknown as InsertOPT;
 
-// Data Lokasi Related
-web.get("/data-lokasi", async (c) => {
-  return c.html(<DataLokasiPage route="data-lokasi"></DataLokasiPage>);
+    if (!kode_opt || !nama_opt || !status || !tanaman_id) {
+      return c.html(<span>Data yang dibutuhkan tidak sesuai</span>);
+    }
+    return { kode_opt, nama_opt, status, tanaman_id };
+  }),
+  async (c) => {
+    const optData = c.req.valid("form");
+
+    try {
+      await db.insert(opt).values({ ...optData });
+    } catch (error) {
+      console.error(error);
+      return c.html(
+        <span>
+          Terjadi kesalahan dalam proses penginputan data. Silahkan coba lagi
+        </span>,
+        500,
+      );
+    }
+
+    return c.html(<span>Berhasil menambahkan data</span>);
+  },
+);
+input.get("/hama", async (c) => {
+  const session = c.get("session");
+  const userId = session.get("user_id") as string;
+
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: eq(user.id, parseInt(userId)),
+      with: {
+        userGroup: true,
+      },
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const selectTanaman = await db.select().from(tanaman);
+
+  return c.html(
+    <DefaultLayout
+      route="input-hama"
+      authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
+    >
+      <InputHama listTanaman={selectTanaman} />
+    </DefaultLayout>,
+  );
 });
+input.post(
+  "/hama",
+  validator("form", (value, c) => {
+    const { hama, tanaman_id } = value as unknown as InsertHama;
+
+    if (!hama || !tanaman_id) {
+      return c.html(<span>Data yang dibutuhkan tidak sesuai</span>);
+    }
+
+    return { hama, tanaman_id };
+  }),
+  async (c) => {
+    const validatedData = c.req.valid("form");
+
+    try {
+      await db.insert(hama).values({ ...validatedData });
+    } catch (error) {
+      console.error(error);
+      return c.html(
+        <span>
+          Terjadi kesalahan dalam proses penginputan data. Silahkan coba lagi
+        </span>,
+        500,
+      );
+    }
+
+    return c.html(<span>Berhasil menambahkan data</span>);
+  },
+);
 
 export default web;
