@@ -4,8 +4,10 @@ import { validator } from "hono/validator";
 import { db } from "../index.js";
 import { rumpun as dataRumpun } from "../db/schema/rumpun.js";
 import { and, eq } from "drizzle-orm";
+import { authorizeApi } from "../middleware.js";
 
 export const rumpun = new Hono<{ Variables: JwtVariables }>();
+rumpun.use("/rumpun/*", authorizeApi);
 
 rumpun.post(
   "/rumpun",

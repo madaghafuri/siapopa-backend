@@ -13,8 +13,10 @@ import { db } from "../index.js";
 import { SQL, and, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import { laporanHarian } from "../db/schema/laporan-harian.js";
 import { pengamatan } from "../db/schema/pengamatan.js";
+import { authorizeApi } from "../middleware.js";
 
 export const laporanSb = new Hono();
+laporanSb.use("/laporan_sb/*", authorizeApi);
 
 laporanSb.post(
   "/laporan_sb",

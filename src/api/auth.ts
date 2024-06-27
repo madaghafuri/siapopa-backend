@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
-import { API_TOKEN, db } from "../index.js";
+import { API_TOKEN, db, lucia } from "../index.js";
 import { InsertUser, user } from "../db/schema/user.js";
 import { and, eq } from "drizzle-orm";
 import { JwtVariables } from "hono/jwt";
@@ -28,7 +28,7 @@ auth.post(
 
     const findUser = await db.query.user.findFirst({
       with: {
-        lokasis: true,
+        locations: true,
         userGroup: true,
       },
       where: and(eq(user.email, email)),
@@ -56,10 +56,18 @@ auth.post(
       );
     }
 
+    const session = await lucia.createSession(findUser.id, {});
+    const tokenSession = {
+      bearerToken: session.id,
+      user_id: session.userId,
+      fresh: session.fresh,
+      expiresAt: session.expiresAt,
+    };
+
     return c.json({
       status: 200,
       message: "login user berhasil",
-      data: { ...findUser, token: API_TOKEN },
+      data: { ...findUser, token: tokenSession },
     });
   },
 );
@@ -110,3 +118,23 @@ auth.post(
     });
   },
 );
+auth.post("logout", async (c) => {
+  const auth = c.req.header("Authorization");
+  const sessionId = lucia.readBearerToken(auth ?? "");
+
+  if (!sessionId)
+    return c.json(
+      {
+        status: 401,
+        message: "Bearer token missing from request header",
+      },
+      401,
+    );
+
+  await lucia.invalidateSession(sessionId);
+
+  return c.json({
+    status: 200,
+    message: "success",
+  });
+});

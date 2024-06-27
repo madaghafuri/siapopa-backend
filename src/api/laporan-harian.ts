@@ -4,18 +4,18 @@ import {
   InsertLaporanHarian,
   laporanHarian as laporanHarianSchema,
 } from "../db/schema/laporan-harian.js";
-import { API_TOKEN, db } from "../index.js";
+import { db } from "../index.js";
 import { and, eq, gte, lte } from "drizzle-orm";
 import { lokasi } from "../db/schema/lokasi.js";
 import { pengamatan } from "../db/schema/pengamatan.js";
 import { rumpun } from "../db/schema/rumpun.js";
 import { detailRumpun } from "../db/schema/detail-rumpun.js";
 import { withPagination } from "./helper.js";
-import { bearerAuth } from "hono/bearer-auth";
+import { authorizeApi } from "../middleware.js";
 
 export const laporanHarian = new Hono();
 
-laporanHarian.use("/laporan_harian/*", bearerAuth({ token: "siapopa-dev" }));
+laporanHarian.use("/laporan_harian/*", authorizeApi);
 
 laporanHarian.post(
   "/laporan_harian",

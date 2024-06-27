@@ -4,16 +4,16 @@ import {
   InsertLaporanBulanan,
   laporanBulanan as laporanBulananSchema,
 } from "../db/schema/laporan-bulanan.js";
-import { API_TOKEN, db } from "../index.js";
+import { db } from "../index.js";
 import { and, eq, gte, lte } from "drizzle-orm";
 import { laporanSb } from "../db/schema/laporan-sb.js";
 import { user } from "../db/schema/user.js";
 import { lokasi } from "../db/schema/lokasi.js";
-import { bearerAuth } from "hono/bearer-auth";
+import { authorizeApi } from "../middleware.js";
 
 export const laporanBulanan = new Hono();
 
-laporanBulanan.use("/laporan_bulanan/*", bearerAuth({ token: "siapopa-dev" }));
+laporanBulanan.use("/laporan_bulanan/*", authorizeApi);
 
 laporanBulanan.post(
   "/laporan_bulanan",

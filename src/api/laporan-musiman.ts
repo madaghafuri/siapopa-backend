@@ -16,8 +16,10 @@ import { laporanSb } from "../db/schema/laporan-sb.js";
 import { laporanHarian } from "../db/schema/laporan-harian.js";
 import { pengamatan } from "../db/schema/pengamatan.js";
 import { Lokasi, lokasi } from "../db/schema/lokasi.js";
+import { authorizeApi } from "../middleware.js";
 
 export const laporanMusiman = new Hono();
+laporanMusiman.use("/laporan_musiman/*", authorizeApi);
 
 laporanMusiman.post(
   "/laporan_musiman",

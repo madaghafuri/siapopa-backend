@@ -22,8 +22,10 @@ import {
   rumpun as rumpunSchema,
 } from "../db/schema/rumpun.js";
 import { withPagination } from "./helper.js";
+import { authorizeApi } from "../middleware.js";
 
 export const pengamatan = new Hono<{ Variables: JwtVariables }>();
+pengamatan.use("/pengamatan/*", authorizeApi);
 
 pengamatan.post(
   "/pengamatan",

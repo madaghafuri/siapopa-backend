@@ -26,11 +26,18 @@ import * as rumpun from "./db/schema/rumpun.js";
 import * as tanaman from "./db/schema/tanaman.js";
 import * as userGroup from "./db/schema/user-group.js";
 import * as validasiLaporan from "./db/schema/validasi-laporan.js";
+import * as session from "./db/schema/session.js";
 import web from "./web/route.js";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { CookieStore, Session, sessionMiddleware } from "hono-sessions";
 import { auth } from "./web/auth.js";
 import { authorize } from "./middleware.js";
+import {
+  DrizzlePostgreSQLAdapter,
+  PostgreSQLUserTable,
+  type PostgreSQLSessionTable,
+} from "@lucia-auth/adapter-drizzle";
+import { Lucia, TimeSpan } from "lucia";
 const { Client } = pg;
 
 export const client = new Client({
@@ -65,8 +72,29 @@ export const db = drizzle(client, {
     ...userGroup,
     ...user,
     ...validasiLaporan,
+    ...session,
   },
 });
+const adapter = new DrizzlePostgreSQLAdapter(
+  db,
+  session.sessionTable as unknown as PostgreSQLSessionTable,
+  user.user as unknown as PostgreSQLUserTable,
+);
+export const lucia = new Lucia(adapter, {
+  sessionCookie: {
+    attributes: {
+      secure: process.env.NODE_ENV === "production",
+    },
+  },
+  sessionExpiresIn: new TimeSpan(2, "w"),
+});
+
+declare module "lucia" {
+  interface Register {
+    Lucia: typeof lucia;
+    UserId: number;
+  }
+}
 
 const app = new Hono<{
   Variables: {
