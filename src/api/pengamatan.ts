@@ -67,19 +67,22 @@ pengamatan.post(
     const { lokasi_pengamatan, bukti_pengamatan, lokasi_id, rumpun, ...rest } =
       c.req.valid("json");
 
+    console.log(c.req.valid("json"));
+
     const [lat, long] = lokasi_pengamatan.coordinates;
 
-    const photoValue: Partial<PhotoPengamatan>[] = bukti_pengamatan.map(
-      (val) => ({
-        path: val,
-        pengamatan_id: insertedData[0].id,
-      }),
-    );
     try {
       var insertedData = await db
         .insert(pengamatanSchema)
         .values({ ...rest, point_pengamatan: [lat, long] })
         .returning();
+
+      const photoValue: Partial<PhotoPengamatan>[] = bukti_pengamatan.map(
+        (val) => ({
+          path: val,
+          pengamatan_id: insertedData[0].id,
+        }),
+      );
 
       if (rumpun.length > 0) {
         const rumpunData: InsertRumpun[] = rumpun.map(
@@ -242,14 +245,14 @@ pengamatan.delete("/pengamatan/:pengamatanId", async (c) => {
 pengamatan.get("/pengamatan/:pengamatanId", async (c) => {
   const pengamatanId = c.req.param("pengamatanId");
 
-  const data = db
+  const data = await db
     .select({ pengamatan: pengamatanSchema, detail_rumpun: detailRumpun })
     .from(pengamatanSchema)
     .leftJoin(rumpun, eq(rumpun.pengamatan_id, pengamatanSchema.id))
     .leftJoin(detailRumpun, eq(detailRumpun.rumpun_id, rumpun.id))
     .where(eq(pengamatanSchema.id, parseInt(pengamatanId)));
 
-  const result = (await data).reduce<
+  const result = data.reduce<
     Record<number, { pengamatan: Pengamatan; detail_rumpun: DetailRumpun[] }>
   >((acc, row) => {
     const pengamatan = row.pengamatan;

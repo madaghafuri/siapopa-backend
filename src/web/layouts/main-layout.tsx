@@ -35,6 +35,7 @@ export const MainLayout = ({ children }: { children?: any }) => {
           src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"
         ></script>
         <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.8/wicket.min.js"></script>
       </head>
       <body>{children}</body>
     </html>
