@@ -2,14 +2,15 @@ import { Hono } from "hono";
 import { validator } from "hono/validator";
 import {
   InsertLaporanHarian,
+  LaporanHarian,
   laporanHarian as laporanHarianSchema,
 } from "../db/schema/laporan-harian.js";
 import { db } from "../index.js";
 import { and, eq, gte, lte } from "drizzle-orm";
-import { lokasi } from "../db/schema/lokasi.js";
+import { Lokasi, lokasi } from "../db/schema/lokasi.js";
 import { pengamatan } from "../db/schema/pengamatan.js";
 import { rumpun } from "../db/schema/rumpun.js";
-import { detailRumpun } from "../db/schema/detail-rumpun.js";
+import { DetailRumpun, detailRumpun } from "../db/schema/detail-rumpun.js";
 import { withPagination } from "./helper.js";
 import { authorizeApi } from "../middleware.js";
 
@@ -146,7 +147,9 @@ laporanHarian.get("/laporan_harian/:laporanHarianId", async (c) => {
   try {
     var dataLaporan = await db
       .select({
-        hasil_pengamatan: detailRumpun,
+        laporan_harian: laporanHarianSchema,
+        lokasi,
+        detail_rumpun: detailRumpun,
       })
       .from(laporanHarianSchema)
       .leftJoin(
@@ -157,6 +160,39 @@ laporanHarian.get("/laporan_harian/:laporanHarianId", async (c) => {
       .leftJoin(rumpun, eq(rumpun.pengamatan_id, pengamatan.id))
       .leftJoin(detailRumpun, eq(detailRumpun.rumpun_id, rumpun.id))
       .where(eq(laporanHarianSchema.id, parseInt(laporanHarianId)));
+
+    var data = dataLaporan.reduce<
+      Record<
+        number,
+        {
+          laporan_harian: LaporanHarian;
+          detail_rumpun: DetailRumpun[];
+          lokasi: Lokasi;
+        }
+      >
+    >((acc, row) => {
+      const laporanHarian = row.laporan_harian;
+      const detailRumpun = row.detail_rumpun;
+      const lokasi = row.lokasi;
+
+      if (!acc[laporanHarian.id]) {
+        acc[laporanHarian.id] = {
+          laporan_harian: laporanHarian,
+          detail_rumpun: [],
+          lokasi: null,
+        };
+      }
+
+      if (detailRumpun) {
+        acc[laporanHarian.id].detail_rumpun.push(detailRumpun);
+      }
+
+      if (lokasi) {
+        acc[laporanHarian.id].lokasi = lokasi;
+      }
+
+      return acc;
+    }, {});
   } catch (error) {
     console.error(error);
     return c.json(
@@ -181,7 +217,7 @@ laporanHarian.get("/laporan_harian/:laporanHarianId", async (c) => {
   return c.json({
     status: 200,
     message: "success",
-    data: {},
+    data: data[laporanHarianId],
   });
 });
 laporanHarian.get(

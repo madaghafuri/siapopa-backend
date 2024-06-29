@@ -279,7 +279,7 @@ pengamatan.get("/pengamatan/:pengamatanId", async (c) => {
   return c.json({
     status: 200,
     message: "success",
-    data: result,
+    data: result[pengamatanId],
   });
 });
 pengamatan.get("/pengamatan", async (c) => {
