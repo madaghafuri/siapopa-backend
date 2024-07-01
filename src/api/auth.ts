@@ -28,7 +28,14 @@ auth.post(
 
     const findUser = await db.query.user.findFirst({
       with: {
-        locations: true,
+        locations: {
+          with: {
+            provinsi: true,
+            kabkot: true,
+            kecamatan: true,
+            desa: true
+          }
+        },
         userGroup: true,
       },
       where: and(eq(user.email, email)),
