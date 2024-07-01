@@ -22,6 +22,22 @@ export const lokasiRelations = relations(lokasi, ({ one }) => ({
     fields: [lokasi.pic_id],
     references: [user.id],
   }),
+  provinsi: one(provinsi, {
+    fields: [lokasi.provinsi_id],
+    references: [provinsi.id]
+  }),
+  kabkot: one(kabupatenKota, {
+    fields: [lokasi.kabkot_id],
+    references: [kabupatenKota.id]
+  }),
+  kecamatan: one(kecamatan, {
+    fields: [lokasi.kecamatan_id],
+    references: [kecamatan.id]
+  }),
+  desa: one(desa, {
+    fields: [lokasi.desa_id],
+    references: [desa.id]
+  })
 }));
 
 export type Lokasi = typeof lokasi.$inferSelect;
