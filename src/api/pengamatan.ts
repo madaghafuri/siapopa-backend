@@ -6,7 +6,7 @@ import {
   pengamatan as pengamatanSchema,
 } from "../db/schema/pengamatan.js";
 import { db } from "../index.js";
-import { SQL, and, eq, inArray, sql } from "drizzle-orm";
+import { SQL, and, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import {
   PhotoPengamatan,
   photoPengamatan,
@@ -67,7 +67,6 @@ pengamatan.post(
     const { lokasi_pengamatan, bukti_pengamatan, lokasi_id, rumpun, ...rest } =
       c.req.valid("json");
 
-    console.log(c.req.valid("json"));
 
     const [lat, long] = lokasi_pengamatan.coordinates;
 
@@ -283,9 +282,9 @@ pengamatan.get("/pengamatan/:pengamatanId", async (c) => {
   });
 });
 pengamatan.get("/pengamatan", async (c) => {
-  const { page, per_page, lokasi_id, user_id, tanggal_pengamatan } =
+  const { page, per_page, lokasi_id, user_id, tanggal_pengamatan, start_date, end_date } =
     c.req.query() as Record<
-      "lokasi_id" | "user_id" | "tanggal_pengamatan" | "page" | "per_page",
+      "lokasi_id" | "user_id" | "tanggal_pengamatan" | "page" | "per_page" | "start_date" | "end_date",
       string
     >;
 
@@ -299,6 +298,8 @@ pengamatan.get("/pengamatan", async (c) => {
         !!tanggal_pengamatan
           ? eq(pengamatanSchema.tanggal_pengamatan, tanggal_pengamatan)
           : undefined,
+        !!start_date ? gte(pengamatanSchema.tanggal_pengamatan, start_date) : undefined,
+        !!end_date ? lte(pengamatanSchema.tanggal_pengamatan, end_date) : undefined,
       ),
     )
     .$dynamic();
