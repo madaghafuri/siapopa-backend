@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { authorizeApi } from "../middleware.js"
 import { db } from "../index.js";
 import { opt as optSchema } from "../db/schema/opt.js"
-import { like } from "drizzle-orm";
+import { ilike } from "drizzle-orm";
 
 export const opt = new Hono();
 
@@ -12,7 +12,7 @@ opt.get("/opt", async (c) => {
   const nama = `%${nama_opt}%`;
 
   try {
-    var selectOpt = await db.select().from(optSchema).where(!!nama_opt ? like(optSchema.nama_opt, nama) : undefined).limit(10).offset(0);
+    var selectOpt = await db.select().from(optSchema).where(!!nama_opt ? ilike(optSchema.nama_opt, nama) : undefined).limit(10).offset(0);
   } catch (error) {
     console.error(error);
     return c.json({

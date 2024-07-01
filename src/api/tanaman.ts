@@ -1,8 +1,8 @@
 import { Hono } from "hono"
-import { authorizeApi } from "../middleware";
-import { db } from "..";
+import { authorizeApi } from "../middleware.js";
+import { db } from "../index.js";
 import { tanaman as tanamanSchema } from "../db/schema/tanaman.js"
-import { like } from "drizzle-orm";
+import { like, ilike } from "drizzle-orm";
 
 export const tanaman = new Hono();
 
@@ -12,7 +12,7 @@ tanaman.get("/tanaman", async (c) => {
   const nama = `%${query}%`;
 
   try {
-    var selectTanaman = await db.select().from(tanamanSchema).where(!!query ? like(tanamanSchema.nama_tanaman, nama) : undefined).limit(10).offset(0)
+    var selectTanaman = await db.select().from(tanamanSchema).where(!!query ? ilike(tanamanSchema.nama_tanaman, nama) : undefined).limit(10).offset(0)
   } catch (error) {
     console.error(error);
     return c.json({
@@ -34,5 +34,4 @@ tanaman.get("/tanaman", async (c) => {
     data: selectTanaman
   })
 })
-
 

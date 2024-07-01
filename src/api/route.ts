@@ -7,6 +7,9 @@ import { laporanHarian } from "./laporan-harian.js";
 import { laporanSb } from "./laporan-sb.js";
 import { laporanBulanan } from "./laporan-bulanan.js";
 import { laporanMusiman } from "./laporan-musiman.js";
+import { tanaman } from "./tanaman.js";
+import { opt } from "./opt.js";
+import { hama } from "./hama.js";
 
 const api = new Hono();
 
@@ -18,5 +21,8 @@ api.route("", laporanHarian);
 api.route("", laporanSb);
 api.route("", laporanBulanan);
 api.route("", laporanMusiman);
+api.route("", tanaman);
+api.route("", opt);
+api.route("", hama);
 
 export default api;
