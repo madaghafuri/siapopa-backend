@@ -1,13 +1,14 @@
 import { integer, pgEnum, pgTable, serial } from "drizzle-orm/pg-core";
 import { rumpun } from "./rumpun.js";
 import { opt } from "./opt.js";
-import { hama } from "./makhluk-asing.js";
+import { relations } from "drizzle-orm";
 
 const ListKerusakan = [
   "mutlak",
   "tidak mutlak",
   "ekor/rumpun",
   "ekor/m2",
+  "ma",
 ] as const;
 
 const ObjKerusakan = {
@@ -15,6 +16,7 @@ const ObjKerusakan = {
   "tidak mutlak": "tidak mutlak",
   "ekor/rumpun": "ekor/rumpun",
   "ekor/m2": "ekor/m2",
+  "ma": "ma"
 } as const;
 
 export const kerusakan = pgEnum("kerusakan", ListKerusakan);
@@ -25,9 +27,14 @@ export const detailRumpun = pgTable("detail_rumpun", {
   opt_id: integer("opt_id").references(() => opt.id),
   jumlah_opt: integer("jumlah_opt"),
   skala_kerusakan: kerusakan("skala_kerusakan"),
-  hama_id: integer("hama_id").references(() => hama.id),
-  jumlah_hama: integer("jumlah_hama"),
 });
+
+export const detailRumpunRelations = relations(detailRumpun, ({ one }) => ({
+  rumpun: one(rumpun, {
+    fields: [detailRumpun.rumpun_id],
+    references: [rumpun.id]
+  })
+}))
 
 export type DetailRumpun = typeof detailRumpun.$inferSelect;
 export type Kerusakan = keyof typeof ObjKerusakan;

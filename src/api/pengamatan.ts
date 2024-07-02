@@ -18,11 +18,12 @@ import {
 } from "../db/schema/detail-rumpun.js";
 import {
   InsertRumpun,
-  rumpun,
+  SelectRumpun,
   rumpun as rumpunSchema,
 } from "../db/schema/rumpun.js";
-import { withPagination } from "./helper.js";
+import { hasilPengamatan, withPagination } from "./helper.js";
 import { authorizeApi } from "../middleware.js";
+import { opt } from "../db/schema/opt.js";
 
 export const pengamatan = new Hono<{ Variables: JwtVariables }>();
 pengamatan.use("/pengamatan/*", authorizeApi);
@@ -244,31 +245,42 @@ pengamatan.delete("/pengamatan/:pengamatanId", async (c) => {
 pengamatan.get("/pengamatan/:pengamatanId", async (c) => {
   const pengamatanId = c.req.param("pengamatanId");
 
-  const data = await db
-    .select({ pengamatan: pengamatanSchema, detail_rumpun: detailRumpun })
-    .from(pengamatanSchema)
-    .leftJoin(rumpun, eq(rumpun.pengamatan_id, pengamatanSchema.id))
-    .leftJoin(detailRumpun, eq(detailRumpun.rumpun_id, rumpun.id))
-    .where(eq(pengamatanSchema.id, parseInt(pengamatanId)));
+  const data = await db.query.pengamatan.findFirst({
+    with: {
+      rumpun: {
+        with: {
+          detailRumpun: true
+        }
+      }
+    },
+    where: eq(pengamatanSchema.id, parseInt(pengamatanId))
+  })
 
-  const result = data.reduce<
-    Record<number, { pengamatan: Pengamatan; detail_rumpun: DetailRumpun[] }>
-  >((acc, row) => {
-    const pengamatan = row.pengamatan;
-    const detail = row.detail_rumpun;
+  const totalAnakan = await db
+    .select({ pengamatan_id: rumpunSchema.pengamatan_id, total: sql<number>`sum(${rumpunSchema.jumlah_anakan})` })
+    .from(rumpunSchema)
+    .where(eq(rumpunSchema.pengamatan_id, parseInt(pengamatanId)))
+    .groupBy(rumpunSchema.pengamatan_id)
 
-    if (!acc[pengamatan.id]) {
-      acc[pengamatan.id] = { pengamatan, detail_rumpun: [] };
+  const totalOpt = await db
+    .select({ pengamatan_id: rumpunSchema.pengamatan_id, opt_id: detailRumpun.opt_id, kode_opt: opt.kode_opt, skala: detailRumpun.skala_kerusakan, total: sql<number>`sum(${detailRumpun.jumlah_opt})` })
+    .from(detailRumpun)
+    .leftJoin(rumpunSchema, eq(rumpunSchema.id, detailRumpun.rumpun_id))
+    .leftJoin(opt, eq(opt.id, detailRumpun.opt_id))
+    .where(eq(rumpunSchema.pengamatan_id, parseInt(pengamatanId)))
+    .groupBy(detailRumpun.opt_id, detailRumpun.skala_kerusakan, rumpunSchema.pengamatan_id, opt.kode_opt)
+
+
+  const hasil_pengamatan = totalOpt.map((value, index) => {
+    return {
+      kode_opt: value.kode_opt,
+      hasil_perhitungan: hasilPengamatan(value.skala, value.total, totalAnakan[0].total),
+      skala: value.skala
     }
+  })
 
-    if (detail) {
-      acc[pengamatan.id].detail_rumpun.push(detail);
-    }
 
-    return acc;
-  }, {});
-
-  if (!result) {
+  if (!data) {
     return c.json({
       status: 404,
       message: "data tidak ditemukan",
@@ -278,7 +290,7 @@ pengamatan.get("/pengamatan/:pengamatanId", async (c) => {
   return c.json({
     status: 200,
     message: "success",
-    data: result[pengamatanId],
+    data: { ...data, hasil_pengamatan },
   });
 });
 pengamatan.get("/pengamatan", async (c) => {

@@ -206,7 +206,6 @@ input.get("/user", async (c) => {
     </DefaultLayout>,
   );
 });
-
 input.get("/usergroup", async (c) => {
   const session = c.get("session");
   const userId = session.get("user_id") as string;

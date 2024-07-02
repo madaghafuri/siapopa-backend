@@ -36,8 +36,6 @@ detailRumpun.post(
       rumpun_id,
       opt_id,
       jumlah_opt,
-      hama_id,
-      jumlah_hama,
       skala_kerusakan,
     } = c.req.valid("json");
 
@@ -47,8 +45,6 @@ detailRumpun.post(
         rumpun_id,
         opt_id,
         jumlah_opt,
-        hama_id,
-        jumlah_hama,
         skala_kerusakan,
       })
       .returning();
@@ -155,12 +151,12 @@ detailRumpun.put(
   }),
   async (c) => {
     const detailRumpunId = c.req.param("detailRumpunId");
-    const { opt_id, jumlah_opt, hama_id, jumlah_hama, skala_kerusakan } =
+    const { opt_id, jumlah_opt, skala_kerusakan } =
       c.req.valid("json");
 
     const updatedDetailRumpun = await db
       .update(detailRumpunSchema)
-      .set({ opt_id, jumlah_opt, hama_id, jumlah_hama, skala_kerusakan })
+      .set({ opt_id, jumlah_opt, skala_kerusakan })
       .where(eq(detailRumpunSchema, parseInt(detailRumpunId)))
       .returning();
 

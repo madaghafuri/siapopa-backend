@@ -17,7 +17,6 @@ import * as laporanMusiman from "./db/schema/laporan-musiman.js";
 import * as laporanSb from "./db/schema/laporan-sb.js";
 import * as lokasi from "./db/schema/lokasi.js";
 import * as luasKerusakanSb from "./db/schema/luas-kerusakan-sb.js";
-import * as makhlukAsing from "./db/schema/makhluk-asing.js";
 import * as opt from "./db/schema/opt.js";
 import * as pengamatan from "./db/schema/pengamatan.js";
 import * as photoPengamatan from "./db/schema/photo-pengamatan.js";
@@ -62,7 +61,6 @@ export const db = drizzle(client, {
     ...laporanSb,
     ...lokasi,
     ...luasKerusakanSb,
-    ...makhlukAsing,
     ...opt,
     ...pengamatan,
     ...photoPengamatan,
