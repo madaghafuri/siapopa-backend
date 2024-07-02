@@ -63,12 +63,16 @@ input.get("/tanaman", async (c) => {
       console.error(err);
     });
 
+    const selectTanaman = await db
+    .select()
+    .from(tanaman);
+
   return c.html(
     <DefaultLayout
       route="input-tanaman"
       authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
     >
-      <InputTanaman />
+      <InputTanaman listTanaman = {selectTanaman}/>
     </DefaultLayout>,
   );
 });
