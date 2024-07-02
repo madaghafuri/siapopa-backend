@@ -34,7 +34,7 @@ export const DefaultLayout = ({
             type="button"
             _="on click toggle between .hidden and .flex on #input-dropdown then toggle .rotate-90 on #dropdown-icon"
           >
-            Input Data
+            Master Data
             <i id="dropdown-icon" class="fa-solid fa-caret-right"></i>
           </button>
           <div id="input-dropdown" class="opening hidden flex-col gap-3 p-5">
