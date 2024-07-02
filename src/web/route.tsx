@@ -11,8 +11,9 @@ import { validator } from "hono/validator";
 import { InsertTanaman, tanaman } from "../db/schema/tanaman.js";
 import DataOPT from "./pages/master/opt.js";
 import { InsertOPT, opt } from "../db/schema/opt.js";
-import InputHama from "./pages/master/hama.js";
-import { InsertHama, hama } from "../db/schema/makhluk-asing.js";
+import { userGroup } from "../db/schema/user-group.js";
+import DataUser from "./pages/master/user.js";
+import DataUserGroup from "./pages/master/usergroup.js";
 
 const web = new Hono<{
   Variables: {
@@ -47,7 +48,7 @@ web.get("/dashboard", async (c) => {
   );
 });
 
-const input = web.route("/input");
+const input = web.route("/master");
 input.get("/tanaman", async (c) => {
   const session = c.get("session");
   const userId = session.get("user_id") as string;
@@ -69,7 +70,7 @@ input.get("/tanaman", async (c) => {
 
   return c.html(
     <DefaultLayout
-      route="input-tanaman"
+      route="tanaman"
       authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
     >
       <InputTanaman listTanaman = {selectTanaman}/>
@@ -133,7 +134,7 @@ input.get("/opt", async (c) => {
 
   return c.html(
     <DefaultLayout
-      route="input-opt"
+      route="opt"
       authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
     >
       <DataOPT listOpt ={selectOpt} />
@@ -169,7 +170,7 @@ input.post(
     return c.html(<span>Berhasil menambahkan data</span>);
   },
 );
-input.get("/hama", async (c) => {
+input.get("/user", async (c) => {
   const session = c.get("session");
   const userId = session.get("user_id") as string;
 
@@ -184,45 +185,55 @@ input.get("/hama", async (c) => {
       console.error(err);
     });
 
-  const selectTanaman = await db.select().from(tanaman);
+  const selectUser = await db
+  .select({
+    user_name: user.name,
+    email: user.email,
+    phone: user.phone,
+    photo: user.photo,
+    validasi: user.validasi,
+    user_group: userGroup.group_name
+  })
+  .from(user)
+  .leftJoin(userGroup, eq(user.usergroup_id, userGroup.id));
 
   return c.html(
     <DefaultLayout
-      route="input-hama"
+      route="user"
       authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
     >
-      <InputHama listTanaman={selectTanaman} />
+      <DataUser listUser={selectUser} />
     </DefaultLayout>,
   );
 });
-input.post(
-  "/hama",
-  validator("form", (value, c) => {
-    const { hama, tanaman_id } = value as unknown as InsertHama;
 
-    if (!hama || !tanaman_id) {
-      return c.html(<span>Data yang dibutuhkan tidak sesuai</span>);
-    }
+input.get("/usergroup", async (c) => {
+  const session = c.get("session");
+  const userId = session.get("user_id") as string;
 
-    return { hama, tanaman_id };
-  }),
-  async (c) => {
-    const validatedData = c.req.valid("form");
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: eq(user.id, parseInt(userId)),
+      with: {
+        userGroup: true,
+      },
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 
-    try {
-      await db.insert(hama).values({ ...validatedData });
-    } catch (error) {
-      console.error(error);
-      return c.html(
-        <span>
-          Terjadi kesalahan dalam proses penginputan data. Silahkan coba lagi
-        </span>,
-        500,
-      );
-    }
+  const selectUserGroup = await db
+  .select()
+  .from(userGroup)
 
-    return c.html(<span>Berhasil menambahkan data</span>);
-  },
-);
+  return c.html(
+    <DefaultLayout
+      route="usergroup"
+      authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
+    >
+      <DataUserGroup listUserGroup={selectUserGroup} />
+    </DefaultLayout>,
+  );
+});
 
 export default web;
