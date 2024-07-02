@@ -6,12 +6,12 @@ import { eq } from "drizzle-orm";
 import { user } from "../db/schema/user.js";
 import { DefaultLayout } from "./layouts/default-layout.js";
 import Profile, { AuthenticatedUser } from "./components/profile.js";
-import InputTanaman from "./pages/input/tanaman.js";
+import InputTanaman from "./pages/master/tanaman.js";
 import { validator } from "hono/validator";
 import { InsertTanaman, tanaman } from "../db/schema/tanaman.js";
-import InputOPT from "./pages/input/opt.js";
+import DataOPT from "./pages/master/opt.js";
 import { InsertOPT, opt } from "../db/schema/opt.js";
-import InputHama from "./pages/input/hama.js";
+import InputHama from "./pages/master/hama.js";
 import { InsertHama, hama } from "../db/schema/makhluk-asing.js";
 
 const web = new Hono<{
@@ -116,14 +116,23 @@ input.get("/opt", async (c) => {
       console.error(err);
     });
 
-  const selectTanaman = await db.select().from(tanaman);
+    const selectOpt = await db
+    .select({
+      kode_opt: opt.kode_opt,
+      nama_opt: opt.nama_opt,
+      status: opt.status,
+      tanaman_id: opt.tanaman_id,
+      nama_tanaman: tanaman.nama_tanaman,
+    })
+    .from(opt)
+    .leftJoin(tanaman, eq(tanaman.id, opt.tanaman_id));
 
   return c.html(
     <DefaultLayout
       route="input-opt"
       authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
     >
-      <InputOPT listTanaman={selectTanaman} />
+      <DataOPT listOpt ={selectOpt} />
     </DefaultLayout>,
   );
 });
