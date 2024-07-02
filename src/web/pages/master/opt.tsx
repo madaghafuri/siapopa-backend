@@ -1,4 +1,3 @@
-import { SelectOPT } from "../../../db/schema/opt.js";
 import { html } from "hono/html";
 
 export type OptWithTanaman = {
