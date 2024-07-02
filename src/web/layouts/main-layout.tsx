@@ -36,6 +36,21 @@ export const MainLayout = ({ children }: { children?: any }) => {
         ></script>
         <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.8/wicket.min.js"></script>
+        <link
+          rel="stylesheet"
+          type="text/css"
+          href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css"
+        />
+        <script
+          type="text/javascript"
+          charset="utf8"
+          src="https://code.jquery.com/jquery-3.7.1.min.js"
+        ></script>
+        <script
+          type="text/javascript"
+          charset="utf8"
+          src="https://cdn.datatables.net/2.0.8/js/dataTables.js"
+        ></script>
       </head>
       <body>{children}</body>
     </html>

@@ -6,12 +6,14 @@ import { eq } from "drizzle-orm";
 import { user } from "../db/schema/user.js";
 import { DefaultLayout } from "./layouts/default-layout.js";
 import Profile, { AuthenticatedUser } from "./components/profile.js";
-import InputTanaman from "./pages/input/tanaman.js";
+import InputTanaman from "./pages/master/tanaman.js";
 import { validator } from "hono/validator";
 import { InsertTanaman, tanaman } from "../db/schema/tanaman.js";
-import InputOPT from "./pages/input/opt.js";
+import DataOPT from "./pages/master/opt.js";
 import { InsertOPT, opt } from "../db/schema/opt.js";
-import InputHama from "./pages/input/hama.js";
+import { userGroup } from "../db/schema/user-group.js";
+import DataUser from "./pages/master/user.js";
+import DataUserGroup from "./pages/master/usergroup.js";
 
 const web = new Hono<{
   Variables: {
@@ -46,7 +48,7 @@ web.get("/dashboard", async (c) => {
   );
 });
 
-const input = web.route("/input");
+const input = web.route("/master");
 input.get("/tanaman", async (c) => {
   const session = c.get("session");
   const userId = session.get("user_id") as string;
@@ -62,12 +64,16 @@ input.get("/tanaman", async (c) => {
       console.error(err);
     });
 
+    const selectTanaman = await db
+    .select()
+    .from(tanaman);
+
   return c.html(
     <DefaultLayout
-      route="input-tanaman"
+      route="tanaman"
       authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
     >
-      <InputTanaman />
+      <InputTanaman listTanaman = {selectTanaman}/>
     </DefaultLayout>,
   );
 });
@@ -115,14 +121,23 @@ input.get("/opt", async (c) => {
       console.error(err);
     });
 
-  const selectTanaman = await db.select().from(tanaman);
+    const selectOpt = await db
+    .select({
+      kode_opt: opt.kode_opt,
+      nama_opt: opt.nama_opt,
+      status: opt.status,
+      tanaman_id: opt.tanaman_id,
+      nama_tanaman: tanaman.nama_tanaman,
+    })
+    .from(opt)
+    .leftJoin(tanaman, eq(tanaman.id, opt.tanaman_id));
 
   return c.html(
     <DefaultLayout
-      route="input-opt"
+      route="opt"
       authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
     >
-      <InputOPT listTanaman={selectTanaman} />
+      <DataOPT listOpt ={selectOpt} />
     </DefaultLayout>,
   );
 });
@@ -155,7 +170,7 @@ input.post(
     return c.html(<span>Berhasil menambahkan data</span>);
   },
 );
-input.get("/hama", async (c) => {
+input.get("/user", async (c) => {
   const session = c.get("session");
   const userId = session.get("user_id") as string;
 
@@ -170,15 +185,54 @@ input.get("/hama", async (c) => {
       console.error(err);
     });
 
-  const selectTanaman = await db.select().from(tanaman);
+  const selectUser = await db
+  .select({
+    user_name: user.name,
+    email: user.email,
+    phone: user.phone,
+    photo: user.photo,
+    validasi: user.validasi,
+    user_group: userGroup.group_name
+  })
+  .from(user)
+  .leftJoin(userGroup, eq(user.usergroup_id, userGroup.id));
 
   return c.html(
     <DefaultLayout
-      route="input-hama"
+      route="user"
       authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
     >
-      <InputHama listTanaman={selectTanaman} />
+      <DataUser listUser={selectUser} />
     </DefaultLayout>,
   );
 });
+input.get("/usergroup", async (c) => {
+  const session = c.get("session");
+  const userId = session.get("user_id") as string;
+
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: eq(user.id, parseInt(userId)),
+      with: {
+        userGroup: true,
+      },
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const selectUserGroup = await db
+  .select()
+  .from(userGroup)
+
+  return c.html(
+    <DefaultLayout
+      route="usergroup"
+      authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
+    >
+      <DataUserGroup listUserGroup={selectUserGroup} />
+    </DefaultLayout>,
+  );
+});
+
 export default web;

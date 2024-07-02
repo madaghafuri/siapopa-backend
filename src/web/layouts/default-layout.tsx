@@ -34,27 +34,33 @@ export const DefaultLayout = ({
             type="button"
             _="on click toggle between .hidden and .flex on #input-dropdown then toggle .rotate-90 on #dropdown-icon"
           >
-            Input Data
+            Master Data
             <i id="dropdown-icon" class="fa-solid fa-caret-right"></i>
           </button>
           <div id="input-dropdown" class="opening hidden flex-col gap-3 p-5">
             <a
-              href="/app/input/tanaman"
-              class={`rounded-md px-4 py-2 text-left ${route === "input-tanaman" ? "bg-primary text-white" : ""}`}
+              href="/app/master/user"
+              class={`rounded-md px-4 py-2 text-left ${route === "user" ? "bg-primary text-white" : ""}`}
+            >
+              User
+            </a>
+            <a
+              href="/app/master/usergroup"
+              class={`rounded-md px-4 py-2 text-left ${route === "usergroup" ? "bg-primary text-white" : ""}`}
+            >
+              User Group
+            </a>
+            <a
+              href="/app/master/tanaman"
+              class={`rounded-md px-4 py-2 text-left ${route === "tanaman" ? "bg-primary text-white" : ""}`}
             >
               Tanaman
             </a>
             <a
-              href="/app/input/opt"
-              class={`rounded-md px-4 py-2 text-left ${route === "input-opt" ? "bg-primary text-white" : ""}`}
+              href="/app/master/opt"
+              class={`rounded-md px-4 py-2 text-left ${route === "opt" ? "bg-primary text-white" : ""}`}
             >
               OPT
-            </a>
-            <a
-              href="/app/input/hama"
-              class={`rounded-md px-4 py-2 text-left ${route === "input-hama" ? "bg-primary text-white" : ""}`}
-            >
-              Hama
             </a>
           </div>
         </div>
