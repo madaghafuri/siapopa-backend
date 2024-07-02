@@ -12,7 +12,6 @@ import { InsertTanaman, tanaman } from "../db/schema/tanaman.js";
 import InputOPT from "./pages/input/opt.js";
 import { InsertOPT, opt } from "../db/schema/opt.js";
 import InputHama from "./pages/input/hama.js";
-import { InsertHama, hama } from "../db/schema/makhluk-asing.js";
 
 const web = new Hono<{
   Variables: {
@@ -182,34 +181,4 @@ input.get("/hama", async (c) => {
     </DefaultLayout>,
   );
 });
-input.post(
-  "/hama",
-  validator("form", (value, c) => {
-    const { hama, tanaman_id } = value as unknown as InsertHama;
-
-    if (!hama || !tanaman_id) {
-      return c.html(<span>Data yang dibutuhkan tidak sesuai</span>);
-    }
-
-    return { hama, tanaman_id };
-  }),
-  async (c) => {
-    const validatedData = c.req.valid("form");
-
-    try {
-      await db.insert(hama).values({ ...validatedData });
-    } catch (error) {
-      console.error(error);
-      return c.html(
-        <span>
-          Terjadi kesalahan dalam proses penginputan data. Silahkan coba lagi
-        </span>,
-        500,
-      );
-    }
-
-    return c.html(<span>Berhasil menambahkan data</span>);
-  },
-);
-
 export default web;

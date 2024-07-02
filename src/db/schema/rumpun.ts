@@ -1,5 +1,7 @@
-import { integer, pgTable, serial, text } from "drizzle-orm/pg-core";
+import { integer, pgTable, serial } from "drizzle-orm/pg-core";
 import { pengamatan } from "./pengamatan.js";
+import { relations } from "drizzle-orm";
+import { detailRumpun } from "./detail-rumpun.js";
 
 export const rumpun = pgTable("rumpun", {
   id: serial("id").primaryKey(),
@@ -8,4 +10,13 @@ export const rumpun = pgTable("rumpun", {
   jumlah_anakan: integer("jumlah_anakan"),
 });
 
+export const rumpunRelations = relations(rumpun, ({ one, many }) => ({
+  pengamatan: one(pengamatan, {
+    fields: [rumpun.pengamatan_id],
+    references: [pengamatan.id]
+  }),
+  detailRumpun: many(detailRumpun)
+}))
+
 export type InsertRumpun = typeof rumpun.$inferInsert;
+export type SelectRumpun = typeof rumpun.$inferSelect;

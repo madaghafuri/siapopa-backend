@@ -15,6 +15,13 @@
       "when": 1719465265156,
       "tag": "0001_familiar_vector",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1719896861429,
+      "tag": "0002_flaky_medusa",
+      "breakpoints": true
     }
   ]
 }
