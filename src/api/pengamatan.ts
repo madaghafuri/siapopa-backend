@@ -251,6 +251,8 @@ pengamatan.get('/pengamatan/:pengamatanId', async (c) => {
           detailRumpun: true,
         },
       },
+      tanaman: true,
+      lokasi: true,
     },
     where: eq(pengamatanSchema.id, parseInt(pengamatanId)),
   });
