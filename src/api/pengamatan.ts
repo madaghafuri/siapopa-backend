@@ -1,36 +1,36 @@
-import { Hono } from "hono";
-import { JwtVariables } from "hono/jwt";
-import { validator } from "hono/validator";
+import { Hono } from 'hono';
+import { JwtVariables } from 'hono/jwt';
+import { validator } from 'hono/validator';
 import {
   Pengamatan,
   pengamatan as pengamatanSchema,
-} from "../db/schema/pengamatan.js";
-import { db } from "../index.js";
-import { SQL, and, eq, gte, inArray, lte, sql } from "drizzle-orm";
+} from '../db/schema/pengamatan.js';
+import { db } from '../index.js';
+import { SQL, and, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import {
   PhotoPengamatan,
   photoPengamatan,
-} from "../db/schema/photo-pengamatan.js";
+} from '../db/schema/photo-pengamatan.js';
 import {
   DetailRumpun,
   Kerusakan,
   detailRumpun,
-} from "../db/schema/detail-rumpun.js";
+} from '../db/schema/detail-rumpun.js';
 import {
   InsertRumpun,
   SelectRumpun,
   rumpun as rumpunSchema,
-} from "../db/schema/rumpun.js";
-import { hasilPengamatan, withPagination } from "./helper.js";
-import { authorizeApi } from "../middleware.js";
-import { opt } from "../db/schema/opt.js";
+} from '../db/schema/rumpun.js';
+import { hasilPengamatan, withPagination } from './helper.js';
+import { authorizeApi } from '../middleware.js';
+import { opt } from '../db/schema/opt.js';
 
 export const pengamatan = new Hono<{ Variables: JwtVariables }>();
-pengamatan.use("/pengamatan/*", authorizeApi);
+pengamatan.use('/pengamatan/*', authorizeApi);
 
 pengamatan.post(
-  "/pengamatan",
-  validator("json", (value, c) => {
+  '/pengamatan',
+  validator('json', (value, c) => {
     const { lokasi_id, tanaman_id, ...rest } = value as Pengamatan & {
       lokasi_pengamatan: {
         type: string;
@@ -54,9 +54,9 @@ pengamatan.post(
       return c.json(
         {
           status: 401,
-          message: "lokasi_id tidak ditemukan",
+          message: 'lokasi_id tidak ditemukan',
         },
-        401,
+        401
       );
     }
     const parsedValue = { lokasi_id, tanaman_id, ...rest };
@@ -66,8 +66,7 @@ pengamatan.post(
   // Context Route Handler
   async (c) => {
     const { lokasi_pengamatan, bukti_pengamatan, lokasi_id, rumpun, ...rest } =
-      c.req.valid("json");
-
+      c.req.valid('json');
 
     const [lat, long] = lokasi_pengamatan.coordinates;
 
@@ -81,7 +80,7 @@ pengamatan.post(
         (val) => ({
           path: val,
           pengamatan_id: insertedData[0].id,
-        }),
+        })
       );
 
       if (rumpun.length > 0) {
@@ -90,7 +89,7 @@ pengamatan.post(
             rumpun_ke,
             jumlah_anakan,
             pengamatan_id: insertedData[0].id,
-          }),
+          })
         );
 
         var insertRumpun = await db
@@ -100,7 +99,7 @@ pengamatan.post(
 
         const detailRumpunData = rumpun.flatMap((val) => {
           const dataRumpun = insertRumpun.find(
-            (val) => val.rumpun_ke === val.rumpun_ke,
+            (val) => val.rumpun_ke === val.rumpun_ke
           );
           const li = val.detail_rumpun.map((val) => {
             return { ...val, rumpun_id: dataRumpun?.id };
@@ -117,39 +116,39 @@ pengamatan.post(
       return c.json(
         {
           status: 500,
-          message: "internal server error",
+          message: 'internal server error',
         },
-        500,
+        500
       );
     }
 
     return c.json({
       status: 200,
-      message: "Berhasil membuat data pengamatan",
+      message: 'Berhasil membuat data pengamatan',
       data: insertedData[0],
     });
-  },
+  }
 );
 pengamatan.put(
-  "/pengamatan/:pengamatanId",
-  validator("param", (value, c) => {
-    const pengamatanId = value["pengamatanId"];
+  '/pengamatan/:pengamatanId',
+  validator('param', (value, c) => {
+    const pengamatanId = value['pengamatanId'];
     if (!pengamatanId)
       return c.json(
         {
           status: 401,
-          message: "parameter pengamatan_id harus berada di url",
+          message: 'parameter pengamatan_id harus berada di url',
         },
-        401,
+        401
       );
     return pengamatanId;
   }),
 
-  validator("json", (value, c) => {
+  validator('json', (value, c) => {
     const { lokasi_id, lokasi_pengamatan, pic_id, ...rest } =
       value as Pengamatan & {
         lokasi_pengamatan: {
-          type: "Point" | "Polygon";
+          type: 'Point' | 'Polygon';
           coordinates: [number, number];
         };
         bukti_pengamatan: {
@@ -163,18 +162,18 @@ pengamatan.put(
         {
           status: 401,
           message:
-            "Permintaan harus memiliki lokasi_id, lokasi_pengamatan, dan pic_id",
+            'Permintaan harus memiliki lokasi_id, lokasi_pengamatan, dan pic_id',
         },
-        401,
+        401
       );
     }
 
     return { lokasi_id, lokasi_pengamatan, pic_id, ...rest };
   }),
   async (c) => {
-    const pengamatanId = c.req.param("pengamatanId");
+    const pengamatanId = c.req.param('pengamatanId');
     const { lokasi_pengamatan, bukti_pengamatan, point_pengamatan, ...rest } =
-      c.req.valid("json");
+      c.req.valid('json');
     const [lat, long] = lokasi_pengamatan.coordinates;
 
     try {
@@ -189,7 +188,7 @@ pengamatan.put(
       sqlChunks.push(sql`(case`);
       for (const input of bukti_pengamatan) {
         sqlChunks.push(
-          sql`when id = ${input.bukti_pengamatan_id} then ${input.photo_pengamatan}`,
+          sql`when id = ${input.bukti_pengamatan_id} then ${input.photo_pengamatan}`
         );
         ids.push(input.bukti_pengamatan_id);
       }
@@ -197,30 +196,30 @@ pengamatan.put(
 
       await db
         .update(photoPengamatan)
-        .set({ path: sql.join(sqlChunks, sql.raw(" ")) })
+        .set({ path: sql.join(sqlChunks, sql.raw(' ')) })
         .where(
           and(
             inArray(photoPengamatan.id, ids),
-            eq(photoPengamatan.pengamatan_id, parseInt(pengamatanId)),
-          ),
+            eq(photoPengamatan.pengamatan_id, parseInt(pengamatanId))
+          )
         );
     } catch (error) {
       console.error(error);
       return c.json({
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       });
     }
 
     return c.json({
       status: 200,
-      message: "success",
+      message: 'success',
       data: updatedData[0],
     });
-  },
+  }
 );
-pengamatan.delete("/pengamatan/:pengamatanId", async (c) => {
-  const pengamatanId = c.req.param("pengamatanId");
+pengamatan.delete('/pengamatan/:pengamatanId', async (c) => {
+  const pengamatanId = c.req.param('pengamatanId');
 
   try {
     await db
@@ -231,74 +230,103 @@ pengamatan.delete("/pengamatan/:pengamatanId", async (c) => {
     return c.json(
       {
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       },
-      500,
+      500
     );
   }
 
   return c.json({
     status: 200,
-    message: "success",
+    message: 'success',
   });
 });
-pengamatan.get("/pengamatan/:pengamatanId", async (c) => {
-  const pengamatanId = c.req.param("pengamatanId");
+pengamatan.get('/pengamatan/:pengamatanId', async (c) => {
+  const pengamatanId = c.req.param('pengamatanId');
 
   const data = await db.query.pengamatan.findFirst({
     with: {
       rumpun: {
         with: {
-          detailRumpun: true
-        }
-      }
+          detailRumpun: true,
+        },
+      },
     },
-    where: eq(pengamatanSchema.id, parseInt(pengamatanId))
-  })
+    where: eq(pengamatanSchema.id, parseInt(pengamatanId)),
+  });
 
   const totalAnakan = await db
-    .select({ pengamatan_id: rumpunSchema.pengamatan_id, total: sql<number>`sum(${rumpunSchema.jumlah_anakan})` })
+    .select({
+      pengamatan_id: rumpunSchema.pengamatan_id,
+      total: sql<number>`sum(${rumpunSchema.jumlah_anakan})`,
+    })
     .from(rumpunSchema)
     .where(eq(rumpunSchema.pengamatan_id, parseInt(pengamatanId)))
-    .groupBy(rumpunSchema.pengamatan_id)
+    .groupBy(rumpunSchema.pengamatan_id);
 
   const totalOpt = await db
-    .select({ pengamatan_id: rumpunSchema.pengamatan_id, opt_id: detailRumpun.opt_id, kode_opt: opt.kode_opt, skala: detailRumpun.skala_kerusakan, total: sql<number>`sum(${detailRumpun.jumlah_opt})` })
+    .select({
+      pengamatan_id: rumpunSchema.pengamatan_id,
+      opt_id: detailRumpun.opt_id,
+      kode_opt: opt.kode_opt,
+      skala: detailRumpun.skala_kerusakan,
+      total: sql<number>`sum(${detailRumpun.jumlah_opt})`,
+    })
     .from(detailRumpun)
     .leftJoin(rumpunSchema, eq(rumpunSchema.id, detailRumpun.rumpun_id))
     .leftJoin(opt, eq(opt.id, detailRumpun.opt_id))
     .where(eq(rumpunSchema.pengamatan_id, parseInt(pengamatanId)))
-    .groupBy(detailRumpun.opt_id, detailRumpun.skala_kerusakan, rumpunSchema.pengamatan_id, opt.kode_opt)
-
+    .groupBy(
+      detailRumpun.opt_id,
+      detailRumpun.skala_kerusakan,
+      rumpunSchema.pengamatan_id,
+      opt.kode_opt
+    );
 
   const hasil_pengamatan = totalOpt.map((value, index) => {
     return {
       kode_opt: value.kode_opt,
-      hasil_perhitungan: hasilPengamatan(value.skala, value.total, totalAnakan[0].total),
-      skala: value.skala
-    }
-  })
-
+      hasil_perhitungan: hasilPengamatan(
+        value.skala,
+        value.total,
+        totalAnakan[0].total
+      ),
+      skala: value.skala,
+    };
+  });
 
   if (!data) {
     return c.json({
       status: 404,
-      message: "data tidak ditemukan",
+      message: 'data tidak ditemukan',
     });
   }
 
   return c.json({
     status: 200,
-    message: "success",
+    message: 'success',
     data: { ...data, hasil_pengamatan },
   });
 });
-pengamatan.get("/pengamatan", async (c) => {
-  const { page, per_page, lokasi_id, user_id, tanggal_pengamatan, start_date, end_date } =
-    c.req.query() as Record<
-      "lokasi_id" | "user_id" | "tanggal_pengamatan" | "page" | "per_page" | "start_date" | "end_date",
-      string
-    >;
+pengamatan.get('/pengamatan', async (c) => {
+  const {
+    page,
+    per_page,
+    lokasi_id,
+    user_id,
+    tanggal_pengamatan,
+    start_date,
+    end_date,
+  } = c.req.query() as Record<
+    | 'lokasi_id'
+    | 'user_id'
+    | 'tanggal_pengamatan'
+    | 'page'
+    | 'per_page'
+    | 'start_date'
+    | 'end_date',
+    string
+  >;
 
   const pengamatanQuery = db
     .select()
@@ -310,9 +338,13 @@ pengamatan.get("/pengamatan", async (c) => {
         !!tanggal_pengamatan
           ? eq(pengamatanSchema.tanggal_pengamatan, tanggal_pengamatan)
           : undefined,
-        !!start_date ? gte(pengamatanSchema.tanggal_pengamatan, start_date) : undefined,
-        !!end_date ? lte(pengamatanSchema.tanggal_pengamatan, end_date) : undefined,
-      ),
+        !!start_date
+          ? gte(pengamatanSchema.tanggal_pengamatan, start_date)
+          : undefined,
+        !!end_date
+          ? lte(pengamatanSchema.tanggal_pengamatan, end_date)
+          : undefined
+      )
     )
     .$dynamic();
 
@@ -320,7 +352,7 @@ pengamatan.get("/pengamatan", async (c) => {
     const finalQuery = withPagination(
       pengamatanQuery,
       parseInt(page),
-      parseInt(per_page),
+      parseInt(per_page)
     );
     var selectedPengamatan = await finalQuery;
   } catch (error) {
@@ -328,9 +360,9 @@ pengamatan.get("/pengamatan", async (c) => {
     return c.json(
       {
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       },
-      500,
+      500
     );
   }
 
@@ -338,15 +370,15 @@ pengamatan.get("/pengamatan", async (c) => {
     return c.json(
       {
         status: 404,
-        message: "Data tidak ditemukan",
+        message: 'Data tidak ditemukan',
       },
-      404,
+      404
     );
   }
 
   return c.json({
     status: 200,
-    message: "success",
+    message: 'success',
     data: selectedPengamatan,
   });
 });
