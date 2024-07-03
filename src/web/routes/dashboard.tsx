@@ -1,25 +1,20 @@
 import { Hono } from 'hono';
-import { Session } from 'hono-sessions';
-import { db } from '../index.js';
+import { db } from '../../index.js';
 import { eq } from 'drizzle-orm';
-import { user } from '../db/schema/user.js';
-import { DefaultLayout } from './layouts/default-layout.js';
-import Profile, { AuthenticatedUser } from './components/profile.js';
-import { dashboard } from './routes/dashboard.js';
-import { master } from './routes/master.js';
+import { user } from '../../db/schema/user.js';
+import { DefaultLayout } from '../layouts/default-layout';
+import DashboardPage from '../pages/dashboard';
+import Profile, { AuthenticatedUser } from '../components/profile.js';
+import { Session } from 'hono-sessions';
 
-const web = new Hono<{
+export const dashboard = new Hono<{
   Variables: {
     session: Session;
     session_key_rotation: boolean;
   };
 }>();
 
-// Dashboard Related
-web.route('/dashboard', dashboard);
-web.route('/master', master);
-
-web.get('/lokasi', async (c) => {
+dashboard.get('/', async (c) => {
   const session = c.get('session');
   const userId = session.get('user_id') as string;
 
@@ -36,10 +31,10 @@ web.get('/lokasi', async (c) => {
 
   return c.html(
     <DefaultLayout
-      route="lokasi"
+      route="dashboard"
       authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
-    ></DefaultLayout>
+    >
+      <DashboardPage></DashboardPage>
+    </DefaultLayout>
   );
 });
-
-export default web;

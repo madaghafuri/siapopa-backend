@@ -1,4 +1,4 @@
-import { DefaultLayout } from "../layouts/default-layout.js";
+import { DefaultLayout } from '../layouts/default-layout.js';
 
 export default function DataLokasiPage({ route }: { route: string }) {
   return (

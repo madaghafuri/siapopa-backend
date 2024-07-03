@@ -1,12 +1,12 @@
-import { html } from "hono/html";
+import { html } from 'hono/html';
 
 export type UserData = {
-    user_name: string,
-    email: string,
-    phone: string,
-    photo: string,
-    validasi: boolean,
-    user_group: string
+  user_name: string;
+  email: string;
+  phone: string;
+  photo: string;
+  validasi: boolean;
+  user_group: string;
 };
 
 const DataUser = ({ listUser }: { listUser: UserData[] }) => {
@@ -15,23 +15,31 @@ const DataUser = ({ listUser }: { listUser: UserData[] }) => {
       <table id="userTable" class="row-border" style="width:100%">
         <thead>
           <tr>
-            <th class="py-2 px-4 border-b border-gray-200" style="width: 5%">No.</th>
-            <th class="py-2 px-4 border-b border-gray-200">Name</th>
-            <th class="py-2 px-4 border-b border-gray-200">Email</th>
-            <th class="py-2 px-4 border-b border-gray-200">Phone Number</th>
-            <th class="py-2 px-4 border-b border-gray-200">User Group</th>
-            <th class="py-2 px-4 border-b border-gray-200">Validation</th>
+            <th class="border-b border-gray-200 px-4 py-2" style="width: 5%">
+              No.
+            </th>
+            <th class="border-b border-gray-200 px-4 py-2">Name</th>
+            <th class="border-b border-gray-200 px-4 py-2">Email</th>
+            <th class="border-b border-gray-200 px-4 py-2">Phone Number</th>
+            <th class="border-b border-gray-200 px-4 py-2">User Group</th>
+            <th class="border-b border-gray-200 px-4 py-2">Validation</th>
           </tr>
         </thead>
         <tbody>
           {listUser.map((user, index) => (
             <tr key={user.email}>
-              <td class="py-2 px-4 border-b border-gray-200" style="width: 5%">{index + 1}</td>
-              <td class="py-2 px-4 border-b border-gray-200">{user.user_name}</td>
-              <td class="py-2 px-4 border-b border-gray-200">{user.email}</td>
-              <td class="py-2 px-4 border-b border-gray-200">{user.phone}</td>
-              <td class="py-2 px-4 border-b border-gray-200">{user.user_group}</td>
-              <td class="py-2 px-4 border-b border-gray-200">
+              <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
+                {index + 1}
+              </td>
+              <td class="border-b border-gray-200 px-4 py-2">
+                {user.user_name}
+              </td>
+              <td class="border-b border-gray-200 px-4 py-2">{user.email}</td>
+              <td class="border-b border-gray-200 px-4 py-2">{user.phone}</td>
+              <td class="border-b border-gray-200 px-4 py-2">
+                {user.user_group}
+              </td>
+              <td class="border-b border-gray-200 px-4 py-2">
                 {user.validasi ? 'Sudah' : 'Belum'}
               </td>
             </tr>
@@ -45,6 +53,16 @@ const DataUser = ({ listUser }: { listUser: UserData[] }) => {
           });
         </script>
       `}
+      <div>
+        <button
+          class="rounded bg-primary px-2 py-1 text-white"
+          hx-get="/app/master/user/create"
+          hx-target="body"
+          hx-swap="beforeend"
+        >
+          Add Tanaman
+        </button>
+      </div>
     </div>
   );
 };

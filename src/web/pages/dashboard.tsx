@@ -1,52 +1,30 @@
-import { html } from "hono/html";
+import { html } from 'hono/html';
 
 const DashboardPage = () => {
   return (
     <div class="p-3">
       <h1 class="text-2xl font-bold">Dashboard</h1>
-      <div
-        id="map"
-        class="min-h-[60vh]"
-        x-init="
-          const bandung = 'MULTIPOLYGON((
-              (
-                  107.569580 -6.897080,
-                  107.569580 -6.941060,
-                  107.595670 -6.970490,
-                  107.644380 -6.970490,
-                  107.715450 -6.941060,
-                  107.715450 -6.897080,
-                  107.644380 -6.867650,
-                  107.595670 -6.867650,
-                  107.569580 -6.897080
-              ),
-              (
-                  107.609930 -6.914220,
-                  107.613620 -6.917910,
-                  107.617310 -6.914220,
-                  107.613620 -6.910530,
-                  107.609930 -6.914220
-              )
-          ))'
+      <div id="map" class="min-h-[60vh]">
+        {html`
+          <script>
+            $(document).ready(function () {
+              const map = L.map('map').setView([-6.917, 107.619], 11);
+              L.tileLayer(
+                'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                {
+                  attribution:
+                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                }
+              ).addTo(map);
 
-          const wicket = new Wkt.Wkt()
-          wicket.read(bandung)
-          const bandungGeoJSON = wicket.toJson()
-          const map = L.map('map').setView([-6.917, 107.619], 11)
-        
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              attribution: '© OpenStreetMap contributors'
-          }).addTo(map);
-
-          L.geoJSON(bandungGeoJSON, {
-              style: {
-                  color: '#ff7800',
-                  weight: 2,
-                  opacity: 0.65
-              }
-          }).addTo(map);
-        "
-      >
+              const foo = fetch('/assets/Jabar_By_Kab.geojson')
+                .then((res) => res.json())
+                .then((data) => {
+                  L.geoJson(data).addTo(map);
+                });
+            });
+          </script>
+        `}
         Map
       </div>
       <div

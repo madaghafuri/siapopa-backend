@@ -1,5 +1,5 @@
-import { SelectTanaman } from "../../../db/schema/tanaman";
-import { html } from "hono/html";
+import { SelectTanaman } from '../../../db/schema/tanaman';
+import { html } from 'hono/html';
 
 const DataTanaman = ({ listTanaman }: { listTanaman: SelectTanaman[] }) => {
   return (
@@ -7,15 +7,21 @@ const DataTanaman = ({ listTanaman }: { listTanaman: SelectTanaman[] }) => {
       <table id="tanamanTable" class="row-border" style="width:100%">
         <thead>
           <tr>
-            <th class="py-2 px-4 border-b border-gray-200" style="width: 5%">No.</th>
-            <th class="py-2 px-4 border-b border-gray-200">Nama Tanaman</th>
+            <th class="border-b border-gray-200 px-4 py-2" style="width: 5%">
+              No.
+            </th>
+            <th class="border-b border-gray-200 px-4 py-2">Nama Tanaman</th>
           </tr>
         </thead>
         <tbody>
           {listTanaman.map((tanaman, index) => (
             <tr key={tanaman.id}>
-              <td class="py-2 px-4 border-b border-gray-200" style="width: 5%">{index + 1}</td>
-              <td class="py-2 px-4 border-b border-gray-200">{tanaman.nama_tanaman}</td>
+              <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
+                {index + 1}
+              </td>
+              <td class="border-b border-gray-200 px-4 py-2">
+                {tanaman.nama_tanaman}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -27,6 +33,16 @@ const DataTanaman = ({ listTanaman }: { listTanaman: SelectTanaman[] }) => {
           });
         </script>
       `}
+      <div>
+        <button
+          class="rounded bg-primary px-2 py-1 text-white"
+          hx-get="/app/master/tanaman/create"
+          hx-swap="beforeend"
+          hx-target="body"
+        >
+          Add Tanaman
+        </button>
+      </div>
     </div>
   );
 };
