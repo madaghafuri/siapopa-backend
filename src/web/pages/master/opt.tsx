@@ -1,4 +1,5 @@
 import { html } from 'hono/html';
+import { AuthenticatedUser } from '../../components/profile';
 
 export type OptWithTanaman = {
   kode_opt: string;
@@ -8,7 +9,13 @@ export type OptWithTanaman = {
   nama_tanaman: string;
 };
 
-const DataOPT = ({ listOpt }: { listOpt: OptWithTanaman[] }) => {
+const DataOPT = ({
+  listOpt,
+  user,
+}: {
+  listOpt: OptWithTanaman[];
+  user?: AuthenticatedUser;
+}) => {
   return (
     <div class="grid p-5 shadow-inner">
       <table id="optTable" class="row-border" style="width:100%">
@@ -25,7 +32,7 @@ const DataOPT = ({ listOpt }: { listOpt: OptWithTanaman[] }) => {
             <th class="border-b border-gray-200 px-4 py-2">Tanaman</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody hx-get="/app/master/opt/reload" hx-trigger="newOpt from:body">
           {listOpt.map((opt, index) => (
             <tr key={opt.kode_opt}>
               <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
@@ -52,16 +59,18 @@ const DataOPT = ({ listOpt }: { listOpt: OptWithTanaman[] }) => {
           });
         </script>
       `}
-      <div>
-        <button
-          class="rounded bg-primary px-2 py-1 text-white"
-          hx-get="/app/master/opt/create"
-          hx-target="body"
-          hx-swap="beforeend"
-        >
-          Add OPT
-        </button>
-      </div>
+      {!!user ? (
+        <div>
+          <button
+            class="rounded bg-primary px-2 py-1 text-white"
+            hx-get="/app/master/opt/create"
+            hx-target="body"
+            hx-swap="beforeend"
+          >
+            Add OPT
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 };

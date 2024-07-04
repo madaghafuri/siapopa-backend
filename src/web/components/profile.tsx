@@ -28,7 +28,9 @@ const Profile = ({ user }: { user: AuthenticatedUser }) => {
         </div>
         <div>
           <h4 class="font-bold">{user.name}</h4>
-          <h5 class="text-xs">{user.userGroup?.group_name || "Guest"}</h5>
+          <h5 class="text-xs uppercase">
+            {user.userGroup?.group_name || 'Guest'}
+          </h5>
         </div>
         <i class="fa-solid fa-caret-down col-start-4"></i>
       </div>

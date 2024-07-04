@@ -1,7 +1,14 @@
 import { SelectTanaman } from '../../../db/schema/tanaman';
 import { html } from 'hono/html';
+import { AuthenticatedUser } from '../../components/profile';
 
-const DataTanaman = ({ listTanaman }: { listTanaman: SelectTanaman[] }) => {
+const DataTanaman = ({
+  listTanaman,
+  user,
+}: {
+  listTanaman: SelectTanaman[];
+  user?: AuthenticatedUser;
+}) => {
   return (
     <div class="grid p-5 shadow-inner">
       <table id="tanamanTable" class="row-border" style="width:100%">
@@ -33,16 +40,18 @@ const DataTanaman = ({ listTanaman }: { listTanaman: SelectTanaman[] }) => {
           });
         </script>
       `}
-      <div>
-        <button
-          class="rounded bg-primary px-2 py-1 text-white"
-          hx-get="/app/master/tanaman/create"
-          hx-swap="beforeend"
-          hx-target="body"
-        >
-          Add Tanaman
-        </button>
-      </div>
+      {!!user ? (
+        <div>
+          <button
+            class="rounded bg-primary px-2 py-1 text-white"
+            hx-get="/app/master/tanaman/create"
+            hx-swap="beforeend"
+            hx-target="body"
+          >
+            Add Tanaman
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 };

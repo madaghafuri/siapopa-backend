@@ -1,30 +1,33 @@
-import { Session } from "hono-sessions";
-import { createMiddleware } from "hono/factory";
-import { lucia } from "./index.js";
+import { Session } from 'hono-sessions';
+import { createMiddleware } from 'hono/factory';
+import { db, lucia } from './index.js';
+import { userGroup } from './db/schema/user-group.js';
+import { eq } from 'drizzle-orm';
+import { user } from './db/schema/user.js';
 
 export const authorize = createMiddleware<{
   Variables: { session: Session; session_rotation_key: boolean };
 }>(async (c, next) => {
-  const session = c.get("session");
-  const userId = session.get("user_id") as string;
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
 
   if (!userId) {
-    return c.redirect("/login");
+    return c.redirect('/login');
   }
   await next();
 });
 
 export const authorizeApi = createMiddleware(async (c, next) => {
-  const authorizationHeader = c.req.header("Authorization");
+  const authorizationHeader = c.req.header('Authorization');
 
-  const token = lucia.readBearerToken(authorizationHeader ?? "");
+  const token = lucia.readBearerToken(authorizationHeader ?? '');
   if (!token)
     return c.json(
       {
         status: 401,
-        message: "Bearer token missing from request header",
+        message: 'Bearer token missing from request header',
       },
-      401,
+      401
     );
   const { session, user } = await lucia.validateSession(token);
 
@@ -32,10 +35,38 @@ export const authorizeApi = createMiddleware(async (c, next) => {
     return c.json(
       {
         status: 401,
-        message: "Bearer token is invalid",
+        message: 'Bearer token is invalid',
       },
-      401,
+      401
     );
+  }
+
+  await next();
+});
+
+export const authorizeWebInput = createMiddleware<{
+  Variables: { session: Session; session_rotation_key: boolean };
+}>(async (c, next) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  if (!userId) {
+    return c.redirect('/login');
+  }
+
+  const selectUser = await db.query.user.findFirst({
+    with: {
+      userGroup: true,
+    },
+    where: eq(user.id, parseInt(userId)),
+  });
+
+  if (!selectUser) {
+    return c.redirect('/app/dashboard');
+  }
+
+  if (selectUser.userGroup.group_name !== 'bptph') {
+    return c.redirect('/app/dashboard');
   }
 
   await next();
