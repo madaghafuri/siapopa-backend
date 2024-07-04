@@ -248,7 +248,11 @@ pengamatan.get('/pengamatan/:pengamatanId', async (c) => {
     with: {
       rumpun: {
         with: {
-          detailRumpun: true,
+          detailRumpun: {
+            with: {
+              opt: true,
+            },
+          },
         },
       },
       tanaman: true,

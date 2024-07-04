@@ -1,11 +1,11 @@
-import { SQL, sql } from "drizzle-orm";
-import { PgSelect } from "drizzle-orm/pg-core";
-import { Kerusakan } from "../db/schema/detail-rumpun";
+import { SQL, sql } from 'drizzle-orm';
+import { PgSelect } from 'drizzle-orm/pg-core';
+import { Kerusakan } from '../db/schema/detail-rumpun';
 
 export function withQueries<T extends PgSelect>(
   qb: T,
   queries: [string, string][],
-  filter: "=" | "<" | ">" | "<=" | ">=" | "<>"
+  filter: '=' | '<' | '>' | '<=' | '>=' | '<>'
 ) {
   const sqlChunks: SQL[] = [];
   if (queries.length > 0) {
@@ -15,7 +15,7 @@ export function withQueries<T extends PgSelect>(
       sqlChunks.push(sql`and`);
     });
 
-    return qb.where(sql.join(sqlChunks, sql.raw(" ")));
+    return qb.where(sql.join(sqlChunks, sql.raw(' ')));
   }
 
   return qb;
@@ -24,7 +24,7 @@ export function withQueries<T extends PgSelect>(
 export function withQuery<T extends PgSelect>(
   qb: T,
   query: [string, string],
-  filter: "=" | "<" | ">" | "<=" | ">=" | "<>"
+  filter: '=' | '<' | '>' | '<=' | '>=' | '<>'
 ) {
   const [key, value] = query;
   return qb.where(sql`${key} ${filter} ${value}`);
@@ -38,18 +38,22 @@ export function withPagination<T extends PgSelect>(
   return qb.limit(pageSize).offset((page - 1) * pageSize);
 }
 
-export function hasilPengamatan(kategori: Kerusakan, jumlahOpt: number, jumlahAnakan: number) {
+export function hasilPengamatan(
+  kategori: Kerusakan,
+  jumlahOpt: number,
+  jumlahAnakan: number
+) {
   switch (kategori) {
-    case "mutlak":
-      return (jumlahOpt / jumlahAnakan) * 100
-    case "tidak mutlak":
-      return (jumlahOpt / 270) * 100
-    case "ekor/rumpun":
-      return (jumlahOpt / 30)
-    case "ekor/m2":
-      return (jumlahOpt / 2)
-    case "ma":
-      return (jumlahOpt / 30)
+    case 'mutlak':
+      return ((jumlahOpt / jumlahAnakan) * 100).toFixed(2);
+    case 'tidak mutlak':
+      return ((jumlahOpt / 270) * 100).toFixed(2);
+    case 'ekor/rumpun':
+      return (jumlahOpt / 30).toFixed(2);
+    case 'ekor/m2':
+      return (jumlahOpt / 2).toFixed(2);
+    case 'ma':
+      return (jumlahOpt / 30).toFixed(2);
     default:
       break;
   }
