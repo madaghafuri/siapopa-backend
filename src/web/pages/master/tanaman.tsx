@@ -1,6 +1,6 @@
-import { SelectTanaman } from '../../../db/schema/tanaman';
+import { SelectTanaman } from '../../../db/schema/tanaman.js';
 import { html } from 'hono/html';
-import { AuthenticatedUser } from '../../components/profile';
+import { AuthenticatedUser } from '../../components/profile.js';
 
 const DataTanaman = ({
   listTanaman,

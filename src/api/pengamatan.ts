@@ -11,16 +11,8 @@ import {
   PhotoPengamatan,
   photoPengamatan,
 } from '../db/schema/photo-pengamatan.js';
-import {
-  DetailRumpun,
-  Kerusakan,
-  detailRumpun,
-} from '../db/schema/detail-rumpun.js';
-import {
-  InsertRumpun,
-  SelectRumpun,
-  rumpun as rumpunSchema,
-} from '../db/schema/rumpun.js';
+import { Kerusakan, detailRumpun } from '../db/schema/detail-rumpun.js';
+import { InsertRumpun, rumpun as rumpunSchema } from '../db/schema/rumpun.js';
 import { hasilPengamatan, withPagination } from './helper.js';
 import { authorizeApi } from '../middleware.js';
 import { opt } from '../db/schema/opt.js';
@@ -289,7 +281,7 @@ pengamatan.get('/pengamatan/:pengamatanId', async (c) => {
       opt.kode_opt
     );
 
-  const hasil_pengamatan = totalOpt.map((value, index) => {
+  const hasil_pengamatan = totalOpt.map((value) => {
     return {
       kode_opt: value.kode_opt,
       hasil_perhitungan: hasilPengamatan(
@@ -334,9 +326,42 @@ pengamatan.get('/pengamatan', async (c) => {
     string
   >;
 
+  const totalAnakan = db.$with('total_anakan').as(
+    db
+      .select({
+        pengamatan_id: rumpunSchema.pengamatan_id,
+        total_anakan: sql`sum(${rumpunSchema.jumlah_anakan})`.as(
+          'total_jumlah_anakan'
+        ),
+      })
+      .from(rumpunSchema)
+      .groupBy(rumpunSchema.pengamatan_id)
+  );
+  const totalOpt = db.$with('total_opt').as(
+    db
+      .select({
+        pengamatan_id: rumpunSchema.pengamatan_id,
+        skala_kerusakan: detailRumpun.skala_kerusakan,
+        total_opt: sql`sum(${detailRumpun.jumlah_opt})`.as('total_jumlah_opt'),
+        opt_id: detailRumpun.opt_id,
+        kode_opt: opt.kode_opt,
+      })
+      .from(detailRumpun)
+      .leftJoin(rumpunSchema, eq(detailRumpun.rumpun_id, rumpunSchema.id))
+      .leftJoin(opt, eq(opt.id, detailRumpun.opt_id))
+      .groupBy(
+        detailRumpun.opt_id,
+        detailRumpun.skala_kerusakan,
+        rumpunSchema.pengamatan_id,
+        opt.kode_opt
+      )
+  );
   const pengamatanQuery = db
+    .with(totalAnakan, totalOpt)
     .select()
     .from(pengamatanSchema)
+    .leftJoin(totalAnakan, eq(totalAnakan.pengamatan_id, pengamatanSchema.id))
+    .leftJoin(totalOpt, eq(totalOpt.pengamatan_id, pengamatanSchema.id))
     .where(
       and(
         !!lokasi_id ? eq(pengamatanSchema.lokasi_id, lokasi_id) : undefined,
@@ -352,8 +377,8 @@ pengamatan.get('/pengamatan', async (c) => {
           : undefined
       )
     )
+    .orderBy(pengamatanSchema.id)
     .$dynamic();
-
   try {
     const finalQuery = withPagination(
       pengamatanQuery,
@@ -372,6 +397,57 @@ pengamatan.get('/pengamatan', async (c) => {
     );
   }
 
+  const result = selectedPengamatan.reduce<
+    Array<
+      Pengamatan & {
+        hasil_pengamatan: {
+          opt_id: number;
+          hasil_perhitungan: number;
+          skala: string;
+        }[];
+      }
+    >
+  >((acc, row) => {
+    const pengamatan = row.pengamatan;
+    const totalAnakan = row.total_anakan;
+    const totalOpt = row.total_opt;
+    const perhitunganKerusakan = hasilPengamatan(
+      totalOpt?.skala_kerusakan || 'mutlak',
+      parseInt((totalOpt?.total_opt as string) || '0') || 0,
+      parseInt((totalAnakan?.total_anakan as string) || '0') || 0
+    );
+    const hasil_pengamatan = {
+      opt_id: totalOpt?.opt_id,
+      hasil_perhitungan: perhitunganKerusakan,
+      skala: totalOpt?.skala_kerusakan,
+    };
+    const finalRow = { ...pengamatan, hasil_pengamatan: [hasil_pengamatan] };
+
+    const foo = acc.find((val) => val.id === pengamatan.id);
+
+    if (!foo) {
+      acc.push(
+        finalRow as unknown as Pengamatan & {
+          hasil_pengamatan: {
+            opt_id: number;
+            hasil_perhitungan: number;
+            skala: string;
+          }[];
+        }
+      );
+    } else if (!!foo) {
+      acc[acc.indexOf(foo)].hasil_pengamatan.push(
+        hasil_pengamatan as unknown as {
+          opt_id: number;
+          hasil_perhitungan: number;
+          skala: string;
+        }
+      );
+    }
+
+    return acc;
+  }, []);
+
   if (selectedPengamatan.length === 0) {
     return c.json(
       {
@@ -385,6 +461,6 @@ pengamatan.get('/pengamatan', async (c) => {
   return c.json({
     status: 200,
     message: 'success',
-    data: selectedPengamatan,
+    data: result,
   });
 });

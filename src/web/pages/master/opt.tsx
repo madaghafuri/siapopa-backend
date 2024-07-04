@@ -1,5 +1,5 @@
 import { html } from 'hono/html';
-import { AuthenticatedUser } from '../../components/profile';
+import { AuthenticatedUser } from '../../components/profile.js';
 
 export type OptWithTanaman = {
   kode_opt: string;

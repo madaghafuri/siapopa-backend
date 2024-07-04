@@ -2,8 +2,8 @@ import { Hono } from 'hono';
 import { db } from '../../index.js';
 import { eq } from 'drizzle-orm';
 import { user } from '../../db/schema/user.js';
-import { DefaultLayout } from '../layouts/default-layout';
-import DashboardPage from '../pages/dashboard';
+import { DefaultLayout } from '../layouts/default-layout.js';
+import DashboardPage from '../pages/dashboard.js';
 import Profile, { AuthenticatedUser } from '../components/profile.js';
 import { Session } from 'hono-sessions';
 
