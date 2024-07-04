@@ -28,11 +28,16 @@ dashboard.get('/', async (c) => {
     .catch((err) => {
       console.error(err);
     });
+  console.log(selectedUser);
 
   return c.html(
     <DefaultLayout
       route="dashboard"
-      authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
+      authNavigation={
+        !!selectedUser ? (
+          <Profile user={selectedUser as AuthenticatedUser} />
+        ) : null
+      }
     >
       <DashboardPage></DashboardPage>
     </DefaultLayout>

@@ -1,3 +1,5 @@
+import { SelectUserGroup } from '../../db/schema/user-group.js';
+import { SelectUser } from '../../db/schema/user.js';
 import { MainLayout } from './main-layout.js';
 
 export const DefaultLayout = ({
@@ -8,6 +10,7 @@ export const DefaultLayout = ({
   children?: any;
   route: string;
   authNavigation?: any;
+  user?: SelectUser & { userGroup: SelectUserGroup };
 }) => (
   <MainLayout>
     <div class="grid max-h-[10vh] grid-cols-12 items-center gap-5 border-b-2 py-3 pr-6">
@@ -16,7 +19,11 @@ export const DefaultLayout = ({
       </button>
       <img class="col-span-2" src="/assets/logo@2x.svg" alt="" />
       <div class="col-span-3 col-start-12 grid items-center gap-5">
-        {authNavigation || null}
+        {authNavigation || (
+          <a href="/login">
+            <button class="rounded border px-2 py-1">Login</button>
+          </a>
+        )}
       </div>
     </div>
     <div class="flex h-full max-h-[90vh]">

@@ -15,6 +15,8 @@ import DataUser from '../pages/master/user.js';
 import DataUserGroup from '../pages/master/usergroup.js';
 import DataTanaman from '../pages/master/tanaman.js';
 import Modal, { ModalContent, ModalHeader } from '../components/modal.js';
+import { Fragment } from 'hono/jsx/jsx-runtime';
+import { authorizeWebInput } from '../../middleware.js';
 
 export const master = new Hono<{
   Variables: {
@@ -42,14 +44,18 @@ master.get('/tanaman', async (c) => {
   return c.html(
     <DefaultLayout
       route="tanaman"
-      authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
     >
-      <DataTanaman listTanaman={selectTanaman} />
+      <DataTanaman
+        listTanaman={selectTanaman}
+        user={(selectedUser as AuthenticatedUser) || null}
+      />
     </DefaultLayout>
   );
 });
 master.post(
   '/tanaman',
+  authorizeWebInput,
   validator('form', (value, c) => {
     const { nama_tanaman } = value as unknown as InsertTanaman;
 
@@ -114,23 +120,30 @@ master.get('/opt', async (c) => {
   return c.html(
     <DefaultLayout
       route="opt"
-      authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
     >
-      <DataOPT listOpt={selectOpt} />
+      <DataOPT listOpt={selectOpt} user={selectedUser || null} />
     </DefaultLayout>
   );
 });
 master.get('/opt/create', async (c) => {
-  return c.html(<ModalOpt />);
+  const listTanaman = await db.select().from(tanaman).limit(50);
+
+  return c.html(<ModalOpt listTanaman={listTanaman} />);
 });
 master.post(
   '/opt',
+  authorizeWebInput,
   validator('form', (value, c) => {
     const { kode_opt, nama_opt, status, tanaman_id } =
       value as unknown as InsertOPT;
 
     if (!kode_opt || !nama_opt || !status || !tanaman_id) {
-      return c.html(<span>Data yang dibutuhkan tidak sesuai</span>);
+      return c.html(
+        <span class="text-sm text-red-500">
+          Data yang dibutuhkan tidak sesuai
+        </span>
+      );
     }
     return { kode_opt, nama_opt, status, tanaman_id };
   }),
@@ -149,9 +162,47 @@ master.post(
       );
     }
 
-    return c.html(<span>Berhasil menambahkan data</span>);
+    return c.html(<span>Berhasil menambahkan data</span>, 200, {
+      'HX-Reswap': 'none',
+      'HX-Trigger': 'newOpt, closeModal',
+    });
   }
 );
+master.get('/opt/reload', async (c) => {
+  const selectOpt = await db
+    .select({
+      kode_opt: opt.kode_opt,
+      nama_opt: opt.nama_opt,
+      status: opt.status,
+      tanaman_id: opt.tanaman_id,
+      nama_tanaman: tanaman.nama_tanaman,
+    })
+    .from(opt)
+    .leftJoin(tanaman, eq(tanaman.id, opt.tanaman_id));
+  return c.html(
+    <Fragment>
+      {selectOpt.map((opt, index) => {
+        return (
+          <tr key={opt.kode_opt}>
+            <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
+              {index + 1}
+            </td>
+            <td class="border-b border-gray-200 px-4 py-2" style="width: 15%">
+              {opt.kode_opt}
+            </td>
+            <td class="border-b border-gray-200 px-4 py-2">{opt.nama_opt}</td>
+            <td class="border-b border-gray-200 px-4 py-2">
+              {opt.status === 'mutlak' ? 'Mutlak' : 'Tidak Mutlak'}
+            </td>
+            <td class="border-b border-gray-200 px-4 py-2">
+              {opt.nama_tanaman}
+            </td>
+          </tr>
+        );
+      })}
+    </Fragment>
+  );
+});
 master.get('/user', async (c) => {
   const session = c.get('session');
   const userId = session.get('user_id') as string;
@@ -182,17 +233,24 @@ master.get('/user', async (c) => {
   return c.html(
     <DefaultLayout
       route="user"
-      authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
     >
-      <DataUser listUser={selectUser} />
+      <DataUser listUser={selectUser} user={selectedUser || null} />
     </DefaultLayout>
   );
 });
 master.get('/user/create', async (c) => {
   return c.html(
     <Modal>
-      <ModalHeader>Foo Bar</ModalHeader>
-      <ModalContent>Foo Bar</ModalContent>
+      <ModalHeader>Create User</ModalHeader>
+      <ModalContent>
+        <form>
+          <div>
+            <label>Email</label>
+            <input type="text" />
+          </div>
+        </form>
+      </ModalContent>
     </Modal>
   );
 });
@@ -216,7 +274,11 @@ master.get('/usergroup', async (c) => {
   return c.html(
     <DefaultLayout
       route="usergroup"
-      authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
+      authNavigation={
+        !!selectedUser ? (
+          <Profile user={selectedUser as AuthenticatedUser} />
+        ) : null
+      }
     >
       <DataUserGroup listUserGroup={selectUserGroup} />
     </DefaultLayout>

@@ -15,8 +15,12 @@ const web = new Hono<{
   };
 }>();
 
+web.get('/', (c) => c.redirect('/app/dashboard'));
+
 // Dashboard Related
 web.route('/dashboard', dashboard);
+
+// Master Data Input
 web.route('/master', master);
 
 web.get('/lokasi', async (c) => {
