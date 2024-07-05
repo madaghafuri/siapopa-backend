@@ -18,6 +18,11 @@ import { authorizeApi } from '../middleware.js';
 import { opt } from '../db/schema/opt.js';
 import { tanaman } from '../db/schema/tanaman.js';
 import { lokasi } from '../db/schema/lokasi.js';
+import { provinsi } from '../db/schema/provinsi.js';
+import { kabupatenKota } from '../db/schema/kabupaten-kota.js';
+import { kecamatan } from '../db/schema/kecamatan.js';
+import { desa } from '../db/schema/desa.js';
+import { user } from '../db/schema/user.js';
 
 export const pengamatan = new Hono<{ Variables: JwtVariables }>();
 pengamatan.use('/pengamatan/*', authorizeApi);
@@ -106,7 +111,6 @@ pengamatan.post(
 
       await db.insert(photoPengamatan).values(photoValue);
     } catch (error) {
-      console.error(error);
       return c.json(
         {
           status: 500,
@@ -198,7 +202,6 @@ pengamatan.put(
           )
         );
     } catch (error) {
-      console.error(error);
       return c.json({
         status: 500,
         message: 'internal server error',
@@ -220,7 +223,6 @@ pengamatan.delete('/pengamatan/:pengamatanId', async (c) => {
       .delete(pengamatanSchema)
       .where(eq(pengamatanSchema.id, parseInt(pengamatanId)));
   } catch (error) {
-    console.error(error);
     return c.json(
       {
         status: 500,
@@ -250,7 +252,16 @@ pengamatan.get('/pengamatan/:pengamatanId', async (c) => {
         },
       },
       tanaman: true,
-      lokasi: true,
+      locations: {
+        with: {
+          provinsi: true,
+          kabkot: true,
+          kecamatan: true,
+          desa: true,
+        },
+      },
+      pic: true,
+      bukti_pengamatan: true,
     },
     where: eq(pengamatanSchema.id, parseInt(pengamatanId)),
   });
@@ -359,14 +370,58 @@ pengamatan.get('/pengamatan', async (c) => {
         opt.kode_opt
       )
   );
+
+  // const foo = db.query.pengamatan.findMany({
+  //   with: {},
+  //   where: and(
+  //     !!lokasi_id ? eq(pengamatanSchema.lokasi_id, lokasi_id) : undefined,
+  //     !!user_id ? eq(pengamatanSchema.pic_id, parseInt(user_id)) : undefined,
+  //     !!tanggal_pengamatan
+  //       ? eq(pengamatanSchema.tanggal_pengamatan, tanggal_pengamatan)
+  //       : undefined,
+  //     !!start_date
+  //       ? gte(pengamatanSchema.tanggal_pengamatan, start_date)
+  //       : undefined,
+  //     !!end_date
+  //       ? lte(pengamatanSchema.tanggal_pengamatan, end_date)
+  //       : undefined
+  //   ),
+  // });
+
   const pengamatanQuery = db
     .with(totalAnakan, totalOpt)
-    .select()
+    .select({
+      pengamatan: pengamatanSchema,
+      tanaman: tanaman,
+      lokasi: {
+        ...lokasi,
+        provinsi: provinsi,
+        kabupaten_kota: kabupatenKota,
+        kecamatan: kecamatan,
+        desa: desa,
+      },
+      total_anakan: {
+        pengamatan_id: totalAnakan.pengamatan_id,
+        total_anakan: totalAnakan.total_anakan,
+      },
+      total_opt: {
+        pengamatan_id: totalOpt.pengamatan_id,
+        skala_kerusakan: totalOpt.skala_kerusakan,
+        total_opt: totalOpt.total_opt,
+        opt_id: totalOpt.opt_id,
+        kode_opt: totalOpt.kode_opt,
+      },
+    })
     .from(pengamatanSchema)
     .leftJoin(totalAnakan, eq(totalAnakan.pengamatan_id, pengamatanSchema.id))
     .leftJoin(totalOpt, eq(totalOpt.pengamatan_id, pengamatanSchema.id))
     .leftJoin(tanaman, eq(tanaman.id, pengamatanSchema.tanaman_id))
     .leftJoin(lokasi, eq(lokasi.id, pengamatanSchema.lokasi_id))
+    .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
+    .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
+    .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
+    .leftJoin(desa, eq(desa.id, lokasi.desa_id))
+    .leftJoin(user, eq(user.id, pengamatanSchema.pic_id))
     .where(
       and(
         !!lokasi_id ? eq(pengamatanSchema.lokasi_id, lokasi_id) : undefined,
@@ -392,7 +447,6 @@ pengamatan.get('/pengamatan', async (c) => {
     );
     var selectedPengamatan = await finalQuery;
   } catch (error) {
-    console.error(error);
     return c.json(
       {
         status: 500,

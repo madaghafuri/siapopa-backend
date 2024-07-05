@@ -14,6 +14,7 @@ import { user } from './user.js';
 import { relations } from 'drizzle-orm';
 import { laporanHarian } from './laporan-harian.js';
 import { rumpun } from './rumpun.js';
+import { photoPengamatan } from './photo-pengamatan.js';
 
 export const pengamatan = pgTable('pengamatan', {
   id: serial('id').primaryKey(),
@@ -41,7 +42,7 @@ export const pengamatan = pgTable('pengamatan', {
 export const pengamatanRelations = relations(pengamatan, ({ one, many }) => ({
   laporanHarian: one(laporanHarian),
   rumpun: many(rumpun),
-  lokasi: one(lokasi, {
+  locations: one(lokasi, {
     fields: [pengamatan.lokasi_id],
     references: [lokasi.id],
   }),
@@ -49,6 +50,11 @@ export const pengamatanRelations = relations(pengamatan, ({ one, many }) => ({
     fields: [pengamatan.tanaman_id],
     references: [tanaman.id],
   }),
+  pic: one(user, {
+    fields: [pengamatan.pic_id],
+    references: [user.id],
+  }),
+  bukti_pengamatan: many(photoPengamatan),
 }));
 
 export type Pengamatan = typeof pengamatan.$inferSelect;
