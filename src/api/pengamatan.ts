@@ -16,13 +16,13 @@ import { InsertRumpun, rumpun as rumpunSchema } from '../db/schema/rumpun.js';
 import { hasilPengamatan, withPagination } from './helper.js';
 import { authorizeApi } from '../middleware.js';
 import { opt } from '../db/schema/opt.js';
-import { tanaman } from '../db/schema/tanaman.js';
-import { lokasi } from '../db/schema/lokasi.js';
+import { SelectTanaman, tanaman } from '../db/schema/tanaman.js';
+import { Lokasi, lokasi } from '../db/schema/lokasi.js';
 import { provinsi } from '../db/schema/provinsi.js';
 import { kabupatenKota } from '../db/schema/kabupaten-kota.js';
 import { kecamatan } from '../db/schema/kecamatan.js';
 import { desa } from '../db/schema/desa.js';
-import { user } from '../db/schema/user.js';
+import { SelectUser, user } from '../db/schema/user.js';
 
 export const pengamatan = new Hono<{ Variables: JwtVariables }>();
 pengamatan.use('/pengamatan/*', authorizeApi);
@@ -411,6 +411,7 @@ pengamatan.get('/pengamatan', async (c) => {
         opt_id: totalOpt.opt_id,
         kode_opt: totalOpt.kode_opt,
       },
+      pic: user,
     })
     .from(pengamatanSchema)
     .leftJoin(totalAnakan, eq(totalAnakan.pengamatan_id, pengamatanSchema.id))
@@ -457,19 +458,23 @@ pengamatan.get('/pengamatan', async (c) => {
   }
 
   const result = selectedPengamatan.reduce<
-    Array<
-      Pengamatan & {
-        hasil_pengamatan: {
-          opt_id: number;
-          hasil_perhitungan: number;
-          skala: string;
-        }[];
-      }
-    >
+    Array<{
+      pengamatan: Pengamatan;
+      tanaman: SelectTanaman;
+      lokasi: Lokasi;
+      pic: SelectUser;
+      hasil_pengamatan: {
+        opt_id: number;
+        kode_opt: string;
+        hasil_perhitungan: number;
+        skala: string;
+      }[];
+    }>
   >((acc, row) => {
     const pengamatan = row.pengamatan;
     const tanaman = row.tanaman;
     const lokasi = row.lokasi;
+    const pic = row.pic;
     const totalAnakan = row.total_anakan;
     const totalOpt = row.total_opt;
     const perhitunganKerusakan = hasilPengamatan(
@@ -487,16 +492,22 @@ pengamatan.get('/pengamatan', async (c) => {
       pengamatan,
       tanaman,
       lokasi,
+      pic,
       hasil_pengamatan: [hasil_pengamatan],
     };
 
-    const foo = acc.find((val) => val.id === pengamatan.id);
+    const foo = acc.find((val) => val.pengamatan.id === finalRow.pengamatan.id);
 
     if (!foo) {
       acc.push(
-        finalRow as unknown as Pengamatan & {
+        finalRow as unknown as {
+          pengamatan: Pengamatan;
+          tanaman: SelectTanaman;
+          lokasi: Lokasi;
+          pic: SelectUser;
           hasil_pengamatan: {
             opt_id: number;
+            kode_opt: string;
             hasil_perhitungan: number;
             skala: string;
           }[];
@@ -506,6 +517,7 @@ pengamatan.get('/pengamatan', async (c) => {
       acc[acc.indexOf(foo)].hasil_pengamatan.push(
         hasil_pengamatan as unknown as {
           opt_id: number;
+          kode_opt: string;
           hasil_perhitungan: number;
           skala: string;
         }
