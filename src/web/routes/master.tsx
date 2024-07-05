@@ -9,7 +9,7 @@ import { InsertTanaman, tanaman } from '../../db/schema/tanaman.js';
 import { validator } from 'hono/validator';
 import { InsertOPT, opt } from '../../db/schema/opt.js';
 import DataOPT from '../pages/master/opt.js';
-import { ModalOpt } from '../components/opt/modal-opt.js';
+import { ModalOpt } from '../components/master/modal-opt.js';
 import { userGroup } from '../../db/schema/user-group.js';
 import DataUser from '../pages/master/user.js';
 import DataUserGroup from '../pages/master/usergroup.js';
@@ -17,6 +17,7 @@ import DataTanaman from '../pages/master/tanaman.js';
 import Modal, { ModalContent, ModalHeader } from '../components/modal.js';
 import { Fragment } from 'hono/jsx/jsx-runtime';
 import { authorizeWebInput } from '../../middleware.js';
+import { ModalTanaman } from '../components/master/modal-tanaman.js';
 
 export const master = new Hono<{
   Variables: {
@@ -80,15 +81,33 @@ master.post(
       );
     }
 
-    return c.html(<span>Berhasil master tanaman</span>);
+    return c.html(<span>Berhasil master tanaman</span>, 200, {
+      'HX-Reswap': 'none',
+      'HX-Trigger': 'newTanaman, closeModal',
+    });
   }
 );
 master.get('/tanaman/create', async (c) => {
+  return c.html(<ModalTanaman />);
+});
+master.get('/tanaman/reload', async (c) => {
+  const selectedTanaman = await db.select().from(tanaman).orderBy(tanaman.id);
+
   return c.html(
-    <Modal>
-      <ModalHeader>Create Tanaman</ModalHeader>
-      <ModalContent>Hello World</ModalContent>
-    </Modal>
+    <Fragment>
+      {selectedTanaman.map((tanaman, index) => {
+        return (
+          <tr key={tanaman.id}>
+            <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
+              {index + 1}
+            </td>
+            <td class="border-b border-gray-200 px-4 py-2">
+              {tanaman.nama_tanaman}
+            </td>
+          </tr>
+        );
+      })}
+    </Fragment>
   );
 });
 master.get('/opt', async (c) => {
@@ -178,7 +197,8 @@ master.get('/opt/reload', async (c) => {
       nama_tanaman: tanaman.nama_tanaman,
     })
     .from(opt)
-    .leftJoin(tanaman, eq(tanaman.id, opt.tanaman_id));
+    .leftJoin(tanaman, eq(tanaman.id, opt.tanaman_id))
+    .orderBy(tanaman.id);
   return c.html(
     <Fragment>
       {selectOpt.map((opt, index) => {

@@ -16,6 +16,8 @@ import { InsertRumpun, rumpun as rumpunSchema } from '../db/schema/rumpun.js';
 import { hasilPengamatan, withPagination } from './helper.js';
 import { authorizeApi } from '../middleware.js';
 import { opt } from '../db/schema/opt.js';
+import { tanaman } from '../db/schema/tanaman.js';
+import { lokasi } from '../db/schema/lokasi.js';
 
 export const pengamatan = new Hono<{ Variables: JwtVariables }>();
 pengamatan.use('/pengamatan/*', authorizeApi);
@@ -349,6 +351,7 @@ pengamatan.get('/pengamatan', async (c) => {
       .from(detailRumpun)
       .leftJoin(rumpunSchema, eq(detailRumpun.rumpun_id, rumpunSchema.id))
       .leftJoin(opt, eq(opt.id, detailRumpun.opt_id))
+      .leftJoin(tanaman, eq(tanaman.id, opt.tanaman_id))
       .groupBy(
         detailRumpun.opt_id,
         detailRumpun.skala_kerusakan,
@@ -362,6 +365,8 @@ pengamatan.get('/pengamatan', async (c) => {
     .from(pengamatanSchema)
     .leftJoin(totalAnakan, eq(totalAnakan.pengamatan_id, pengamatanSchema.id))
     .leftJoin(totalOpt, eq(totalOpt.pengamatan_id, pengamatanSchema.id))
+    .leftJoin(tanaman, eq(tanaman.id, pengamatanSchema.tanaman_id))
+    .leftJoin(lokasi, eq(lokasi.id, pengamatanSchema.lokasi_id))
     .where(
       and(
         !!lokasi_id ? eq(pengamatanSchema.lokasi_id, lokasi_id) : undefined,
@@ -409,6 +414,8 @@ pengamatan.get('/pengamatan', async (c) => {
     >
   >((acc, row) => {
     const pengamatan = row.pengamatan;
+    const tanaman = row.tanaman;
+    const lokasi = row.lokasi;
     const totalAnakan = row.total_anakan;
     const totalOpt = row.total_opt;
     const perhitunganKerusakan = hasilPengamatan(
@@ -418,10 +425,16 @@ pengamatan.get('/pengamatan', async (c) => {
     );
     const hasil_pengamatan = {
       opt_id: totalOpt?.opt_id,
+      kode_opt: totalOpt?.kode_opt,
       hasil_perhitungan: perhitunganKerusakan,
       skala: totalOpt?.skala_kerusakan,
     };
-    const finalRow = { ...pengamatan, hasil_pengamatan: [hasil_pengamatan] };
+    const finalRow = {
+      pengamatan,
+      tanaman,
+      lokasi,
+      hasil_pengamatan: [hasil_pengamatan],
+    };
 
     const foo = acc.find((val) => val.id === pengamatan.id);
 

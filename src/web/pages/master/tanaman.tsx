@@ -20,7 +20,10 @@ const DataTanaman = ({
             <th class="border-b border-gray-200 px-4 py-2">Nama Tanaman</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody
+          hx-get="/app/master/tanaman/reload"
+          hx-trigger="newTanaman from:body"
+        >
           {listTanaman.map((tanaman, index) => (
             <tr key={tanaman.id}>
               <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
