@@ -296,6 +296,7 @@ pengamatan.get('/pengamatan/:pengamatanId', async (c) => {
 
   const hasil_pengamatan = totalOpt.map((value) => {
     return {
+      opt_id: value.opt_id,
       kode_opt: value.kode_opt,
       hasil_perhitungan: hasilPengamatan(
         value.skala,
@@ -370,23 +371,6 @@ pengamatan.get('/pengamatan', async (c) => {
         opt.kode_opt
       )
   );
-
-  // const foo = db.query.pengamatan.findMany({
-  //   with: {},
-  //   where: and(
-  //     !!lokasi_id ? eq(pengamatanSchema.lokasi_id, lokasi_id) : undefined,
-  //     !!user_id ? eq(pengamatanSchema.pic_id, parseInt(user_id)) : undefined,
-  //     !!tanggal_pengamatan
-  //       ? eq(pengamatanSchema.tanggal_pengamatan, tanggal_pengamatan)
-  //       : undefined,
-  //     !!start_date
-  //       ? gte(pengamatanSchema.tanggal_pengamatan, start_date)
-  //       : undefined,
-  //     !!end_date
-  //       ? lte(pengamatanSchema.tanggal_pengamatan, end_date)
-  //       : undefined
-  //   ),
-  // });
 
   const pengamatanQuery = db
     .with(totalAnakan, totalOpt)
