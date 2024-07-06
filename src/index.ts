@@ -30,7 +30,6 @@ import web from './web/route.js';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { CookieStore, Session, sessionMiddleware } from 'hono-sessions';
 import { auth } from './web/auth.js';
-import { authorize, authorizeWebInput } from './middleware.js';
 import {
   DrizzlePostgreSQLAdapter,
   PostgreSQLUserTable,
