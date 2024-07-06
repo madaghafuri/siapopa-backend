@@ -1,26 +1,26 @@
-import { Hono } from "hono";
-import { validator } from "hono/validator";
+import { Hono } from 'hono';
+import { validator } from 'hono/validator';
 import {
   InsertLaporanHarian,
   LaporanHarian,
   laporanHarian as laporanHarianSchema,
-} from "../db/schema/laporan-harian.js";
-import { db } from "../index.js";
-import { and, eq, gte, lte } from "drizzle-orm";
-import { Lokasi, lokasi } from "../db/schema/lokasi.js";
-import { pengamatan } from "../db/schema/pengamatan.js";
-import { rumpun } from "../db/schema/rumpun.js";
-import { DetailRumpun, detailRumpun } from "../db/schema/detail-rumpun.js";
-import { withPagination } from "./helper.js";
-import { authorizeApi } from "../middleware.js";
+} from '../db/schema/laporan-harian.js';
+import { db } from '../index.js';
+import { and, eq, gte, lte, sql } from 'drizzle-orm';
+import { Lokasi, lokasi } from '../db/schema/lokasi.js';
+import { pengamatan } from '../db/schema/pengamatan.js';
+import { rumpun } from '../db/schema/rumpun.js';
+import { DetailRumpun, detailRumpun } from '../db/schema/detail-rumpun.js';
+import { withPagination } from './helper.js';
+import { authorizeApi } from '../middleware.js';
 
 export const laporanHarian = new Hono();
 
-laporanHarian.use("/laporan_harian/*", authorizeApi);
+laporanHarian.use('/laporan_harian/*', authorizeApi);
 
 laporanHarian.post(
-  "/laporan_harian",
-  validator("json", (value, c) => {
+  '/laporan_harian',
+  validator('json', (value, c) => {
     const { pengamatan_id, opt_id, lokasi_id, ...rest } =
       value as InsertLaporanHarian & {
         lokasi_id: string;
@@ -32,31 +32,36 @@ laporanHarian.post(
         {
           status: 401,
           message:
-            "Tidak dapat melanjutkan permintaan. pengamatan_id, opt_id, lokasi_id tidak ditemukan",
+            'Tidak dapat melanjutkan permintaan. pengamatan_id, opt_id, lokasi_id tidak ditemukan',
         },
-        401,
+        401
       );
     }
 
     return { pengamatan_id, opt_id, lokasi_id, ...rest };
   }),
   async (c) => {
-    const { lokasi_laporan_harian, lokasi_id, ...rest } = c.req.valid("json");
+    const { lokasi_laporan_harian, lokasi_id, pengamatan_id, opt_id, ...rest } =
+      c.req.valid('json');
     const [lat, long] = lokasi_laporan_harian.coordinates;
 
     try {
       var insertedData = await db
         .insert(laporanHarianSchema)
-        .values({ ...rest, point_laporan_harian: [lat, long] })
+        .values({
+          ...rest,
+          pengamatan_id,
+          point_laporan_harian: sql`ST_SetSRID(ST_MakePoint(${long}, ${lat}), 4326)`,
+        })
         .returning();
     } catch (error) {
       console.error(error);
       return c.json(
         {
           status: 500,
-          message: "internal server error",
+          message: 'internal server error',
         },
-        500,
+        500
       );
     }
 
@@ -64,22 +69,40 @@ laporanHarian.post(
       return c.json(
         {
           status: 404,
-          message: "Data tidak ditemukan",
+          message: 'Data tidak ditemukan',
         },
-        404,
+        404
       );
+    }
+
+    try {
+      var updatedPengamatan = await db
+        .update(pengamatan)
+        .set({ status_laporan_harian: true })
+        .where(eq(pengamatan.id, pengamatan_id))
+        .returning();
+    } catch (error) {
+      return c.json({
+        status: 500,
+        message: 'internal server error',
+      });
     }
 
     return c.json({
       status: 200,
-      message: "success",
-      data: { ...insertedData[0], lokasi_id },
+      message: 'success',
+      data: {
+        id: insertedData[0].id,
+        pengamatan_id,
+        opt_id,
+        status_laporan_harian: updatedPengamatan[0].status_laporan_harian,
+      },
     });
-  },
+  }
 );
 laporanHarian.put(
-  "/laporan_harian/:laporanHarianId",
-  validator("json", (value, c) => {
+  '/laporan_harian/:laporanHarianId',
+  validator('json', (value, c) => {
     const { lokasi_id, lokasi_laporan_harian, ...rest } =
       value as InsertLaporanHarian & {
         lokasi_id: string;
@@ -92,11 +115,11 @@ laporanHarian.put(
     return { lokasi_id, lokasi_laporan_harian, ...rest };
   }),
   async (c) => {
-    const laporanHarianId = c.req.param("laporanHarianId");
-    const { lokasi_id, lokasi_laporan_harian, ...rest } = c.req.valid("json");
+    const laporanHarianId = c.req.param('laporanHarianId');
+    const { lokasi_id, lokasi_laporan_harian, ...rest } = c.req.valid('json');
 
     try {
-      var updatedData = await db
+      await db
         .update(laporanHarianSchema)
         .set({ ...rest })
         .where(eq(laporanHarianSchema.id, parseInt(laporanHarianId)))
@@ -106,20 +129,20 @@ laporanHarian.put(
       return c.json(
         {
           status: 500,
-          message: "internal server error",
+          message: 'internal server error',
         },
-        500,
+        500
       );
     }
 
     return c.json({
       status: 200,
-      message: "Berhasil mengupdate laporan harian",
+      message: 'Berhasil mengupdate laporan harian',
     });
-  },
+  }
 );
-laporanHarian.delete("/laporan_harian/:laporanHarianId", async (c) => {
-  const laporanHarianId = c.req.param("laporanHarianId");
+laporanHarian.delete('/laporan_harian/:laporanHarianId', async (c) => {
+  const laporanHarianId = c.req.param('laporanHarianId');
 
   try {
     await db
@@ -130,19 +153,19 @@ laporanHarian.delete("/laporan_harian/:laporanHarianId", async (c) => {
     return c.json(
       {
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       },
-      500,
+      500
     );
   }
 
   return c.json({
     status: 200,
-    message: "Berhasil menghapus data laporan harian",
+    message: 'Berhasil menghapus data laporan harian',
   });
 });
-laporanHarian.get("/laporan_harian/:laporanHarianId", async (c) => {
-  const laporanHarianId = c.req.param("laporanHarianId");
+laporanHarian.get('/laporan_harian/:laporanHarianId', async (c) => {
+  const laporanHarianId = c.req.param('laporanHarianId');
 
   try {
     var dataLaporan = await db
@@ -154,7 +177,7 @@ laporanHarian.get("/laporan_harian/:laporanHarianId", async (c) => {
       .from(laporanHarianSchema)
       .leftJoin(
         pengamatan,
-        eq(pengamatan.id, laporanHarianSchema.pengamatan_id),
+        eq(pengamatan.id, laporanHarianSchema.pengamatan_id)
       )
       .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
       .leftJoin(rumpun, eq(rumpun.pengamatan_id, pengamatan.id))
@@ -198,9 +221,9 @@ laporanHarian.get("/laporan_harian/:laporanHarianId", async (c) => {
     return c.json(
       {
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       },
-      500,
+      500
     );
   }
 
@@ -208,29 +231,29 @@ laporanHarian.get("/laporan_harian/:laporanHarianId", async (c) => {
     return c.json(
       {
         status: 404,
-        message: "Data tidak ditemukan",
+        message: 'Data tidak ditemukan',
       },
-      404,
+      404
     );
   }
 
   return c.json({
     status: 200,
-    message: "success",
+    message: 'success',
     data: data[laporanHarianId],
   });
 });
 laporanHarian.get(
-  "/laporan_harian",
-  validator("query", (value, c) => {
+  '/laporan_harian',
+  validator('query', (value, c) => {
     const query = value as Record<
-      | "user_id"
-      | "location_id"
-      | "tanggal"
-      | "start_date"
-      | "end_date"
-      | "page"
-      | "per_page",
+      | 'user_id'
+      | 'location_id'
+      | 'tanggal'
+      | 'start_date'
+      | 'end_date'
+      | 'page'
+      | 'per_page',
       string
     >;
     return query;
@@ -244,7 +267,7 @@ laporanHarian.get(
       user_id,
       page,
       per_page,
-    } = c.req.valid("query");
+    } = c.req.valid('query');
 
     try {
       const preQuery = db
@@ -252,7 +275,7 @@ laporanHarian.get(
         .from(laporanHarianSchema)
         .leftJoin(
           pengamatan,
-          eq(pengamatan.id, laporanHarianSchema.pengamatan_id),
+          eq(pengamatan.id, laporanHarianSchema.pengamatan_id)
         )
         .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
         .where(
@@ -269,21 +292,21 @@ laporanHarian.get(
               : undefined,
             !!end_date
               ? lte(laporanHarianSchema.tanggal_laporan_harian, end_date)
-              : undefined,
-          ),
+              : undefined
+          )
         )
         .$dynamic();
       const final = withPagination(
         preQuery,
         parseInt(per_page),
-        parseInt(page),
+        parseInt(page)
       );
       var selectData = await final;
     } catch (error) {
       console.error(error);
       return c.json({
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       });
     }
 
@@ -291,16 +314,16 @@ laporanHarian.get(
       return c.json(
         {
           status: 404,
-          message: "Data laporan harian tidak ditemukan",
+          message: 'Data laporan harian tidak ditemukan',
         },
-        404,
+        404
       );
     }
 
     return c.json({
       status: 200,
-      message: "success",
+      message: 'success',
       data: selectData,
     });
-  },
+  }
 );
