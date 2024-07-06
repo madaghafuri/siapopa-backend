@@ -260,7 +260,11 @@ pengamatan.get('/pengamatan/:pengamatanId', async (c) => {
           desa: true,
         },
       },
-      pic: true,
+      pic: {
+        columns: {
+          password: false,
+        },
+      },
       bukti_pengamatan: true,
     },
     where: eq(pengamatanSchema.id, parseInt(pengamatanId)),
@@ -395,7 +399,14 @@ pengamatan.get('/pengamatan', async (c) => {
         opt_id: totalOpt.opt_id,
         kode_opt: totalOpt.kode_opt,
       },
-      pic: user,
+      pic: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+        photo: user.photo,
+        validasi: user.validasi,
+      },
     })
     .from(pengamatanSchema)
     .leftJoin(totalAnakan, eq(totalAnakan.pengamatan_id, pengamatanSchema.id))
