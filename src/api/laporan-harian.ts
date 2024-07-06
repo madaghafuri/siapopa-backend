@@ -11,8 +11,15 @@ import { Lokasi, lokasi } from '../db/schema/lokasi.js';
 import { pengamatan } from '../db/schema/pengamatan.js';
 import { rumpun } from '../db/schema/rumpun.js';
 import { DetailRumpun, detailRumpun } from '../db/schema/detail-rumpun.js';
-import { withPagination } from './helper.js';
+import { hasilPengamatan, withPagination } from './helper.js';
 import { authorizeApi } from '../middleware.js';
+import { opt } from '../db/schema/opt.js';
+import { tanaman } from '../db/schema/tanaman.js';
+import { provinsi } from '../db/schema/provinsi.js';
+import { kabupatenKota } from '../db/schema/kabupaten-kota.js';
+import { kecamatan } from '../db/schema/kecamatan.js';
+import { desa } from '../db/schema/desa.js';
+import { user } from '../db/schema/user.js';
 
 export const laporanHarian = new Hono();
 
@@ -167,80 +174,136 @@ laporanHarian.delete('/laporan_harian/:laporanHarianId', async (c) => {
 laporanHarian.get('/laporan_harian/:laporanHarianId', async (c) => {
   const laporanHarianId = c.req.param('laporanHarianId');
 
-  try {
-    var dataLaporan = await db
+  const totalAnakan = db.$with('total_anakan').as(
+    db
       .select({
-        laporan_harian: laporanHarianSchema,
-        lokasi,
-        detail_rumpun: detailRumpun,
+        pengamatan_id: rumpun.pengamatan_id,
+        total_anakan: sql`sum(${rumpun.jumlah_anakan})`.as(
+          'total_jumlah_anakan'
+        ),
       })
-      .from(laporanHarianSchema)
-      .leftJoin(
-        pengamatan,
-        eq(pengamatan.id, laporanHarianSchema.pengamatan_id)
+      .from(rumpun)
+      .groupBy(rumpun.pengamatan_id)
+  );
+  const totalOpt = db.$with('total_opt').as(
+    db
+      .select({
+        pengamatan_id: rumpun.pengamatan_id,
+        skala_kerusakan: detailRumpun.skala_kerusakan,
+        total_opt: sql`sum(${detailRumpun.jumlah_opt})`.as('total_jumlah_opt'),
+        opt_id: detailRumpun.opt_id,
+        kode_opt: opt.kode_opt,
+      })
+      .from(detailRumpun)
+      .leftJoin(rumpun, eq(detailRumpun.rumpun_id, rumpun.id))
+      .leftJoin(opt, eq(opt.id, detailRumpun.opt_id))
+      .leftJoin(tanaman, eq(tanaman.id, opt.tanaman_id))
+      .groupBy(
+        detailRumpun.opt_id,
+        detailRumpun.skala_kerusakan,
+        rumpun.pengamatan_id,
+        opt.kode_opt
       )
-      .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
-      .leftJoin(rumpun, eq(rumpun.pengamatan_id, pengamatan.id))
-      .leftJoin(detailRumpun, eq(detailRumpun.rumpun_id, rumpun.id))
-      .where(eq(laporanHarianSchema.id, parseInt(laporanHarianId)));
+  );
 
-    var data = dataLaporan.reduce<
-      Record<
-        number,
-        {
-          laporan_harian: LaporanHarian;
-          detail_rumpun: DetailRumpun[];
-          lokasi: Lokasi;
-        }
-      >
-    >((acc, row) => {
-      const laporanHarian = row.laporan_harian;
-      const detailRumpun = row.detail_rumpun;
-      const lokasi = row.lokasi;
-
-      if (!acc[laporanHarian.id]) {
-        acc[laporanHarian.id] = {
-          laporan_harian: laporanHarian,
-          detail_rumpun: [],
-          lokasi: null,
-        };
-      }
-
-      if (detailRumpun) {
-        acc[laporanHarian.id].detail_rumpun.push(detailRumpun);
-      }
-
-      if (lokasi) {
-        acc[laporanHarian.id].lokasi = lokasi;
-      }
-
-      return acc;
-    }, {});
-  } catch (error) {
-    console.error(error);
-    return c.json(
-      {
-        status: 500,
-        message: 'internal server error',
+  const laporanHarianQuery = await db
+    .with(totalAnakan, totalOpt)
+    .select({
+      laporan_harian: laporanHarianSchema,
+      pengamatan: pengamatan,
+      total_anakan: {
+        pengamatan_id: totalAnakan.pengamatan_id,
+        total_anakan: totalAnakan.total_anakan,
       },
-      500
-    );
-  }
+      total_opt: {
+        pengamatan_id: totalOpt.pengamatan_id,
+        skala_kerusakan: totalOpt.skala_kerusakan,
+        total_opt: totalOpt.total_opt,
+        opt_id: totalOpt.opt_id,
+        kode_opt: totalOpt.kode_opt,
+      },
+      lokasi: {
+        ...lokasi,
+        provinsi: provinsi,
+        kabupaten_kota: kabupatenKota,
+        kecamatan: kecamatan,
+        desa: desa,
+      },
+      pic: {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        name: user.name,
+        photo: user.photo,
+        validasi: user.validasi,
+      },
+    })
+    .from(laporanHarianSchema)
+    .leftJoin(
+      totalAnakan,
+      eq(totalAnakan.pengamatan_id, laporanHarianSchema.pengamatan_id)
+    )
+    .leftJoin(
+      totalOpt,
+      eq(totalOpt.pengamatan_id, laporanHarianSchema.pengamatan_id)
+    )
+    .leftJoin(pengamatan, eq(pengamatan.id, laporanHarianSchema.pengamatan_id))
+    .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
+    .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
+    .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
+    .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
+    .leftJoin(desa, eq(desa.id, lokasi.desa_id))
+    .leftJoin(user, eq(user.id, laporanHarianSchema.pic_id))
+    .where(eq(laporanHarianSchema.id, parseInt(laporanHarianId)));
 
-  if (dataLaporan.length === 0) {
+  if (laporanHarianQuery.length === 0) {
     return c.json(
       {
         status: 404,
-        message: 'Data tidak ditemukan',
+        message: 'Laporan harian tidak ditemukan',
       },
       404
     );
   }
 
+  const res = laporanHarianQuery.reduce((acc, row) => {
+    const totalAnakan = row.total_anakan;
+    const totalOpt = row.total_opt;
+    const laporanHarian = row.laporan_harian;
+    const pengamatan = row.pengamatan;
+    const lokasi = row.lokasi;
+    const pic = row.pic;
+    const perhitungan = hasilPengamatan(
+      totalOpt.skala_kerusakan,
+      totalOpt.total_opt as number,
+      totalAnakan.total_anakan as number
+    );
+    const hasilPerhitungan = {
+      id_opt: totalOpt.opt_id,
+      kode_opt: totalOpt.kode_opt,
+      hasil_perhitungan: perhitungan,
+      skala: totalOpt.skala_kerusakan,
+    };
+
+    if (!acc[laporanHarian.id]) {
+      acc[laporanHarian.id] = {
+        ...laporanHarian,
+        pengamatan,
+        lokasi,
+        pic,
+        hasil_pengamatan: [hasilPerhitungan],
+      };
+    } else if (acc[laporanHarian.id]) {
+      acc[laporanHarian.id].hasil_pengamatan.push(hasilPerhitungan);
+    }
+
+    return acc;
+  }, {});
+
   return c.json({
     status: 200,
     message: 'success',
-    data: data[laporanHarianId],
+    data: res[laporanHarianId],
   });
 });
 laporanHarian.get(
