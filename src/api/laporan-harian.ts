@@ -332,39 +332,108 @@ laporanHarian.get(
       per_page,
     } = c.req.valid('query');
 
+    const totalAnakan = db.$with('total_anakan').as(
+      db
+        .select({
+          pengamatan_id: rumpun.pengamatan_id,
+          total_anakan: sql<number>`sum(${rumpun.jumlah_anakan})`.as(
+            'total_jumlah_anakan'
+          ),
+        })
+        .from(rumpun)
+        .groupBy(rumpun.pengamatan_id)
+    );
+    const totalOpt = db.$with('total_opt').as(
+      db
+        .select({
+          pengamatan_id: rumpun.pengamatan_id,
+          skala_kerusakan: detailRumpun.skala_kerusakan,
+          total_opt: sql<number>`sum(${detailRumpun.jumlah_opt})`.as(
+            'total_jumlah_opt'
+          ),
+          opt_id: detailRumpun.opt_id,
+          kode_opt: opt.kode_opt,
+        })
+        .from(detailRumpun)
+        .leftJoin(rumpun, eq(detailRumpun.rumpun_id, rumpun.id))
+        .leftJoin(opt, eq(opt.id, detailRumpun.opt_id))
+        .leftJoin(tanaman, eq(tanaman.id, opt.tanaman_id))
+        .groupBy(
+          detailRumpun.opt_id,
+          detailRumpun.skala_kerusakan,
+          rumpun.pengamatan_id,
+          opt.kode_opt
+        )
+    );
+
+    const query = db
+      .with(totalAnakan, totalOpt)
+      .select({
+        laporan_harian: laporanHarianSchema,
+        total_anakan: {
+          pengamatan_id: totalAnakan.pengamatan_id,
+          total_anakan: totalAnakan.total_anakan,
+        },
+        total_opt: {
+          pengamatan_id: totalOpt.pengamatan_id,
+          opt_id: totalOpt.opt_id,
+          kode_opt: totalOpt.kode_opt,
+          total_opt: totalOpt.total_opt,
+          skala_kerusakan: totalOpt.skala_kerusakan,
+        },
+        lokasi: {
+          ...lokasi,
+          provinsi,
+          kabupaten_kota: kabupatenKota,
+          kecamatan,
+          desa,
+        },
+      })
+      .from(laporanHarianSchema)
+      .leftJoin(
+        totalAnakan,
+        eq(totalAnakan.pengamatan_id, laporanHarianSchema.pengamatan_id)
+      )
+      .leftJoin(
+        totalOpt,
+        eq(totalOpt.pengamatan_id, laporanHarianSchema.pengamatan_id)
+      )
+      .leftJoin(
+        pengamatan,
+        eq(pengamatan.id, laporanHarianSchema.pengamatan_id)
+      )
+      .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
+      .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
+      .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
+      .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
+      .leftJoin(desa, eq(desa.id, lokasi.desa_id))
+      .where(
+        and(
+          !!user_id
+            ? eq(laporanHarianSchema.pic_id, parseInt(user_id))
+            : undefined,
+          !!location_id ? eq(lokasi.id, location_id) : undefined,
+          !!tanggal
+            ? eq(laporanHarianSchema.tanggal_laporan_harian, tanggal)
+            : undefined,
+          !!start_date
+            ? gte(laporanHarianSchema.tanggal_laporan_harian, start_date)
+            : undefined,
+          !!end_date
+            ? lte(laporanHarianSchema.tanggal_laporan_harian, end_date)
+            : undefined
+        )
+      )
+      .$dynamic();
+
+    const paginatedQuery = withPagination(
+      query,
+      parseInt(page),
+      parseInt(per_page)
+    );
+
     try {
-      const preQuery = db
-        .select()
-        .from(laporanHarianSchema)
-        .leftJoin(
-          pengamatan,
-          eq(pengamatan.id, laporanHarianSchema.pengamatan_id)
-        )
-        .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
-        .where(
-          and(
-            !!user_id
-              ? eq(laporanHarianSchema.pic_id, parseInt(user_id))
-              : undefined,
-            !!location_id ? eq(lokasi.id, location_id) : undefined,
-            !!tanggal
-              ? eq(laporanHarianSchema.tanggal_laporan_harian, tanggal)
-              : undefined,
-            !!start_date
-              ? gte(laporanHarianSchema.tanggal_laporan_harian, start_date)
-              : undefined,
-            !!end_date
-              ? lte(laporanHarianSchema.tanggal_laporan_harian, end_date)
-              : undefined
-          )
-        )
-        .$dynamic();
-      const final = withPagination(
-        preQuery,
-        parseInt(per_page),
-        parseInt(page)
-      );
-      var selectData = await final;
+      var selectData = await paginatedQuery;
     } catch (error) {
       console.error(error);
       return c.json({
@@ -383,10 +452,47 @@ laporanHarian.get(
       );
     }
 
+    const result = selectData.reduce((acc, row) => {
+      const laporanHarian = row.laporan_harian;
+      const totalAnakan = row.total_anakan;
+      const totalOpt = row.total_opt;
+      const lokasi = row.lokasi;
+
+      const hasilPerhitungan = hasilPengamatan(
+        totalOpt.skala_kerusakan,
+        totalOpt.total_opt,
+        totalAnakan.total_anakan
+      );
+      const hasil = {
+        opt_id: totalOpt.opt_id,
+        kode_opt: totalOpt.kode_opt,
+        hasil_perhitungan: hasilPerhitungan,
+        skala: totalOpt.skala_kerusakan,
+      };
+
+      const finalRow = {
+        laporan_harian: laporanHarian,
+        lokasi,
+        hasil_pengamatan: [hasil],
+      };
+
+      const laporan = acc.find(
+        (value) => value.laporan_harian.id === laporanHarian.id
+      );
+
+      if (!laporan) {
+        acc.push(finalRow);
+      } else if (!!laporan) {
+        acc[acc.indexOf(laporan)].hasil_pengamatan.push(hasil);
+      }
+
+      return acc;
+    }, []);
+
     return c.json({
       status: 200,
       message: 'success',
-      data: selectData,
+      data: result,
     });
   }
 );
