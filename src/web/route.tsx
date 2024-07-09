@@ -7,6 +7,7 @@ import { DefaultLayout } from './layouts/default-layout.js';
 import Profile, { AuthenticatedUser } from './components/profile.js';
 import { dashboard } from './routes/dashboard.js';
 import { master } from './routes/master.js';
+import { laporan } from './routes/laporan.js';
 
 const web = new Hono<{
   Variables: {
@@ -22,6 +23,9 @@ web.route('/dashboard', dashboard);
 
 // Master Data Input
 web.route('/master', master);
+
+// laporan
+web.route('/laporan', laporan);
 
 web.get('/lokasi', async (c) => {
   const session = c.get('session');

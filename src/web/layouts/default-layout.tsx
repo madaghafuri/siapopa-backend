@@ -71,13 +71,24 @@ export const DefaultLayout = ({
             </a>
           </div>
         </div>
-        <a href="/app/lokasi">
+        <div class="rounded-md border">
           <button
-            class={`rounded-md px-4 py-2 text-left ${route === 'data-lokasi' ? 'bg-primary text-white' : ''}`}
+            class="flex w-full items-center justify-between gap-5 border-b-2 px-4 py-2 text-left"
+            type="button"
+            _="on click toggle between .hidden and .flex on #laporan-dropdown then toggle .rotate-90 on #laporan-icon"
           >
             Laporan
+            <i id="laporan-icon" class="fa-solid fa-caret-right"></i>
           </button>
-        </a>
+          <div id="laporan-dropdown" class="opening hidden flex-col gap-3 p-5">
+            <a
+              href="/app/laporan/harian"
+              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-harian' ? 'bg-primary text-white' : ''}`}
+            >
+              Laporan Harian
+            </a>
+          </div>
+        </div>
       </section>
       <div class="grow">{children}</div>
     </div>

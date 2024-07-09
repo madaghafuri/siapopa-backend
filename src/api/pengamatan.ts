@@ -72,7 +72,10 @@ pengamatan.post(
     try {
       var insertedData = await db
         .insert(pengamatanSchema)
-        .values({ ...rest, point_pengamatan: [lat, long] })
+        .values({
+          ...rest,
+          point_pengamatan: [lat, long],
+        })
         .returning();
 
       const photoValue: Partial<PhotoPengamatan>[] = bukti_pengamatan.map(
