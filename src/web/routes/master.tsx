@@ -227,12 +227,16 @@ master.get('/user', async (c) => {
   const session = c.get('session');
   const userId = session.get('user_id') as string;
 
-  const selectedUser = await db.query.user.findFirst({
-    where: eq(user.id, parseInt(userId)),
-    with: {
-      userGroup: true,
-    },
-  });
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: eq(user.id, parseInt(userId)),
+      with: {
+        userGroup: true,
+      },
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 
   const selectUser = await db
     .select({
