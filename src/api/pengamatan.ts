@@ -110,14 +110,13 @@ pengamatan.post(
         });
 
         await db.insert(detailRumpun).values(detailRumpunData);
+        await db.insert(photoPengamatan).values(photoValue);
       }
-
-      await db.insert(photoPengamatan).values(photoValue);
     } catch (error) {
       return c.json(
         {
           status: 500,
-          message: 'internal server error',
+          message: 'internal server error' + error,
         },
         500
       );
