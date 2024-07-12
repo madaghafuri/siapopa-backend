@@ -2,7 +2,6 @@ import { serve } from '@hono/node-server';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Hono } from 'hono';
 import pg from 'pg';
-// import { Client } from "pg";
 import api from './api/route.js';
 import * as user from './db/schema/user.js';
 import { logger } from 'hono/logger';

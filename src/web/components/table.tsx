@@ -1,3 +1,5 @@
+import { JSX } from "hono/jsx";
+
 export type ColumnHeader<T extends Object = any> = {
   field?: keyof T;
   headerName: string;
@@ -17,14 +19,14 @@ export type ColumnHeader<T extends Object = any> = {
 };
 
 const Table = ({
-  rows,
+  rowsData,
   columns,
   ...props
 }: {
   children?: any;
-  rows: any[];
+  rowsData: any[];
   columns: ColumnHeader[];
-} & HTMLTableElement) => {
+} & Hono.IntrinsicElements["table"]) => {
   return (
     //@ts-ignore
     <table class="grid grid-cols-12" {...props}>
@@ -40,7 +42,7 @@ const Table = ({
         })}
       </tr>
       <tbody id="#table-body">
-        {rows.map((row) => {
+        {rowsData.map((row) => {
           return (
             <tr
               key={row.id}
