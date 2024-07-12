@@ -11,7 +11,6 @@ import { tanaman } from './tanaman.js';
 import { opt } from './opt.js';
 import { user } from './user.js';
 import { userGroup } from './user-group.js';
-import { photoPengamatan } from './photo-pengamatan.js';
 
 const api = new Hono();
 
@@ -27,6 +26,5 @@ api.route('', tanaman);
 api.route('', opt);
 api.route('', user);
 api.route('', userGroup);
-api.route('', photoPengamatan);
 
 export default api;

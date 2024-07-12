@@ -35,8 +35,6 @@ import {
   type PostgreSQLSessionTable,
 } from '@lucia-auth/adapter-drizzle';
 import { Lucia, TimeSpan } from 'lucia';
-import multer from 'multer';
-import path from 'path';
 const { Client } = pg;
 
 export const client = new Client({

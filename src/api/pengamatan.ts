@@ -23,7 +23,7 @@ import { kabupatenKota } from '../db/schema/kabupaten-kota.js';
 import { kecamatan } from '../db/schema/kecamatan.js';
 import { desa } from '../db/schema/desa.js';
 import { SelectUser, user } from '../db/schema/user.js';
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { existsSync, writeFileSync } from 'fs';
 import path from 'path';
 import { mkdir } from 'fs/promises';
 
