@@ -1,21 +1,21 @@
-import { LaporanHarian } from '../../../db/schema/laporan-harian';
-import { Pengamatan } from '../../../db/schema/pengamatan';
-import { Lokasi } from '../../../db/schema/lokasi';
-import { Provinsi } from '../../../db/schema/provinsi';
-import { KabupatenKota } from '../../../db/schema/kabupaten-kota';
-import { Kecamatan } from '../../../db/schema/kecamatan';
-import { Desa } from '../../../db/schema/desa';
-import { ColumnHeader, Table } from '../../components/table';
-import { Select } from '../../components/select';
-import { SelectTanaman } from '../../../db/schema/tanaman';
+import { LaporanHarian } from '../../../db/schema/laporan-harian.js';
+import { Pengamatan } from '../../../db/schema/pengamatan.js';
+import { Lokasi } from '../../../db/schema/lokasi.js';
+import { Provinsi } from '../../../db/schema/provinsi.js';
+import { KabupatenKota } from '../../../db/schema/kabupaten-kota.js';
+import { Kecamatan } from '../../../db/schema/kecamatan.js';
+import { Desa } from '../../../db/schema/desa.js';
+import { ColumnHeader } from '../../components/table.js';
+import { SelectTanaman } from '../../../db/schema/tanaman.js';
+import { html } from 'hono/html';
 
-const columnHeaders: ColumnHeader<LaporanHarian>[] = [
+const columnHeaders: ColumnHeader<LaporanHarian & { pengamatan: Pengamatan; lokasi: Lokasi }>[] = [
   { headerName: 'status', field: 'status_laporan_sb' },
   { headerName: 'foto', field: 'sign_pic' },
   { headerName: 'tgl lapor', field: 'tanggal_laporan_harian' },
   { headerName: 'tgl kunjungan', field: 'sign_pic' },
   { headerName: 'POPT' },
-  { headerName: 'wilayah' },
+  { headerName: 'wilayah', field: 'lokasi' },
   { headerName: 'komoditas' },
   { headerName: 'varietas' },
   { headerName: 'umur tanam', span: '1' },
@@ -45,7 +45,7 @@ const LaporanHarianPage = ({
 }) => {
   return (
     <div class="isolate flex flex-col gap-5 bg-background p-5 shadow-inner">
-      <h1 class="text-lg font-bold">Filter</h1>
+      <h1 class="text-lg font-bold">Laporan Harian</h1>
       <div
         hx-get="/app/laporan/harian/filter"
         hx-trigger="click from:#filter-submit"
@@ -54,30 +54,30 @@ const LaporanHarianPage = ({
         hx-target="#table-body"
         class="grid w-full grid-cols-4 gap-5 rounded border border-t-2 border-gray-200 border-t-secondary bg-white p-3 shadow-xl"
       >
-        <Select
+        <select
           name="tanaman_id"
-          //@ts-ignore
           class="rounded border border-gray-200 px-4 py-2"
         >
           <option value="">PILIH Komoditas</option>
           {komoditasOption.map((value) => {
             return <option value={value.id}>{value.nama_tanaman}</option>;
           })}
-        </Select>
-        <Select
+        </select>
+        <select
           name="provinsi_id"
-          //@ts-ignore
           class="rounded border border-gray-200 px-4 py-2"
         >
           <option value="">PILIH Provinsi</option>
           {provinsiOption.map((value) => {
             return <option value={value.id}>{value.nama_provinsi}</option>;
           })}
-        </Select>
+        </select>
         <input
-          type="date"
+          type="text"
           placeholder='Dari tanggal'
           name="start_date"
+          onfocus="this.type='date'"
+          onblur="this.type='text'"
           class="rounded border border-gray-200 px-4 py-2"
         />
         <input
@@ -94,12 +94,31 @@ const LaporanHarianPage = ({
           Filter
         </button>
       </div>
-      <Table
-        rowsData={listLaporan}
-        columns={columnHeaders}
-        id="laporanTable"
-        className="w-full overflow-x-scroll rounded border border-t-2 border-gray-200 border-t-secondary bg-white shadow-2xl"
-      ></Table>
+      <table id="laporanTable" class="border-t-2 border-t-secondary bg-white rounded" style="width: 100%">
+        <thead >
+          <tr >
+            {columnHeaders.map((column) => {
+              return <th class={`border-b border-gray-200 px-4 py-2 capitalize text-sm font-medium text-blue-500`}>{column.headerName}</th>
+            })}
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          {listLaporan.map((laporan) => {
+            return <tr key={laporan.id}>
+              {columnHeaders.map((column) => {
+                return <td class={`border-b border-gray-200 px-4 py-2`}>{laporan[column.field]}</td>
+              })}
+            </tr>
+          })}
+        </tbody>
+      </table>
+      {html`
+        <script>
+          $(document).ready(function() {
+            $('#laporanTable').DataTable()
+          });
+        </script>
+      `}
     </div>
   );
 };

@@ -15,8 +15,8 @@ import { Kecamatan, kecamatan } from '../../db/schema/kecamatan.js';
 import { Desa, desa } from '../../db/schema/desa.js';
 import { validator } from 'hono/validator';
 import { tanaman } from '../../db/schema/tanaman.js';
-import { Fragment } from 'hono/jsx/jsx-runtime';
 import { ColumnHeader, Table } from '../components/table.js';
+import { Fragment } from 'hono/jsx/jsx-runtime';
 
 export const laporan = new Hono<{
   Variables: {
@@ -77,7 +77,7 @@ laporanHarian.get('/', async (c) => {
           ? lte(laporanHarianSchema.tanggal_laporan_harian, endDate)
           : undefined
       )
-    );
+    ).limit(25).offset(0);
 
   const tanamanList = await db.query.tanaman.findMany({
     orderBy: tanaman.id,
@@ -139,7 +139,8 @@ laporanHarian.get(
           kabupaten_kota: kabupatenKota,
           kecamatan,
           desa
-        }
+        },
+        tanaman
       })
       .from(laporanHarianSchema)
       .leftJoin(
@@ -181,7 +182,7 @@ laporanHarian.get(
       { headerName: 'status', field: 'status_laporan_sb' },
       { headerName: 'foto', field: 'sign_pic' },
       { headerName: 'tgl lapor', field: 'tanggal_laporan_harian' },
-      { headerName: 'tgl kunjungan', field: 'sign_pic' },
+      { headerName: 'tgl kunjungan', field: 'tanggal_laporan_harian' },
       { headerName: 'POPT' },
       { headerName: 'wilayah' },
       { headerName: 'komoditas' },
@@ -196,8 +197,15 @@ laporanHarian.get(
 
 
     return c.html(
-      <Table id='laporanTable' rowsData={result} columns={columnHeaders} />, 200, {
-      'HX-Reswap': 'none',
-    });
+      <Fragment>
+        {result.map((row) => {
+          return <tr key={row.id}>
+            {columnHeaders.map((column) => {
+              return <td class="border-b bordery-gray-200 px-4 py-2">{row[column.field]}</td>
+            })}
+          </tr>
+        })}
+      </Fragment>
+    );
   }
 );

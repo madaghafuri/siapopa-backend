@@ -26,7 +26,7 @@ const Table = ({
   children?: any;
   rowsData: any[];
   columns: ColumnHeader[];
-} & Hono.IntrinsicElements["table"]) => {
+} & JSX.TableElement) => {
   return (
     //@ts-ignore
     <table class="grid grid-cols-12" {...props}>
@@ -65,7 +65,7 @@ const Table = ({
   );
 };
 
-const colSpan = {
+export const colSpan = {
   '1': 'col-span-1',
   '2': 'col-span-2',
   '3': 'col-span-3',

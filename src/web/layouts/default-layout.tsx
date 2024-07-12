@@ -17,11 +17,11 @@ export const DefaultLayout = ({
       <button>
         <i class="fa-solid fa-bars"></i>
       </button>
-      <img class="col-span-2" src="/assets/logo@2x.svg" alt="" />
+      <img class="col-span-2 h-14" src="/assets/logo1x.svg" alt="" />
       <div class="col-span-3 col-start-12 grid items-center gap-5">
         {authNavigation || (
           <a href="/login">
-            <button class="rounded border px-2 py-1">Login</button>
+            <button class="rounded border px-2 py-1 bg-primary text-white">Login</button>
           </a>
         )}
       </div>
