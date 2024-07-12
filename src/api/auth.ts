@@ -5,8 +5,6 @@ import { InsertUser, user } from '../db/schema/user.js';
 import { and, eq } from 'drizzle-orm';
 import { JwtVariables } from 'hono/jwt';
 import bcrypt from 'bcrypt';
-import { userGroup } from './user-group.js';
-import { lokasi } from '../db/schema/lokasi.js';
 
 export const auth = new Hono<{ Variables: JwtVariables }>();
 
@@ -85,8 +83,8 @@ auth.post(
         validasi: findUser.validasi,
         token: tokenSession,
         usergroup_id: findUser.usergroup_id,
-        user_group: userGroup,
-        locations: lokasi,
+        user_group: findUser.userGroup,
+        locations: findUser.locations,
       },
     });
   }

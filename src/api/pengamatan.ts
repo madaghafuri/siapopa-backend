@@ -5,7 +5,7 @@ import {
   Pengamatan,
   pengamatan as pengamatanSchema,
 } from '../db/schema/pengamatan.js';
-import { db } from '../index.js';
+import { db, } from '../index.js';
 import { SQL, and, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import {
   PhotoPengamatan,
@@ -23,6 +23,9 @@ import { kabupatenKota } from '../db/schema/kabupaten-kota.js';
 import { kecamatan } from '../db/schema/kecamatan.js';
 import { desa } from '../db/schema/desa.js';
 import { SelectUser, user } from '../db/schema/user.js';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import path from 'path';
+import { mkdir } from 'fs/promises';
 
 export const pengamatan = new Hono<{ Variables: JwtVariables }>();
 pengamatan.use('/pengamatan/*', authorizeApi);
@@ -408,6 +411,7 @@ pengamatan.get('/pengamatan', async (c) => {
         phone: user.phone,
         photo: user.photo,
         validasi: user.validasi,
+        usergroup_id: user.usergroup_id
       },
     })
     .from(pengamatanSchema)
@@ -540,3 +544,42 @@ pengamatan.get('/pengamatan', async (c) => {
     data: result,
   });
 });
+pengamatan.post("/pengamatan/upload",
+  validator("form", (value) => {
+    return value;
+  }),
+  async (c) => {
+    const { pengamatan_id } = c.req.valid("form");
+    const body = await c.req.parseBody();
+    const file = body['file'];
+
+    //@ts-ignore
+    const buff = Buffer.from(await file.arrayBuffer(), 'base64');
+
+    try {
+      var insertedData = await db.insert(photoPengamatan).values({ pengamatan_id: parseInt(pengamatan_id as string), path: file['name'] }).returning();
+    } catch (error) {
+      return c.json({
+        status: 500,
+        message: "internal server error"
+      }, 500)
+    }
+
+
+    if (insertedData.length !== 0) {
+      const filePath = path.resolve(import.meta.dirname, "..", "..", "uploads", "pengamatan", insertedData[0].id.toString())
+      if (!existsSync(filePath)) {
+        await mkdir(filePath, { recursive: true });
+
+        writeFileSync('uploads/' + 'pengamatan/' + insertedData[0].id.toString() + '/' + insertedData[0].path, buff, { encoding: 'base64' })
+
+        return c.json({
+          status: 200,
+          message: "sucess",
+          data: insertedData[0]
+        })
+
+      }
+    }
+  }
+)
