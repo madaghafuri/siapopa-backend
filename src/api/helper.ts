@@ -58,3 +58,11 @@ export function hasilPengamatan(
       break;
   }
 }
+
+export const validateFile = (file: File, fileType: 'image' | 'text') => {
+  if (fileType === 'image') {
+    return file.type.includes('image')
+  } else if (fileType === 'text') {
+    return file.type.includes('text')
+  }
+}
