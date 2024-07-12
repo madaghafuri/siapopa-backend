@@ -35,6 +35,8 @@ import {
   type PostgreSQLSessionTable,
 } from '@lucia-auth/adapter-drizzle';
 import { Lucia, TimeSpan } from 'lucia';
+import multer from 'multer';
+import path from 'path';
 const { Client } = pg;
 
 export const client = new Client({
@@ -117,6 +119,10 @@ app.use(
     rewriteRequestPath: (path) => path.replace(/^\/dist/, '/dist'),
   })
 );
+app.use('/uploads/*', serveStatic({
+  root: './',
+  rewriteRequestPath: (path) => path.replace(/^\/uploads/, '/uploads')
+}))
 app.use(
   '*',
   sessionMiddleware({

@@ -13,7 +13,7 @@ import {
 } from '../db/schema/photo-pengamatan.js';
 import { Kerusakan, detailRumpun } from '../db/schema/detail-rumpun.js';
 import { InsertRumpun, rumpun as rumpunSchema } from '../db/schema/rumpun.js';
-import { hasilPengamatan, withPagination } from './helper.js';
+import { hasilPengamatan, validateFile, withPagination } from './helper.js';
 import { authorizeApi } from '../middleware.js';
 import { opt } from '../db/schema/opt.js';
 import { SelectTanaman, tanaman } from '../db/schema/tanaman.js';
@@ -545,7 +545,23 @@ pengamatan.get('/pengamatan', async (c) => {
   });
 });
 pengamatan.post("/pengamatan/upload",
-  validator("form", (value) => {
+  validator("form", (value, c) => {
+    const { pengamatan_id, file } = value;
+
+    const validateImage = validateFile(file as File, "image");
+
+    if (!validateImage) {
+      return c.json({
+        status: 422,
+        message: "file type must be image"
+      }, 422)
+    } else if (!pengamatan_id) {
+      return c.json({
+        status: 400,
+        message: "missing pengamatan_id"
+      }, 400)
+    }
+
     return value;
   }),
   async (c) => {
