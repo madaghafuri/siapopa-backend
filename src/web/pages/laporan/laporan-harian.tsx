@@ -8,21 +8,15 @@ import { Desa } from '../../../db/schema/desa.js';
 import { ColumnHeader } from '../../components/table.js';
 import { SelectTanaman } from '../../../db/schema/tanaman.js';
 import { html } from 'hono/html';
+import { UserData } from '../master/user.js';
 
-const columnHeaders: ColumnHeader<LaporanHarian & { pengamatan: Pengamatan; lokasi: Lokasi }>[] = [
-  { headerName: 'status', field: 'status_laporan_sb' },
-  { headerName: 'foto', field: 'sign_pic' },
+export const columnHeaders: ColumnHeader<LaporanHarian & { pengamatan: Pengamatan; lokasi: Lokasi; pic: UserData }>[] = [
+  { headerName: 'signature', field: 'sign_pic' },
   { headerName: 'tgl lapor', field: 'tanggal_laporan_harian' },
-  { headerName: 'tgl kunjungan', field: 'sign_pic' },
-  { headerName: 'POPT' },
+  { headerName: 'POPT', field: 'pic' },
   { headerName: 'wilayah', field: 'lokasi' },
-  { headerName: 'komoditas' },
-  { headerName: 'varietas' },
   { headerName: 'umur tanam', span: '1' },
   { headerName: 'luas tanam', span: '2' },
-  { headerName: 'penyebab' },
-  { headerName: 'keterangan' },
-  { headerName: 'pic' }
 ];
 
 export type DataLaporanHarian = LaporanHarian & {
