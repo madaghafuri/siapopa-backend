@@ -90,7 +90,7 @@ export const DefaultLayout = ({
           </div>
         </div>
       </section>
-      <div class="grow">{children}</div>
+      <div class="isolate grow bg-background">{children}</div>
     </div>
   </MainLayout>
 );
