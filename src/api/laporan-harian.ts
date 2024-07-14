@@ -48,7 +48,7 @@ laporanHarian.post(
     return { pengamatan_id, opt_id, lokasi_id, ...rest };
   }),
   async (c) => {
-    const { lokasi_laporan_harian, lokasi_id, pengamatan_id, opt_id, ...rest } =
+    const { lokasi_laporan_harian, lokasi_id, pengamatan_id, skala, ...rest } =
       c.req.valid('json');
     const [lat, long] = lokasi_laporan_harian.coordinates;
 
@@ -58,6 +58,7 @@ laporanHarian.post(
         .values({
           ...rest,
           pengamatan_id,
+          skala,
           point_laporan_harian: sql`ST_SetSRID(ST_MakePoint(${long}, ${lat}), 4326)`,
         })
         .returning();
@@ -101,7 +102,7 @@ laporanHarian.post(
       data: {
         id: insertedData[0].id,
         pengamatan_id,
-        opt_id,
+        opt_id: insertedData[0].opt_id,
         status_laporan_harian: updatedPengamatan[0].status_laporan_harian,
       },
     });
@@ -369,7 +370,11 @@ laporanHarian.get(
     const query = db
       .with(totalAnakan, totalOpt)
       .select({
-        laporan_harian: laporanHarianSchema,
+        laporan_harian: {
+          ...laporanHarianSchema,
+          hari_ke: pengamatan.hari_ke,
+          blok: pengamatan.blok,
+        },
         total_anakan: {
           pengamatan_id: totalAnakan.pengamatan_id,
           total_anakan: totalAnakan.total_anakan,

@@ -1,6 +1,6 @@
 {
-  "id": "43f38966-afb4-462e-8220-92efe119cf43",
-  "prevId": "cb52f551-08eb-432c-8385-61e99739ebe5",
+  "id": "9c81c00c-21f4-4654-8c99-2c8b4045d768",
+  "prevId": "ff9d7748-4ddb-40ce-96ee-664110206b27",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -130,18 +130,6 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
-        },
-        "hama_id": {
-          "name": "hama_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "jumlah_hama": {
-          "name": "jumlah_hama",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
@@ -165,19 +153,6 @@
           "tableTo": "opt",
           "columnsFrom": [
             "opt_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "detail_rumpun_hama_id_hama_id_fk": {
-          "name": "detail_rumpun_hama_id_hama_id_fk",
-          "tableFrom": "detail_rumpun",
-          "tableTo": "hama",
-          "columnsFrom": [
-            "hama_id"
           ],
           "columnsTo": [
             "id"
@@ -533,6 +508,12 @@
           "primaryKey": false,
           "notNull": false,
           "default": false
+        },
+        "skala": {
+          "name": "skala",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -1019,48 +1000,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.hama": {
-      "name": "hama",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "hama": {
-          "name": "hama",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "tanaman_id": {
-          "name": "tanaman_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "hama_tanaman_id_tanaman_id_fk": {
-          "name": "hama_tanaman_id_tanaman_id_fk",
-          "tableFrom": "hama",
-          "tableTo": "tanaman",
-          "columnsFrom": [
-            "tanaman_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
     "public.opt": {
       "name": "opt",
       "schema": "",
@@ -1089,6 +1028,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "jenis": {
+          "name": "jenis",
+          "type": "jenis",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
         },
         "tanaman_id": {
           "name": "tanaman_id",
@@ -1396,6 +1342,12 @@
         },
         "jumlah_anakan": {
           "name": "jumlah_anakan",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "luas_spot_hopperburn": {
+          "name": "luas_spot_hopperburn",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -1759,7 +1711,8 @@
         "mutlak",
         "tidak mutlak",
         "ekor/rumpun",
-        "ekor/m2"
+        "ekor/m2",
+        "ma"
       ]
     },
     "public.kategori_kerusakan": {
@@ -1779,6 +1732,14 @@
         "sisa serangan",
         "tambah serangan",
         "keadaan serangan"
+      ]
+    },
+    "public.jenis": {
+      "name": "jenis",
+      "schema": "public",
+      "values": [
+        "opt",
+        "ma"
       ]
     },
     "public.status": {

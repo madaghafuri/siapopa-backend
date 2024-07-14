@@ -54,7 +54,13 @@ export function hasilPengamatan(
       return (jumlahOpt / 2).toFixed(2);
     case 'ma':
       return (jumlahOpt / 30).toFixed(2);
-    default:
-      break;
+  }
+}
+
+export const validateFile = (file: File, fileType: 'image' | 'text') => {
+  if (fileType === 'image') {
+    return file.type.includes('image')
+  } else if (fileType === 'text') {
+    return file.type.includes('text')
   }
 }

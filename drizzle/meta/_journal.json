@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1719407271742,
-      "tag": "0000_deep_gorgon",
+      "when": 1720846755971,
+      "tag": "0000_robust_doomsday",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1719465265156,
-      "tag": "0001_familiar_vector",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1719896861429,
-      "tag": "0002_flaky_medusa",
+      "when": 1720948852100,
+      "tag": "0001_milky_bastion",
       "breakpoints": true
     }
   ]

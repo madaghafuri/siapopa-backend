@@ -117,6 +117,10 @@ app.use(
     rewriteRequestPath: (path) => path.replace(/^\/dist/, '/dist'),
   })
 );
+app.use('/uploads/*', serveStatic({
+  root: './',
+  rewriteRequestPath: (path) => path.replace(/^\/uploads/, '/uploads')
+}))
 app.use(
   '*',
   sessionMiddleware({

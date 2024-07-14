@@ -87,6 +87,11 @@ export const DefaultLayout = ({
             >
               Laporan Harian
             </a>
+            <a href='/app/laporan/pengamatan'
+              class={`rounded-md px-4 py-2 text-left ${route === 'pengamatan' ? 'bg-primary text-white' : ''}`}
+            >
+              Pengamatan
+            </a>
           </div>
         </div>
       </section>

@@ -5,15 +5,15 @@ import {
   Pengamatan,
   pengamatan as pengamatanSchema,
 } from '../db/schema/pengamatan.js';
-import { db } from '../index.js';
+import { db, } from '../index.js';
 import { SQL, and, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import {
   PhotoPengamatan,
   photoPengamatan,
 } from '../db/schema/photo-pengamatan.js';
-import { Kerusakan, detailRumpun } from '../db/schema/detail-rumpun.js';
+import { DetailRumpun, Kerusakan, detailRumpun } from '../db/schema/detail-rumpun.js';
 import { InsertRumpun, rumpun as rumpunSchema } from '../db/schema/rumpun.js';
-import { hasilPengamatan, withPagination } from './helper.js';
+import { hasilPengamatan, validateFile, withPagination } from './helper.js';
 import { authorizeApi } from '../middleware.js';
 import { opt } from '../db/schema/opt.js';
 import { SelectTanaman, tanaman } from '../db/schema/tanaman.js';
@@ -30,23 +30,16 @@ pengamatan.use('/pengamatan/*', authorizeApi);
 pengamatan.post(
   '/pengamatan',
   validator('json', (value, c) => {
+    type RumpunPengamatan = InsertRumpun & {
+      detail_rumpun: DetailRumpun[];
+    }
     const { lokasi_id, tanaman_id, ...rest } = value as Pengamatan & {
       lokasi_pengamatan: {
         type: string;
         coordinates: [number, number];
       };
       bukti_pengamatan: string[];
-      rumpun: {
-        rumpun_ke: number;
-        jumlah_anakan: number;
-        detail_rumpun: {
-          opt_id: number;
-          jumlah_opt: number;
-          skala_kerusakan: Kerusakan;
-          hama_id: number;
-          jumlah_hama: number;
-        }[];
-      }[];
+      rumpun: RumpunPengamatan[];
     };
 
     if (!lokasi_id || !tanaman_id) {
@@ -64,7 +57,7 @@ pengamatan.post(
   }),
   // Context Route Handler
   async (c) => {
-    const { lokasi_pengamatan, bukti_pengamatan, lokasi_id, rumpun, ...rest } =
+    const { lokasi_pengamatan, bukti_pengamatan, rumpun, ...rest } =
       c.req.valid('json');
 
     const [lat, long] = lokasi_pengamatan.coordinates;
@@ -87,9 +80,10 @@ pengamatan.post(
 
       if (rumpun.length > 0) {
         const rumpunData: InsertRumpun[] = rumpun.map(
-          ({ rumpun_ke, jumlah_anakan }) => ({
+          ({ rumpun_ke, jumlah_anakan, luas_spot_hopperburn }) => ({
             rumpun_ke,
             jumlah_anakan,
+            luas_spot_hopperburn,
             pengamatan_id: insertedData[0].id,
           })
         );
@@ -99,15 +93,17 @@ pengamatan.post(
           .values(rumpunData)
           .returning();
 
-        const detailRumpunData = rumpun.flatMap((val) => {
+        const detailRumpunData = rumpun.map((val) => {
           const dataRumpun = insertRumpun.find(
-            (val) => val.rumpun_ke === val.rumpun_ke
+            (rumpun) => rumpun.rumpun_ke === val.rumpun_ke
           );
-          const li = val.detail_rumpun.map((val) => {
-            return { ...val, rumpun_id: dataRumpun?.id };
-          });
-          return li;
-        });
+
+          const detailRumpunList = val.detail_rumpun.map((dRumpun) => {
+            return { ...dRumpun, rumpun_id: dataRumpun?.id }
+          })
+
+          return detailRumpunList;
+        }).flat();
 
         await db.insert(detailRumpun).values(detailRumpunData);
         await db.insert(photoPengamatan).values(photoValue);
@@ -408,6 +404,7 @@ pengamatan.get('/pengamatan', async (c) => {
         phone: user.phone,
         photo: user.photo,
         validasi: user.validasi,
+        usergroup_id: user.usergroup_id
       },
     })
     .from(pengamatanSchema)

@@ -3,9 +3,8 @@ import { JwtVariables } from "hono/jwt";
 import { validator } from "hono/validator";
 import { db } from "../index.js";
 import { rumpun as dataRumpun } from "../db/schema/rumpun.js";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { authorizeApi } from "../middleware.js";
-import { kecamatan } from "../db/schema/kecamatan.js";
 
 export const rumpun = new Hono<{ Variables: JwtVariables }>();
 rumpun.use("/rumpun/*", authorizeApi);

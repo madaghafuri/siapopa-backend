@@ -25,6 +25,7 @@ export const laporanHarian = pgTable('laporan_harian', {
   pic_id: integer('pic_id').references(() => user.id),
   sign_pic: text('sign_pic'),
   status_laporan_sb: boolean('status_laporan_sb').default(false),
+  skala: text('skala')
 });
 
 export const laporanHarianRelations = relations(laporanHarian, ({ one }) => ({

@@ -1,5 +1,5 @@
 DO $$ BEGIN
- CREATE TYPE "public"."kerusakan" AS ENUM('mutlak', 'tidak mutlak', 'ekor/rumpun', 'ekor/m2');
+ CREATE TYPE "public"."kerusakan" AS ENUM('mutlak', 'tidak mutlak', 'ekor/rumpun', 'ekor/m2', 'ma');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -12,6 +12,12 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  CREATE TYPE "public"."kategori_serangan" AS ENUM('sisa serangan', 'tambah serangan', 'keadaan serangan');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "public"."jenis" AS ENUM('opt', 'ma');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -37,9 +43,7 @@ CREATE TABLE IF NOT EXISTS "detail_rumpun" (
 	"rumpun_id" integer,
 	"opt_id" integer,
 	"jumlah_opt" integer,
-	"skala_kerusakan" "kerusakan",
-	"hama_id" integer,
-	"jumlah_hama" integer
+	"skala_kerusakan" "kerusakan"
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "kabupaten_kota" (
@@ -90,7 +94,8 @@ CREATE TABLE IF NOT EXISTS "laporan_harian" (
 	"id_laporan_sb" integer,
 	"pic_id" integer,
 	"sign_pic" text,
-	"status_laporan_sb" boolean DEFAULT false
+	"status_laporan_sb" boolean DEFAULT false,
+	"skala" "kerusakan" 
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "laporan_musiman" (
@@ -144,17 +149,12 @@ CREATE TABLE IF NOT EXISTS "luas_kerusakan_sb" (
 	"laporan_sb_id" integer
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "hama" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"hama" text,
-	"tanaman_id" integer
-);
---> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "opt" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"nama_opt" text,
 	"status" "status",
 	"kode_opt" text NOT NULL,
+	"jenis" "jenis",
 	"tanaman_id" integer,
 	CONSTRAINT "opt_kode_opt_unique" UNIQUE("kode_opt")
 );
@@ -200,6 +200,12 @@ CREATE TABLE IF NOT EXISTS "rumpun" (
 	"pengamatan_id" integer,
 	"rumpun_ke" integer,
 	"jumlah_anakan" integer
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "session" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" integer NOT NULL,
+	"expires_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tanaman" (
@@ -265,12 +271,6 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "detail_rumpun" ADD CONSTRAINT "detail_rumpun_opt_id_opt_id_fk" FOREIGN KEY ("opt_id") REFERENCES "public"."opt"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "detail_rumpun" ADD CONSTRAINT "detail_rumpun_hama_id_hama_id_fk" FOREIGN KEY ("hama_id") REFERENCES "public"."hama"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -402,12 +402,6 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "hama" ADD CONSTRAINT "hama_tanaman_id_tanaman_id_fk" FOREIGN KEY ("tanaman_id") REFERENCES "public"."tanaman"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
  ALTER TABLE "opt" ADD CONSTRAINT "opt_tanaman_id_tanaman_id_fk" FOREIGN KEY ("tanaman_id") REFERENCES "public"."tanaman"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
@@ -439,6 +433,12 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "rumpun" ADD CONSTRAINT "rumpun_pengamatan_id_pengamatan_id_fk" FOREIGN KEY ("pengamatan_id") REFERENCES "public"."pengamatan"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "session" ADD CONSTRAINT "session_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
