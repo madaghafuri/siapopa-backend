@@ -12,7 +12,6 @@ import { opt } from './opt.js';
 import { user } from './user.js';
 import { laporanSb } from './laporan-sb.js';
 import { relations } from 'drizzle-orm';
-import { kerusakan } from './detail-rumpun.js';
 
 export const laporanHarian = pgTable('laporan_harian', {
   id: serial('id').primaryKey(),
@@ -26,7 +25,7 @@ export const laporanHarian = pgTable('laporan_harian', {
   pic_id: integer('pic_id').references(() => user.id),
   sign_pic: text('sign_pic'),
   status_laporan_sb: boolean('status_laporan_sb').default(false),
-  skala: kerusakan("skala")
+  skala: text('skala')
 });
 
 export const laporanHarianRelations = relations(laporanHarian, ({ one }) => ({
