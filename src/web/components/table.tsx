@@ -16,6 +16,7 @@ export type ColumnHeader<T extends Object = any> = {
   | '10'
   | '11'
   | '12';
+  valueGetter?: (value, row: T) => T[keyof T]
 };
 
 const Table = ({
