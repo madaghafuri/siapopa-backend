@@ -54,8 +54,6 @@ export function hasilPengamatan(
       return (jumlahOpt / 2).toFixed(2);
     case 'ma':
       return (jumlahOpt / 30).toFixed(2);
-    default:
-      break;
   }
 }
 

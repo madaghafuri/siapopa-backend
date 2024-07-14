@@ -48,7 +48,7 @@ laporanHarian.post(
     return { pengamatan_id, opt_id, lokasi_id, ...rest };
   }),
   async (c) => {
-    const { lokasi_laporan_harian, lokasi_id, pengamatan_id, opt_id, skala, ...rest } =
+    const { lokasi_laporan_harian, lokasi_id, pengamatan_id, skala, ...rest } =
       c.req.valid('json');
     const [lat, long] = lokasi_laporan_harian.coordinates;
 
@@ -102,7 +102,7 @@ laporanHarian.post(
       data: {
         id: insertedData[0].id,
         pengamatan_id,
-        opt_id,
+        opt_id: insertedData[0].opt_id,
         status_laporan_harian: updatedPengamatan[0].status_laporan_harian,
       },
     });
