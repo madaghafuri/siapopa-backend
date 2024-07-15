@@ -22,6 +22,8 @@ import { detailRumpun, Kerusakan } from '../../db/schema/detail-rumpun.js';
 import { opt } from '../../db/schema/opt.js';
 import { hasilPengamatan } from '../../api/helper.js';
 import { userGroup } from '../../db/schema/user-group.js';
+import { laporanSb } from '../../db/schema/laporan-sb.js';
+import { columnLaporanSb, LaporanSbDetailPage, LaporanSbPage } from '../pages/laporan/laporan-sb.js';
 
 export const laporan = new Hono<{
   Variables: {
@@ -373,6 +375,152 @@ pengamatanRoute.get("/:pengamatanId", async (c) => {
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
     >
       <PengamatanDetailPage pengamatan={result[pengamatanId]} />
+    </DefaultLayout>
+  )
+})
+
+const laporanSbRoute = laporan.route('/sb');
+
+laporanSbRoute.get('/', async (c) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+  const startDate = c.req.query('start_date');
+  const endDate = c.req.query('end_date');
+  const tanamanId = c.req.query('tanaman_id')
+  const provinsiId = c.req.query('provinsi_id')
+
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: eq(user.id, parseInt(userId)),
+      with: {
+        userGroup: true,
+      },
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const laporanSbData = await db.query.laporanSb.findMany({
+    with: {
+      laporanHarian: {
+        with: {
+          pengamatan: {
+            with: {
+              tanaman: true,
+              locations: {
+                with: {
+                  provinsi: true,
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    where: and(
+      !!startDate ? gte(laporanSb.tanggal_laporan_sb, startDate) : undefined,
+      !!endDate ? lte(laporanSb.tanggal_laporan_sb, endDate) : undefined,
+      !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
+      !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined
+    ),
+    orderBy: laporanSb.id
+  })
+
+  const komoditasOption = await db.query.tanaman.findMany({
+    orderBy: tanaman.nama_tanaman
+  });
+  const provinsiOption = await db.query.provinsi.findMany({
+    orderBy: provinsi.nama_provinsi
+  });
+
+  return c.html(
+    <DefaultLayout route='laporan-sb' authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}>
+      <LaporanSbPage komoditasOption={komoditasOption} provinsiOption={provinsiOption} laporanSbList={laporanSbData} />
+    </DefaultLayout>
+  )
+})
+
+laporanSbRoute.get('/filter', async (c) => {
+  const startDate = c.req.query('start_date');
+  const endDate = c.req.query('end_date');
+  const tanamanId = c.req.query('tanaman_id')
+  const provinsiId = c.req.query('provinsi_id')
+
+  const laporanSbData = await db.query.laporanSb.findMany({
+    with: {
+      laporanHarian: {
+        with: {
+          pengamatan: {
+            with: {
+              tanaman: true,
+              locations: {
+                with: {
+                  provinsi: true,
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    where: and(
+      !!startDate ? gte(laporanSb.tanggal_laporan_sb, startDate) : undefined,
+      !!endDate ? lte(laporanSb.tanggal_laporan_sb, endDate) : undefined,
+      !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
+      !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined
+    ),
+    orderBy: laporanSb.id
+  })
+
+  return c.html(
+    <Fragment>
+      {laporanSbData.map((row) => {
+        return (
+          <tr key={row.id}>
+            {columnLaporanSb.map((column) => {
+              return <td class="border-b border-gray-200">
+                {column?.valueGetter?.(row) || row[column.field]}
+              </td>
+            })}
+          </tr>
+        )
+      })}
+    </Fragment>,
+    200,
+    {
+      'HX-Push-Url': c.req.url.replace('/filter', ''),
+    }
+  )
+})
+
+laporanSbRoute.get('/:laporanSbId', async (c) => {
+  const laporanSbId = c.req.param('laporanSbId');
+
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: eq(user.id, parseInt(userId)),
+      with: {
+        userGroup: true,
+      },
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const laporanSbData = await db.query.laporanSb.findFirst({
+    with: {
+      laporanHarian: true,
+      luas_kerusakan_sb: true,
+    },
+    where: eq(laporanSb.id, parseInt(laporanSbId))
+  })
+
+  return c.html(
+    <DefaultLayout route="laporan-sb" authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}>
+      <LaporanSbDetailPage laporanSb={laporanSbData} />
     </DefaultLayout>
   )
 })
