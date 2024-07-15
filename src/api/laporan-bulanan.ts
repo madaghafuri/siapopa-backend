@@ -5,7 +5,7 @@ import {
   laporanBulanan as laporanBulananSchema,
 } from "../db/schema/laporan-bulanan.js";
 import { db } from "../index.js";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq, gte, inArray, lte, sql, SQL } from "drizzle-orm";
 import { laporanSb } from "../db/schema/laporan-sb.js";
 import { user } from "../db/schema/user.js";
 import { lokasi } from "../db/schema/lokasi.js";
@@ -22,6 +22,7 @@ laporanBulanan.post(
       value as InsertLaporanBulanan & {
         lokasi_laporan_bulanan: { type: string; coordinates: [number, number] };
         lokasi_id: string;
+        laporan_sb: number[];
       };
 
     if (!opt_id || !lokasi_id || !pic_id) {
@@ -37,7 +38,7 @@ laporanBulanan.post(
     return { opt_id, pic_id, lokasi_id, ...rest };
   }),
   async (c) => {
-    const { lokasi_laporan_bulanan, lokasi_id, ...rest } = c.req.valid("json");
+    const { lokasi_laporan_bulanan, lokasi_id, laporan_sb, ...rest } = c.req.valid("json");
     const [lat, long] = lokasi_laporan_bulanan.coordinates;
 
     try {
@@ -45,6 +46,11 @@ laporanBulanan.post(
         .insert(laporanBulananSchema)
         .values({ ...rest, point: [lat, long] })
         .returning();
+
+      await db
+        .update(laporanSb)
+        .set({ status_laporan_bulanan: true, laporan_bulanan_id: insertLaporan[0].id })
+        .where(inArray(laporanSb.id, laporan_sb));
     } catch (error) {
       console.error(error);
       return c.json(
@@ -65,7 +71,7 @@ laporanBulanan.post(
 );
 laporanBulanan.put(
   "/laporan_bulanan/:laporanBulananId",
-  validator("json", (value, c) => {
+  validator("json", (value) => {
     const data = value as InsertLaporanBulanan & {
       lokasi_id: string;
       lokasi_laporan_bulanan: {

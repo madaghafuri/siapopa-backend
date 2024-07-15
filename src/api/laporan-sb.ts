@@ -62,16 +62,9 @@ laporanSb.post(
 
       await db.insert(luasKerusakanSb).values(insertLuasKerusakan);
 
-      const sqlChunks: SQL[] = [];
-
-      sqlChunks.push(sql`(case`);
-      for (const id of laporan_harian) {
-        sqlChunks.push(sql`when id = ${id} then ${true}`)
-      }
-      sqlChunks.push(sql`end)`);
-
       await db.update(laporanHarian).set({
-        status_laporan_sb: sql.join(sqlChunks, sql.raw(' '))
+        status_laporan_sb: true,
+        id_laporan_sb: insertedData[0].id,
       }).where(
         inArray(laporanSbSchema.id, laporan_harian)
       )
