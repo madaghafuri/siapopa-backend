@@ -32,6 +32,7 @@ laporanSb.post(
         kategori_kerusakan: KategoriKerusakan;
         luas_kerusakan: number;
       }[];
+      laporan_harian: number[];
     };
 
     if (!opt_id || !lokasi_id || !pic_id) {
@@ -46,7 +47,7 @@ laporanSb.post(
     return { opt_id, lokasi_id, pic_id, ...rest };
   }),
   async (c) => {
-    const { lokasi_laporan_setengah_bulanan, luas_kerusakan, ...rest } = c.req.valid('json');
+    const { lokasi_laporan_setengah_bulanan, luas_kerusakan, laporan_harian, ...rest } = c.req.valid('json');
     console.log(lokasi_laporan_setengah_bulanan)
     const [lat, long] = lokasi_laporan_setengah_bulanan.coordinates;
 
@@ -60,13 +61,27 @@ laporanSb.post(
         return { ...value, laporan_sb_id: insertedData[0].id }
       })
 
-      await db.insert(luasKerusakanSb).values(insertLuasKerusakan)
+      await db.insert(luasKerusakanSb).values(insertLuasKerusakan);
+
+      const sqlChunks: SQL[] = [];
+
+      sqlChunks.push(sql`(case`);
+      for (const id of laporan_harian) {
+        sqlChunks.push(sql`when id = ${id} then ${true}`)
+      }
+      sqlChunks.push(sql`end)`);
+
+      await db.update(laporanHarian).set({
+        status_laporan_sb: sql.join(sqlChunks, sql.raw(' '))
+      }).where(
+        inArray(laporanSbSchema.id, laporan_harian)
+      )
     } catch (error) {
       console.error(error);
       return c.json(
         {
           status: 500,
-          message: 'internal server error',
+          message: 'internal server error' + error,
         },
         500
       );
@@ -235,32 +250,18 @@ laporanSb.get('/laporan_sb', async (c) => {
     >;
 
   try {
-    // var selectData = await db
-    //   .select()
-    //   .from(laporanSbSchema)
-    //   .leftJoin(
-    //     luasKerusakanSb,
-    //     eq(luasKerusakanSb.laporan_sb_id, laporanSbSchema.id)
-    //   )
-    //   .leftJoin(
-    //     laporanHarian,
-    //     eq(laporanHarian.id_laporan_sb, laporanSbSchema.id)
-    //   )
-    //   .leftJoin(pengamatan, eq(pengamatan.id, laporanHarian.pengamatan_id))
-    //   .where(
-    //     and(
-    //       !!user_id ? eq(laporanSbSchema.pic_id, parseInt(user_id)) : undefined,
-    //       !!location_id ? eq(pengamatan.lokasi_id, location_id) : undefined,
-    //       !!start_date
-    //         ? gte(laporanSbSchema.start_date, start_date)
-    //         : undefined,
-    //       !!end_date ? lte(laporanSbSchema.end_date, end_date) : undefined
-    //     )
-    //   );
     var selectData = await db.query.laporanSb.findMany({
       with: {
         luas_kerusakan_sb: true
       },
+      where: and(
+        !!user_id ? eq(laporanSbSchema.pic_id, parseInt(user_id)) : undefined,
+        !!location_id ? eq(pengamatan.lokasi_id, location_id) : undefined,
+        !!start_date
+          ? gte(laporanSbSchema.start_date, start_date)
+          : undefined,
+        !!end_date ? lte(laporanSbSchema.end_date, end_date) : undefined
+      ),
       orderBy: laporanSbSchema.id
     })
   } catch (error) {
