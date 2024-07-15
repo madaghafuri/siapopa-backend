@@ -1,5 +1,6 @@
 import { integer, pgEnum, pgTable, serial } from "drizzle-orm/pg-core";
 import { laporanSb } from "./laporan-sb.js";
+import { relations } from "drizzle-orm";
 
 export const serangan = pgEnum("kategori_serangan", [
   "sisa serangan",
@@ -20,6 +21,13 @@ export const luasKerusakanSb = pgTable("luas_kerusakan_sb", {
   luas_kerusakan: integer("luas_kerusakan"),
   laporan_sb_id: integer("laporan_sb_id").references(() => laporanSb.id),
 });
+
+export const luasKerusakanSbRelations = relations(luasKerusakanSb, ({ one }) => ({
+  laporan_sb: one(laporanSb, {
+    fields: [luasKerusakanSb.laporan_sb_id],
+    references: [laporanSb.id]
+  })
+}))
 
 export type KategoriSerangan =
   | "sisa serangan"

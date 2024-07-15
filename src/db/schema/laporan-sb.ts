@@ -12,6 +12,7 @@ import { user } from "./user.js";
 import { laporanBulanan } from "./laporan-bulanan.js";
 import { relations } from "drizzle-orm";
 import { laporanHarian } from "./laporan-harian.js";
+import { luasKerusakanSb } from "./luas-kerusakan-sb.js";
 
 export const laporanSb = pgTable("laporan_sb", {
   id: serial("id").primaryKey(),
@@ -40,6 +41,7 @@ export const laporanSbRelations = relations(laporanSb, ({ many, one }) => ({
     fields: [laporanSb.laporan_bulanan_id],
     references: [laporanBulanan.id],
   }),
+  luas_kerusakan_sb: many(luasKerusakanSb)
 }));
 
 export type LaporanSb = typeof laporanSb.$inferSelect;
