@@ -41,7 +41,6 @@ export const LaporanSbPage = ({ laporanSbList, komoditasOption, provinsiOption }
         hx-swap="innerHTML"
         hx-trigger="click from:#submit-filter"
         hx-include="*"
-        hx-push-url="true"
         class="bg-white p-5 rounded-md border-t-2 border-t-secondary grid grid-cols-4 gap-3">
         <select
           name="tanaman_id"

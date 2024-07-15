@@ -28,7 +28,6 @@ dashboard.get('/', async (c) => {
     .catch((err) => {
       console.error(err);
     });
-  console.log(selectedUser);
 
   return c.html(
     <DefaultLayout

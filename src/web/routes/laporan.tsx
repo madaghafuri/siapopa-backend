@@ -130,7 +130,6 @@ type FilterLaporanQuery = {
 };
 laporanHarian.get(
   '/filter',
-
   validator('query', (value) => {
     return value;
   }),
@@ -185,6 +184,11 @@ laporanHarian.get(
         lokasi
       }
     });
+    const newUrl = new URLSearchParams();
+    !!start_date && newUrl.append('start_date', start_date);
+    !!end_date && newUrl.append('end_date', end_date);
+    !!tanaman_id && newUrl.append('tanaman_id', tanaman_id);
+    !!provinsi_id && newUrl.append('provinsi_id', provinsi_id);
 
     return c.html(
       <Fragment>
@@ -194,11 +198,11 @@ laporanHarian.get(
               return <td class="border-b bordery-gray-200 px-4 py-2 text-right">{row[column.field]}</td>
             })}
           </tr>
-        })}
+        }) || null}
       </Fragment>,
       200,
       {
-        'HX-Push-Url': c.req.url.replace('/filter', '')
+        'HX-Replace-Url': `/app/laporan/harian?` + newUrl.toString(),
       }
     );
   }
@@ -472,6 +476,14 @@ laporanSbRoute.get('/filter', async (c) => {
     orderBy: laporanSb.id
   })
 
+  const newUrl = new URLSearchParams('');
+  !!startDate && newUrl.append('start_date', startDate);
+  !!endDate && newUrl.append('end_date', endDate);
+  !!tanamanId && newUrl.append('tanaman_id', tanamanId);
+  !!provinsiId && newUrl.append('provinsi_id', provinsiId);
+
+  console.log(laporanSbData)
+
   return c.html(
     <Fragment>
       {laporanSbData.map((row) => {
@@ -484,11 +496,11 @@ laporanSbRoute.get('/filter', async (c) => {
             })}
           </tr>
         )
-      })}
+      }) || null}
     </Fragment>,
     200,
     {
-      'HX-Push-Url': c.req.url.replace('/filter', ''),
+      'HX-Replace-Url': `/app/laporan/sb?` + newUrl.toString(),
     }
   )
 })

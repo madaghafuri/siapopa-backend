@@ -46,7 +46,6 @@ const LaporanHarianPage = ({
         hx-include="*"
         hx-swap="innerHTML"
         hx-target="#table-body"
-        hx-push-url="true"
         class="grid w-full grid-cols-4 gap-5 rounded border border-t-2 border-gray-200 border-t-secondary bg-white p-3 shadow-xl"
       >
         <select

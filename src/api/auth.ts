@@ -112,8 +112,6 @@ auth.post(
 
     const hPass = bcrypt.hashSync(data.password, 10);
 
-    console.log(hPass);
-
     try {
       await db
         .insert(user)

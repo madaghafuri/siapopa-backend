@@ -48,7 +48,6 @@ laporanSb.post(
   }),
   async (c) => {
     const { lokasi_laporan_setengah_bulanan, luas_kerusakan, laporan_harian, ...rest } = c.req.valid('json');
-    console.log(lokasi_laporan_setengah_bulanan)
     const [lat, long] = lokasi_laporan_setengah_bulanan.coordinates;
 
     try {
