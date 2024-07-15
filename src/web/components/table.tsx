@@ -16,45 +16,50 @@ export type ColumnHeader<T extends Object = any> = {
   | '10'
   | '11'
   | '12';
-  valueGetter?: (row: T) => T[keyof T] | any;
+  valueGetter?: (row: T, index: number) => T[keyof T] | any;
 };
 
 const Table = ({
   rowsData,
   columns,
+  reloadBody,
   ...props
 }: {
   children?: any;
   rowsData: any[];
   columns: ColumnHeader[];
+  reloadBody?: string;
 } & JSX.TableElement) => {
   return (
     //@ts-ignore
-    <table class="grid grid-cols-12" {...props}>
-      <tr class="grid auto-cols-fr grid-flow-col grid-cols-12">
-        {columns.map((col) => {
-          return (
-            <th
-              class={`border-b border-gray-200 px-4 py-2 text-sm font-semibold capitalize text-blue-500 ${colSpan[col.span]}`}
-            >
-              {col.headerName}
-            </th>
-          );
-        })}
-      </tr>
-      <tbody id="#table-body">
-        {rowsData.map((row) => {
+    <table class="bg-white border-t-2 border-t-secondary" style="width:100%" {...props}>
+      <thead>
+        <tr class="">
+          {columns.map((col) => {
+            return (
+              <th
+                class={`border-b border-gray-200 px-4 py-2 text-sm font-semibold capitalize text-blue-500 ${colSpan[col.span]}`}
+              >
+                {col.headerName}
+              </th>
+            );
+          })}
+        </tr>
+      </thead>
+
+      <tbody hx-get={reloadBody} id="#table-body">
+        {rowsData.map((row, index) => {
           return (
             <tr
               key={row.id}
-              class="grid auto-cols-fr grid-flow-col grid-cols-12"
+              class=""
             >
               {columns.map((column) => {
                 return (
                   <td
                     class={`border-b border-r border-gray-200 px-4 py-2 text-left text-sm font-normal ${colSpan[column.span]}`}
                   >
-                    {row[column.field]}
+                    {column?.valueGetter?.(row, index) || row[column.field]}
                   </td>
                 );
               })}

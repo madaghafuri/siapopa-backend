@@ -316,6 +316,7 @@ pengamatanRoute.get("/:pengamatanId", async (c) => {
     .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
     .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
     .leftJoin(desa, eq(desa.id, lokasi.desa_id))
+    .leftJoin(rumpun, eq(rumpun.pengamatan_id, pengamatan.id))
     .where(eq(pengamatan.id, parseInt(pengamatanId)));
 
   const result = pengamatanQuery.reduce<Record<string, {
@@ -373,12 +374,17 @@ pengamatanRoute.get("/:pengamatanId", async (c) => {
     return acc;
   }, {})
 
+  const rumpunList = await db.query.rumpun.findMany({
+    where: eq(rumpun.pengamatan_id, parseInt(pengamatanId)),
+    orderBy: rumpun.id,
+  })
+
   return c.html(
     <DefaultLayout
       route='pengamatan-detail'
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
     >
-      <PengamatanDetailPage pengamatan={result[pengamatanId]} />
+      <PengamatanDetailPage pengamatan={result[pengamatanId]} rumpunData={rumpunList} />
     </DefaultLayout>
   )
 })

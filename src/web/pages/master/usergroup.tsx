@@ -20,7 +20,7 @@ const DataUserGroup = ({
             <th class="border-b border-gray-200 px-4 py-2">User Group</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody hx-get="/app/master/usergroup/reload" hx-trigger="newUserGroup from:body">
           {listUserGroup.map((userGroup, index) => (
             <tr key={userGroup.id}>
               <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
@@ -42,7 +42,14 @@ const DataUserGroup = ({
       `}
       {!!user ? (
         <div>
-          <button></button>
+          <button
+            hx-get="/app/master/usergroup/create"
+            hx-target="body"
+            hx-swap="beforeend"
+            class="rounded px-2 py-1 bg-primary text-white"
+          >
+            Add User Group
+          </button>
         </div>
       ) : null}
     </div>

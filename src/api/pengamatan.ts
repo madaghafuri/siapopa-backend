@@ -23,6 +23,7 @@ import { kabupatenKota } from '../db/schema/kabupaten-kota.js';
 import { kecamatan } from '../db/schema/kecamatan.js';
 import { desa } from '../db/schema/desa.js';
 import { SelectUser, user } from '../db/schema/user.js';
+import { laporanHarian } from '../db/schema/laporan-harian.js';
 
 export const pengamatan = new Hono<{ Variables: JwtVariables }>();
 pengamatan.use('/pengamatan/*', authorizeApi);
@@ -406,6 +407,7 @@ pengamatan.get('/pengamatan', async (c) => {
         validasi: user.validasi,
         usergroup_id: user.usergroup_id
       },
+      laporan_harian: laporanHarian,
     })
     .from(pengamatanSchema)
     .leftJoin(totalAnakan, eq(totalAnakan.pengamatan_id, pengamatanSchema.id))
@@ -417,6 +419,7 @@ pengamatan.get('/pengamatan', async (c) => {
     .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
     .leftJoin(desa, eq(desa.id, lokasi.desa_id))
     .leftJoin(user, eq(user.id, pengamatanSchema.pic_id))
+    .leftJoin(laporanHarian, eq(laporanHarian.pengamatan_id, pengamatanSchema.id))
     .where(
       and(
         !!lokasi_id ? eq(pengamatanSchema.lokasi_id, lokasi_id) : undefined,
@@ -463,12 +466,14 @@ pengamatan.get('/pengamatan', async (c) => {
         hasil_perhitungan: number;
         skala: string;
       }[];
+      bukti_pengamatan: PhotoPengamatan[]
     }>
   >((acc, row) => {
     const pengamatan = row.pengamatan;
     const tanaman = row.tanaman;
     const lokasi = row.lokasi;
     const pic = row.pic;
+    const laporan_harian = row.laporan_harian;
     const totalAnakan = row.total_anakan;
     const totalOpt = row.total_opt;
     const perhitunganKerusakan = hasilPengamatan(
@@ -484,6 +489,7 @@ pengamatan.get('/pengamatan', async (c) => {
     };
     const finalRow = {
       pengamatan,
+      laporan_harian,
       tanaman,
       lokasi,
       pic,
@@ -505,6 +511,7 @@ pengamatan.get('/pengamatan', async (c) => {
             hasil_perhitungan: number;
             skala: string;
           }[];
+          bukti_pengamatan: PhotoPengamatan[]
         }
       );
     } else if (!!foo) {
@@ -530,6 +537,21 @@ pengamatan.get('/pengamatan', async (c) => {
       404
     );
   }
+
+  const ids = result.map((pengamatan) => pengamatan.pengamatan.id);
+  const photos = await db.query.photoPengamatan.findMany({
+    where: inArray(photoPengamatan.id, ids),
+    orderBy: photoPengamatan.pengamatan_id
+  })
+  result.forEach((value) => {
+    const buktiPengamatan = photos.filter((photo) => photo.pengamatan_id === value.pengamatan.id);
+
+    if (buktiPengamatan.length > 0) {
+      value.bukti_pengamatan = buktiPengamatan;
+    } else {
+      value.bukti_pengamatan = [];
+    }
+  })
 
   return c.json({
     status: 200,

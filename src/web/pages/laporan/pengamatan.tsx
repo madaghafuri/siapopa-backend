@@ -1,6 +1,6 @@
 import { html } from "hono/html"
 import { Pengamatan } from "../../../db/schema/pengamatan.js"
-import { ColumnHeader } from "../../components/table.js"
+import { ColumnHeader, Table } from "../../components/table.js"
 import { Lokasi } from "../../../db/schema/lokasi.js"
 import { SelectTanaman } from "../../../db/schema/tanaman.js"
 import { SelectUser } from "../../../db/schema/user.js"
@@ -10,9 +10,10 @@ import { KabupatenKota } from "../../../db/schema/kabupaten-kota.js"
 import { Kecamatan } from "../../../db/schema/kecamatan.js"
 import { Desa } from "../../../db/schema/desa.js"
 import { Fragment } from "hono/jsx/jsx-runtime"
+import { SelectRumpun } from "../../../db/schema/rumpun.js"
 
 export const pengamatanColumn: ColumnHeader<Pengamatan>[] = [
-  { headerName: 'no', field: 'id' },
+  { headerName: 'no', valueGetter: (_, index) => index + 1 },
   { headerName: 'blok', field: 'blok' },
   { headerName: "hari ke", field: 'hari_ke' },
   { headerName: 'ph tanah', field: 'ph_tanah' },
@@ -24,7 +25,21 @@ export const pengamatanColumn: ColumnHeader<Pengamatan>[] = [
   { headerName: 'luas hamparan', field: 'luas_hamparan' },
   { headerName: 'luas diamati', field: 'luas_diamati' },
   { headerName: 'luas persemaian', field: 'luas_persemaian' },
-  { headerName: 'luas hasil panen', field: 'luas_hasil_panen' }
+  { headerName: 'luas hasil panen', field: 'luas_hasil_panen' },
+  {
+    headerName: 'aksi', valueGetter: (row) => (
+      <a href={`/app/laporan/pengamatan/${row.id}`}>
+        <i class="fa-solid fa-circle-info"></i>
+      </a>
+    )
+  }
+]
+
+export const rumpunColumn: ColumnHeader<SelectRumpun>[] = [
+  { headerName: 'no', valueGetter: (_, index) => index + 1 },
+  { field: 'rumpun_ke', headerName: 'rumpun ke' },
+  { field: 'jumlah_anakan', headerName: 'jumlah anakan' },
+  { field: 'luas_spot_hopperburn', headerName: 'luas spot hopperburn' },
 ]
 
 export const PengamatanPage = ({ pengamatanList }: { pengamatanList: Pengamatan[] }) => {
@@ -34,30 +49,12 @@ export const PengamatanPage = ({ pengamatanList }: { pengamatanList: Pengamatan[
       <select class="px-4 py-2 border border-gray-200 rounded"></select>
       <select class="px-4 py-2 border-gray-200 rounded"></select>
     </div>
-    <table id="pengamatan-table" class="row-border hover bg-white rounded border-t-secondary border-t-2 shadow-xl">
-      <thead>
-        <tr>
-          {pengamatanColumn.map((value) => {
-            return <th class="px-4 py-2 border-b border-gray-200 capitalize text-sm font-medium text-blue-500" >{value.headerName}</th>
-          })}
-          <th class="px-4 py-2 border-b border-gray-200 capitalize text-sm font-medium text-blue-500">action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {pengamatanList.map((value) => {
-          return <tr key={value.id}>
-            {pengamatanColumn.map((column) => {
-              return <td class="px-4 py-2 border-b border-gray-200 text-sm font-medium">{value[column.field]}</td>
-            })}
-            <td class="px-4 py-2 border-b border-gray-200 text0sm font-medium text-center">
-              <a href={`/app/laporan/pengamatan/${value.id}`}>
-                <i class="fa-solid fa-circle-info"></i>
-              </a>
-            </td>
-          </tr>
-        })}
-      </tbody>
-    </table>
+    <Table
+      id="pengamatan-table"
+      columns={pengamatanColumn}
+      rowsData={pengamatanList}
+      className="hover row-border bg-white border-t-2 border-t-secondary"
+    />
     {html`
     <script>
       $(document).ready(function() {
@@ -68,7 +65,7 @@ export const PengamatanPage = ({ pengamatanList }: { pengamatanList: Pengamatan[
   </div>
 }
 
-export const PengamatanDetailPage = ({ pengamatan }: {
+export const PengamatanDetailPage = ({ pengamatan, rumpunData }: {
   pengamatan: {
     pengamatan: Pengamatan;
     lokasi: Lokasi & {
@@ -85,7 +82,8 @@ export const PengamatanDetailPage = ({ pengamatan }: {
       skala: Kerusakan;
       hasil_perhitungan: string;
     }[]
-  }
+  };
+  rumpunData: SelectRumpun[]
 }) => {
   return (
     <div class="p-5 shadow-inner flex flex-col gap-5 bg-background">
@@ -155,6 +153,12 @@ export const PengamatanDetailPage = ({ pengamatan }: {
           })}
         </tbody>
       </table>
+      <h2 class="text-lg font-medium">Rumpun</h2>
+      <Table
+        id="rumpun-table"
+        rowsData={rumpunData}
+        columns={rumpunColumn}
+      />
       <div class="grid grid-cols-2 gap-5">
         <div class="rounded-md bg-white shadow-lg p-5 flex flex-col gap-3">
           <div class="text-lg text-center font-medium text-blue-700">Profil POPT</div>
@@ -176,10 +180,12 @@ export const PengamatanDetailPage = ({ pengamatan }: {
           </div>
         </div>
       </div>
+
       {html`
         <script>
           $(document).ready(function() {
             $('#hasil-pengamatan').DataTable();
+            $('#rumpun-table').DataTable();
           })
         </script>
       `}

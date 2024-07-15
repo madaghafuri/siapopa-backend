@@ -2,15 +2,14 @@ import { Hono } from 'hono';
 import { validator } from 'hono/validator';
 import {
   InsertLaporanHarian,
-  LaporanHarian,
   laporanHarian as laporanHarianSchema,
 } from '../db/schema/laporan-harian.js';
 import { db } from '../index.js';
 import { and, eq, gte, lte, sql } from 'drizzle-orm';
-import { Lokasi, lokasi } from '../db/schema/lokasi.js';
+import { lokasi } from '../db/schema/lokasi.js';
 import { pengamatan } from '../db/schema/pengamatan.js';
 import { rumpun } from '../db/schema/rumpun.js';
-import { DetailRumpun, detailRumpun } from '../db/schema/detail-rumpun.js';
+import { detailRumpun } from '../db/schema/detail-rumpun.js';
 import { hasilPengamatan, withPagination } from './helper.js';
 import { authorizeApi } from '../middleware.js';
 import { opt } from '../db/schema/opt.js';
@@ -309,7 +308,7 @@ laporanHarian.get('/laporan_harian/:laporanHarianId', async (c) => {
 });
 laporanHarian.get(
   '/laporan_harian',
-  validator('query', (value, c) => {
+  validator('query', (value) => {
     const query = value as Record<
       | 'user_id'
       | 'location_id'

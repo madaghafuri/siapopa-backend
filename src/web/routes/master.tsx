@@ -10,7 +10,7 @@ import { validator } from 'hono/validator';
 import { InsertOPT, opt } from '../../db/schema/opt.js';
 import DataOPT from '../pages/master/opt.js';
 import { ModalOpt } from '../components/master/modal-opt.js';
-import { userGroup } from '../../db/schema/user-group.js';
+import { InsertUserGroup, userGroup } from '../../db/schema/user-group.js';
 import DataUser from '../pages/master/user.js';
 import DataUserGroup from '../pages/master/usergroup.js';
 import DataTanaman from '../pages/master/tanaman.js';
@@ -18,6 +18,7 @@ import Modal, { ModalContent, ModalHeader } from '../components/modal.js';
 import { Fragment } from 'hono/jsx/jsx-runtime';
 import { authorizeWebInput } from '../../middleware.js';
 import { ModalTanaman } from '../components/master/modal-tanaman.js';
+import { ModalUserGroup } from '../components/master/modal-usergroup.js';
 
 export const master = new Hono<{
   Variables: {
@@ -300,7 +301,54 @@ master.get('/usergroup', async (c) => {
         ) : null
       }
     >
-      <DataUserGroup listUserGroup={selectUserGroup} />
+      <DataUserGroup user={selectedUser || null} listUserGroup={selectUserGroup} />
     </DefaultLayout>
+  );
+});
+master.get('/usergroup/create', async (c) => {
+  return c.html(
+    <ModalUserGroup />
+  )
+})
+master.post('/usergroup',
+  authorizeWebInput,
+  validator("form", value => {
+    return value;
+  }),
+  async (c) => {
+    const { group_name } = c.req.valid("form");
+
+    try {
+      await db.insert(userGroup).values({ group_name: group_name as string })
+    } catch (error) {
+      return c.html(<span class="text-sm text-red-500">Error</span>)
+    }
+
+    return c.html(<span>Berhasil menambahkan data</span>, 200, {
+      'HX-Reswap': 'none',
+      'HX-Trigger': 'newUserGroup, closeModal',
+    });
+  }
+);
+master.get('/usergroup/reload', async (c) => {
+  const selectUserGroup = await db.query.userGroup.findMany({
+    orderBy: userGroup.id,
+  });
+
+  return c.html(
+    <Fragment>
+      {selectUserGroup.map((userGroup, index) => {
+        return (
+          <tr key={opt.kode_opt}>
+            <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
+              {index + 1}
+            </td>
+            <td class="border-b border-gray-200 px-4 py-2">
+              {userGroup.group_name}
+            </td>
+          </tr>
+        );
+      })}
+    </Fragment>
   );
 });

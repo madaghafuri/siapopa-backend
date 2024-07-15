@@ -5,3 +5,4 @@ export const userGroup = pgTable("user_group", {
   group_name: text("group_name"),
 });
 export type SelectUserGroup = typeof userGroup.$inferSelect;
+export type InsertUserGroup = typeof userGroup.$inferInsert;
