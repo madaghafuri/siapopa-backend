@@ -35,9 +35,10 @@ const laporanHarian = laporan.route('/harian');
 laporanHarian.get('/', async (c) => {
   const session = c.get('session');
   const userId = session.get('user_id') as string;
-  const locations = c.req.queries('lokasi_id[]');
   const startDate = c.req.query('start_date');
   const endDate = c.req.query('end_date');
+  const tanamanId = c.req.query('tanaman_id')
+  const provinsiId = c.req.query('provinsi_id')
 
   const selectedUser = await db.query.user
     .findFirst({
@@ -64,6 +65,7 @@ laporanHarian.get('/', async (c) => {
     })
     .from(laporanHarianSchema)
     .leftJoin(pengamatan, eq(pengamatan.id, laporanHarianSchema.pengamatan_id))
+    .leftJoin(tanaman, eq(tanaman.id, pengamatan.tanaman_id))
     .leftJoin(user, eq(user.id, laporanHarianSchema.pic_id))
     .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
     .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
@@ -72,9 +74,8 @@ laporanHarian.get('/', async (c) => {
     .leftJoin(desa, eq(desa.id, lokasi.desa_id))
     .where(
       and(
-        !!locations && locations.length > 0
-          ? inArray(lokasi.id, locations)
-          : undefined,
+        !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined,
+        !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
         !!startDate
           ? gte(laporanHarianSchema.tanggal_laporan_harian, startDate)
           : undefined,
@@ -129,7 +130,6 @@ laporanHarian.get(
   '/filter',
 
   validator('query', (value) => {
-    console.log(value);
     return value;
   }),
   async (c) => {
@@ -150,6 +150,7 @@ laporanHarian.get(
       })
       .from(laporanHarianSchema)
       .leftJoin(pengamatan, eq(pengamatan.id, laporanHarianSchema.pengamatan_id))
+      .leftJoin(tanaman, eq(tanaman.id, pengamatan.tanaman_id))
       .leftJoin(user, eq(user.id, laporanHarianSchema.pic_id))
       .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
       .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
@@ -192,7 +193,11 @@ laporanHarian.get(
             })}
           </tr>
         })}
-      </Fragment>
+      </Fragment>,
+      200,
+      {
+        'HX-Push-Url': c.req.url.replace('/filter', '')
+      }
     );
   }
 );

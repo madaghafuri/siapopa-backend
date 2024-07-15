@@ -46,6 +46,7 @@ const LaporanHarianPage = ({
         hx-include="*"
         hx-swap="innerHTML"
         hx-target="#table-body"
+        hx-push-url="true"
         class="grid w-full grid-cols-4 gap-5 rounded border border-t-2 border-gray-200 border-t-secondary bg-white p-3 shadow-xl"
       >
         <select
@@ -75,9 +76,11 @@ const LaporanHarianPage = ({
           class="rounded border border-gray-200 px-4 py-2"
         />
         <input
-          type="date"
+          type="text"
           placeholder='Sampai tanggal'
           name="end_date"
+          onfocus="this.type='date'"
+          onblur="this.type='text'"
           class="rounded border border-gray-200 px-4 py-2"
         />
         <button

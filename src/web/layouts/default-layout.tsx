@@ -81,16 +81,31 @@ export const DefaultLayout = ({
             <i id="laporan-icon" class="fa-solid fa-caret-right"></i>
           </button>
           <div id="laporan-dropdown" class="opening hidden flex-col gap-3 p-5">
+            <a href='/app/laporan/pengamatan'
+              class={`rounded-md px-4 py-2 text-left ${route === 'pengamatan' ? 'bg-primary text-white' : ''}`}
+            >
+              Pengamatan
+            </a>
             <a
               href="/app/laporan/harian"
               class={`rounded-md px-4 py-2 text-left ${route === 'laporan-harian' ? 'bg-primary text-white' : ''}`}
             >
               Laporan Harian
             </a>
-            <a href='/app/laporan/pengamatan'
-              class={`rounded-md px-4 py-2 text-left ${route === 'pengamatan' ? 'bg-primary text-white' : ''}`}
-            >
-              Pengamatan
+            <a
+              href="/app/laporan/sb"
+              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-sb' ? 'bg-primary text-white' : ''}`}>
+              Laporan Setengah Bulan
+            </a>
+            <a
+              href="/app/laporan/bulanan"
+              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-bulanan' ? 'bg-primary text-white' : ''}`}>
+              Laporan Bulanan
+            </a>
+            <a
+              href="/app/laporan/musiman"
+              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-bulanan' ? 'bg-primary text-white' : ''}`}>
+              Laporan Musiman
             </a>
           </div>
         </div>
