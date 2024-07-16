@@ -5,25 +5,41 @@ import { db } from '../../index.js';
 import { and, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { SelectUser, user } from '../../db/schema/user.js';
 import Profile from '../components/profile.js';
-import LaporanHarianPage, { columnHeaders, DataLaporanHarian } from '../pages/laporan/laporan-harian.js';
+import LaporanHarianPage, {
+  columnHeaders,
+  DataLaporanHarian,
+} from '../pages/laporan/laporan-harian.js';
 import { Lokasi, lokasi } from '../../db/schema/lokasi.js';
-import { LaporanHarian, laporanHarian as laporanHarianSchema } from '../../db/schema/laporan-harian.js';
+import {
+  LaporanHarian,
+  laporanHarian as laporanHarianSchema,
+} from '../../db/schema/laporan-harian.js';
 import { Pengamatan, pengamatan } from '../../db/schema/pengamatan.js';
 import { Provinsi, provinsi } from '../../db/schema/provinsi.js';
-import { KabupatenKota, kabupatenKota } from '../../db/schema/kabupaten-kota.js';
+import {
+  KabupatenKota,
+  kabupatenKota,
+} from '../../db/schema/kabupaten-kota.js';
 import { Kecamatan, kecamatan } from '../../db/schema/kecamatan.js';
 import { Desa, desa } from '../../db/schema/desa.js';
 import { validator } from 'hono/validator';
 import { SelectTanaman, tanaman } from '../../db/schema/tanaman.js';
 import { Fragment } from 'hono/jsx/jsx-runtime';
-import { PengamatanDetailPage, PengamatanPage } from '../pages/laporan/pengamatan.js';
+import {
+  PengamatanDetailPage,
+  PengamatanPage,
+} from '../pages/laporan/pengamatan.js';
 import { rumpun } from '../../db/schema/rumpun.js';
 import { detailRumpun, Kerusakan } from '../../db/schema/detail-rumpun.js';
 import { opt } from '../../db/schema/opt.js';
 import { hasilPengamatan } from '../../api/helper.js';
 import { userGroup } from '../../db/schema/user-group.js';
 import { laporanSb } from '../../db/schema/laporan-sb.js';
-import { columnLaporanSb, LaporanSbDetailPage, LaporanSbPage } from '../pages/laporan/laporan-sb.js';
+import {
+  columnLaporanSb,
+  LaporanSbDetailPage,
+  LaporanSbPage,
+} from '../pages/laporan/laporan-sb.js';
 
 export const laporan = new Hono<{
   Variables: {
@@ -39,8 +55,8 @@ laporanHarian.get('/', async (c) => {
   const userId = session.get('user_id') as string;
   const startDate = c.req.query('start_date');
   const endDate = c.req.query('end_date');
-  const tanamanId = c.req.query('tanaman_id')
-  const provinsiId = c.req.query('provinsi_id')
+  const tanamanId = c.req.query('tanaman_id');
+  const provinsiId = c.req.query('provinsi_id');
 
   const selectedUser = await db.query.user
     .findFirst({
@@ -87,7 +103,8 @@ laporanHarian.get('/', async (c) => {
       )
     )
     .orderBy(laporanHarianSchema.id)
-    .limit(25).offset(0);
+    .limit(25)
+    .offset(0);
 
   const tanamanList = await db.query.tanaman.findMany({
     orderBy: tanaman.id,
@@ -100,7 +117,12 @@ laporanHarian.get('/', async (c) => {
   const result: DataLaporanHarian[] = listLaporan.map((value) => {
     const laporan = value.laporan_harian as LaporanHarian;
     const pengamatan = value.pengamatan as Pengamatan;
-    const lokasi = value.lokasi as Lokasi & { provinsi: Provinsi; kabupaten_kota: KabupatenKota; kecamatan: Kecamatan; desa: Desa };
+    const lokasi = value.lokasi as Lokasi & {
+      provinsi: Provinsi;
+      kabupaten_kota: KabupatenKota;
+      kecamatan: Kecamatan;
+      desa: Desa;
+    };
 
     return {
       ...laporan,
@@ -146,11 +168,14 @@ laporanHarian.get(
           provinsi,
           kabupaten_kota: kabupatenKota,
           kecamatan,
-          desa
+          desa,
         },
       })
       .from(laporanHarianSchema)
-      .leftJoin(pengamatan, eq(pengamatan.id, laporanHarianSchema.pengamatan_id))
+      .leftJoin(
+        pengamatan,
+        eq(pengamatan.id, laporanHarianSchema.pengamatan_id)
+      )
       .leftJoin(tanaman, eq(tanaman.id, pengamatan.tanaman_id))
       .leftJoin(user, eq(user.id, laporanHarianSchema.pic_id))
       .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
@@ -169,7 +194,8 @@ laporanHarian.get(
             ? lte(laporanHarianSchema.tanggal_laporan_harian, end_date)
             : undefined
         )
-      ).orderBy(laporanHarianSchema.id)
+      )
+      .orderBy(laporanHarianSchema.id)
       .limit(25)
       .offset(0);
 
@@ -181,8 +207,8 @@ laporanHarian.get(
       return {
         ...laporan,
         pengamatan,
-        lokasi
-      }
+        lokasi,
+      };
     });
     const newUrl = new URLSearchParams();
     !!start_date && newUrl.append('start_date', start_date);
@@ -193,11 +219,17 @@ laporanHarian.get(
     return c.html(
       <Fragment>
         {result.map((row) => {
-          return <tr key={row.id}>
-            {columnHeaders.map((column) => {
-              return <td class="border-b bordery-gray-200 px-4 py-2 text-right">{row[column.field]}</td>
-            })}
-          </tr>
+          return (
+            <tr key={row.id}>
+              {columnHeaders.map((column) => {
+                return (
+                  <td class="bordery-gray-200 border-b px-4 py-2 text-right">
+                    {row[column.field]}
+                  </td>
+                );
+              })}
+            </tr>
+          );
         }) || null}
       </Fragment>,
       200,
@@ -210,72 +242,91 @@ laporanHarian.get(
 
 const pengamatanRoute = laporan.route('/pengamatan');
 
-pengamatanRoute.get("/", async (c) => {
+pengamatanRoute.get('/', async (c) => {
   const session = c.get('session');
   const userId = session.get('user_id') as string;
 
-  const selectedUser = await db.query.user.findFirst({
-    with: {
-      userGroup: true
-    },
-    columns: {
-      password: false
-    },
-    where: eq(user.id, parseInt(userId))
-  }).catch((err) => {
-    console.error(err);
-  })
+  const selectedUser = await db.query.user
+    .findFirst({
+      with: {
+        userGroup: true,
+      },
+      columns: {
+        password: false,
+      },
+      where: eq(user.id, parseInt(userId)),
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 
   const pengamatanList = await db.query.pengamatan.findMany({
-    orderBy: pengamatan.id
-  })
+    orderBy: pengamatan.id,
+  });
 
   return c.html(
-    <DefaultLayout route='pengamatan' authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}>
+    <DefaultLayout
+      route="pengamatan"
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+    >
       <PengamatanPage pengamatanList={pengamatanList} />
     </DefaultLayout>
-  )
-})
-pengamatanRoute.get("/:pengamatanId", async (c) => {
+  );
+});
+pengamatanRoute.get('/:pengamatanId', async (c) => {
   const session = c.get('session');
   const userId = session.get('user_id') as string;
-  const pengamatanId = c.req.param('pengamatanId')
+  const pengamatanId = c.req.param('pengamatanId');
 
-  const selectedUser = await db.query.user.findFirst({
-    with: {
-      userGroup: true,
-    },
-    columns: {
-      password: false
-    },
-    where: eq(user.id, parseInt(userId))
-  }).catch((err) => {
-    console.error(err)
-  })
+  const selectedUser = await db.query.user
+    .findFirst({
+      with: {
+        userGroup: true,
+      },
+      columns: {
+        password: false,
+      },
+      where: eq(user.id, parseInt(userId)),
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 
   const totalAnakan = db.$with('total_anakan').as(
     db
       .select({
         pengamatan_id: rumpun.pengamatan_id,
-        total_anakan: sql<number>`sum(${rumpun.jumlah_anakan})`.as('total_jumlah_anakan')
+        total_anakan: sql<number>`sum(${rumpun.jumlah_anakan})`.as(
+          'total_jumlah_anakan'
+        ),
       })
       .from(rumpun)
+      .where(eq(rumpun.pengamatan_id, parseInt(pengamatanId)))
       .groupBy(rumpun.pengamatan_id)
-  )
+  );
 
   const totalOpt = db.$with('total_opt').as(
-    db.select({
-      pengamatan_id: rumpun.pengamatan_id,
-      skala_kerusakan: detailRumpun.skala_kerusakan,
-      opt_id: detailRumpun.opt_id,
-      kode_opt: opt.kode_opt,
-      total_opt: sql<number>`sum(${detailRumpun.jumlah_opt})`.as('total_jumlah_opt')
-    })
+    db
+      .select({
+        pengamatan_id: rumpun.pengamatan_id,
+        skala_kerusakan: detailRumpun.skala_kerusakan,
+        opt_id: detailRumpun.opt_id,
+        kode_opt: opt.kode_opt,
+        total_opt: sql<number>`sum(${detailRumpun.jumlah_opt})`.as(
+          'total_jumlah_opt'
+        ),
+      })
       .from(detailRumpun)
       .leftJoin(rumpun, eq(rumpun.id, detailRumpun.rumpun_id))
       .leftJoin(opt, eq(opt.id, detailRumpun.opt_id))
-      .groupBy(detailRumpun.opt_id, detailRumpun.skala_kerusakan, rumpun.pengamatan_id, opt.kode_opt)
-  )
+      .where(eq(rumpun.pengamatan_id, parseInt(pengamatanId)))
+      .groupBy(
+        detailRumpun.opt_id,
+        detailRumpun.skala_kerusakan,
+        rumpun.pengamatan_id,
+        opt.kode_opt
+      )
+  );
 
   const pengamatanQuery = await db
     .with(totalOpt, totalAnakan)
@@ -283,27 +334,27 @@ pengamatanRoute.get("/:pengamatanId", async (c) => {
       pengamatan,
       total_anakan: {
         pengamatan_id: totalAnakan.pengamatan_id,
-        total_anakan: totalAnakan.total_anakan
+        total_anakan: totalAnakan.total_anakan,
       },
       total_opt: {
         pengamatan_id: totalOpt.pengamatan_id,
         opt_id: totalOpt.opt_id,
         kode_opt: totalOpt.kode_opt,
         skala_kerusakan: totalOpt.skala_kerusakan,
-        total_opt: totalOpt.total_opt
+        total_opt: totalOpt.total_opt,
       },
       tanaman,
       pic: {
         ...user,
-        user_group: userGroup
+        user_group: userGroup,
       },
       lokasi: {
         ...lokasi,
         provinsi,
         kabupaten_kota: kabupatenKota,
         kecamatan,
-        desa
-      }
+        desa,
+      },
     })
     .from(pengamatan)
     .leftJoin(totalOpt, eq(totalOpt.pengamatan_id, pengamatan.id))
@@ -316,26 +367,30 @@ pengamatanRoute.get("/:pengamatanId", async (c) => {
     .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
     .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
     .leftJoin(desa, eq(desa.id, lokasi.desa_id))
-    .leftJoin(rumpun, eq(rumpun.pengamatan_id, pengamatan.id))
     .where(eq(pengamatan.id, parseInt(pengamatanId)));
 
-  const result = pengamatanQuery.reduce<Record<string, {
-    pengamatan: Pengamatan;
-    lokasi: Lokasi & {
-      provinsi: Provinsi;
-      kabupaten_kota: KabupatenKota;
-      kecamatan: Kecamatan;
-      desa: Desa;
-    };
-    tanaman: SelectTanaman;
-    pic: SelectUser;
-    hasil_pengamatan: {
-      opt_id: number;
-      kode_opt: string;
-      skala: Kerusakan;
-      hasil_perhitungan: string;
-    }[]
-  }>>((acc, row) => {
+  const result = pengamatanQuery.reduce<
+    Record<
+      string,
+      {
+        pengamatan: Pengamatan;
+        lokasi: Lokasi & {
+          provinsi: Provinsi;
+          kabupaten_kota: KabupatenKota;
+          kecamatan: Kecamatan;
+          desa: Desa;
+        };
+        tanaman: SelectTanaman;
+        pic: SelectUser;
+        hasil_pengamatan: {
+          opt_id: number;
+          kode_opt: string;
+          skala: Kerusakan;
+          hasil_perhitungan: string;
+        }[];
+      }
+    >
+  >((acc, row) => {
     const pengamatan = row.pengamatan;
     const tanaman = row.tanaman;
     const lokasi = row.lokasi;
@@ -351,8 +406,8 @@ pengamatanRoute.get("/:pengamatanId", async (c) => {
       opt_id: row.total_opt.opt_id,
       kode_opt: row.total_opt.kode_opt,
       skala: row.total_opt.skala_kerusakan,
-      hasil_perhitungan: hasilPerhitungan
-    }
+      hasil_perhitungan: hasilPerhitungan,
+    };
 
     if (!acc[pengamatan.id]) {
       acc[pengamatan.id] = {
@@ -361,33 +416,36 @@ pengamatanRoute.get("/:pengamatanId", async (c) => {
           provinsi: Provinsi;
           kabupaten_kota: KabupatenKota;
           kecamatan: Kecamatan;
-          desa: Desa
+          desa: Desa;
         },
         tanaman,
         pic,
-        hasil_pengamatan: [hasil]
-      }
+        hasil_pengamatan: [hasil],
+      };
     } else if (acc[pengamatan.id]) {
-      acc[pengamatan.id].hasil_pengamatan.push(hasil)
+      acc[pengamatan.id].hasil_pengamatan.push(hasil);
     }
 
     return acc;
-  }, {})
+  }, {});
 
   const rumpunList = await db.query.rumpun.findMany({
     where: eq(rumpun.pengamatan_id, parseInt(pengamatanId)),
     orderBy: rumpun.id,
-  })
+  });
 
   return c.html(
     <DefaultLayout
-      route='pengamatan-detail'
+      route="pengamatan-detail"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
     >
-      <PengamatanDetailPage pengamatan={result[pengamatanId]} rumpunData={rumpunList} />
+      <PengamatanDetailPage
+        pengamatan={result[pengamatanId]}
+        rumpunData={rumpunList}
+      />
     </DefaultLayout>
-  )
-})
+  );
+});
 
 const laporanSbRoute = laporan.route('/sb');
 
@@ -396,8 +454,8 @@ laporanSbRoute.get('/', async (c) => {
   const userId = session.get('user_id') as string;
   const startDate = c.req.query('start_date');
   const endDate = c.req.query('end_date');
-  const tanamanId = c.req.query('tanaman_id')
-  const provinsiId = c.req.query('provinsi_id')
+  const tanamanId = c.req.query('tanaman_id');
+  const provinsiId = c.req.query('provinsi_id');
 
   const selectedUser = await db.query.user
     .findFirst({
@@ -420,12 +478,12 @@ laporanSbRoute.get('/', async (c) => {
               locations: {
                 with: {
                   provinsi: true,
-                }
-              }
-            }
-          }
-        }
-      }
+                },
+              },
+            },
+          },
+        },
+      },
     },
     where: and(
       !!startDate ? gte(laporanSb.tanggal_laporan_sb, startDate) : undefined,
@@ -433,28 +491,35 @@ laporanSbRoute.get('/', async (c) => {
       !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
       !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined
     ),
-    orderBy: laporanSb.id
-  })
+    orderBy: laporanSb.id,
+  });
 
   const komoditasOption = await db.query.tanaman.findMany({
-    orderBy: tanaman.nama_tanaman
+    orderBy: tanaman.nama_tanaman,
   });
   const provinsiOption = await db.query.provinsi.findMany({
-    orderBy: provinsi.nama_provinsi
+    orderBy: provinsi.nama_provinsi,
   });
 
   return c.html(
-    <DefaultLayout route='laporan-sb' authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}>
-      <LaporanSbPage komoditasOption={komoditasOption} provinsiOption={provinsiOption} laporanSbList={laporanSbData} />
+    <DefaultLayout
+      route="laporan-sb"
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+    >
+      <LaporanSbPage
+        komoditasOption={komoditasOption}
+        provinsiOption={provinsiOption}
+        laporanSbList={laporanSbData}
+      />
     </DefaultLayout>
-  )
-})
+  );
+});
 
 laporanSbRoute.get('/filter', async (c) => {
   const startDate = c.req.query('start_date');
   const endDate = c.req.query('end_date');
-  const tanamanId = c.req.query('tanaman_id')
-  const provinsiId = c.req.query('provinsi_id')
+  const tanamanId = c.req.query('tanaman_id');
+  const provinsiId = c.req.query('provinsi_id');
 
   const laporanSbData = await db.query.laporanSb.findMany({
     with: {
@@ -466,12 +531,12 @@ laporanSbRoute.get('/filter', async (c) => {
               locations: {
                 with: {
                   provinsi: true,
-                }
-              }
-            }
-          }
-        }
-      }
+                },
+              },
+            },
+          },
+        },
+      },
     },
     where: and(
       !!startDate ? gte(laporanSb.tanggal_laporan_sb, startDate) : undefined,
@@ -479,8 +544,8 @@ laporanSbRoute.get('/filter', async (c) => {
       !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
       !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined
     ),
-    orderBy: laporanSb.id
-  })
+    orderBy: laporanSb.id,
+  });
 
   const newUrl = new URLSearchParams('');
   !!startDate && newUrl.append('start_date', startDate);
@@ -488,7 +553,7 @@ laporanSbRoute.get('/filter', async (c) => {
   !!tanamanId && newUrl.append('tanaman_id', tanamanId);
   !!provinsiId && newUrl.append('provinsi_id', provinsiId);
 
-  console.log(laporanSbData)
+  console.log(laporanSbData);
 
   return c.html(
     <Fragment>
@@ -496,20 +561,22 @@ laporanSbRoute.get('/filter', async (c) => {
         return (
           <tr key={row.id}>
             {columnLaporanSb.map((column) => {
-              return <td class="border-b border-gray-200">
-                {column?.valueGetter?.(row) || row[column.field]}
-              </td>
+              return (
+                <td class="border-b border-gray-200">
+                  {column?.valueGetter?.(row) || row[column.field]}
+                </td>
+              );
             })}
           </tr>
-        )
+        );
       }) || null}
     </Fragment>,
     200,
     {
       'HX-Replace-Url': `/app/laporan/sb?` + newUrl.toString(),
     }
-  )
-})
+  );
+});
 
 laporanSbRoute.get('/:laporanSbId', async (c) => {
   const laporanSbId = c.req.param('laporanSbId');
@@ -533,12 +600,15 @@ laporanSbRoute.get('/:laporanSbId', async (c) => {
       laporanHarian: true,
       luas_kerusakan_sb: true,
     },
-    where: eq(laporanSb.id, parseInt(laporanSbId))
-  })
+    where: eq(laporanSb.id, parseInt(laporanSbId)),
+  });
 
   return c.html(
-    <DefaultLayout route="laporan-sb" authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}>
+    <DefaultLayout
+      route="laporan-sb"
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+    >
       <LaporanSbDetailPage laporanSb={laporanSbData} />
     </DefaultLayout>
-  )
-})
+  );
+});

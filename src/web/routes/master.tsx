@@ -301,27 +301,29 @@ master.get('/usergroup', async (c) => {
         ) : null
       }
     >
-      <DataUserGroup user={selectedUser || null} listUserGroup={selectUserGroup} />
+      <DataUserGroup
+        user={selectedUser || null}
+        listUserGroup={selectUserGroup}
+      />
     </DefaultLayout>
   );
 });
 master.get('/usergroup/create', async (c) => {
-  return c.html(
-    <ModalUserGroup />
-  )
-})
-master.post('/usergroup',
+  return c.html(<ModalUserGroup />);
+});
+master.post(
+  '/usergroup',
   authorizeWebInput,
-  validator("form", value => {
+  validator('form', (value) => {
     return value;
   }),
   async (c) => {
-    const { group_name } = c.req.valid("form");
+    const { group_name } = c.req.valid('form');
 
     try {
-      await db.insert(userGroup).values({ group_name: group_name as string })
+      await db.insert(userGroup).values({ group_name: group_name as string });
     } catch (error) {
-      return c.html(<span class="text-sm text-red-500">Error</span>)
+      return c.html(<span class="text-sm text-red-500">Error</span>);
     }
 
     return c.html(<span>Berhasil menambahkan data</span>, 200, {
