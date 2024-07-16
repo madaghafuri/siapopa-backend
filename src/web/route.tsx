@@ -17,6 +17,27 @@ const web = new Hono<{
 }>();
 
 web.get('/', (c) => c.redirect('/app/dashboard'));
+web.notFound(async (c) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: eq(user.id, parseInt(userId)),
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  return c.html(
+    <DefaultLayout
+      route=""
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+    >
+      THE PAGE YOU ARE LOOKING FOR DOES NOT EXIST
+    </DefaultLayout>
+  );
+});
 
 // Dashboard Related
 web.route('/dashboard', dashboard);

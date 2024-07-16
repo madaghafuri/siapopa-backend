@@ -40,6 +40,10 @@ import {
   LaporanSbDetailPage,
   LaporanSbPage,
 } from '../pages/laporan/laporan-sb.js';
+import { LaporanBulananPage } from '../pages/laporan/laporan-bulanan.js';
+import { laporanBulanan } from '../../db/schema/laporan-bulanan.js';
+import { laporanMusiman } from '../../db/schema/laporan-musiman.js';
+import { LaporanMusimanPage } from '../pages/laporan/laporan-musiman.js';
 
 export const laporan = new Hono<{
   Variables: {
@@ -553,8 +557,6 @@ laporanSbRoute.get('/filter', async (c) => {
   !!tanamanId && newUrl.append('tanaman_id', tanamanId);
   !!provinsiId && newUrl.append('provinsi_id', provinsiId);
 
-  console.log(laporanSbData);
-
   return c.html(
     <Fragment>
       {laporanSbData.map((row) => {
@@ -609,6 +611,60 @@ laporanSbRoute.get('/:laporanSbId', async (c) => {
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
     >
       <LaporanSbDetailPage laporanSb={laporanSbData} />
+    </DefaultLayout>
+  );
+});
+
+const laporanBulananRoute = laporan.route('/bulanan');
+laporanBulananRoute.get('/', async (c) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: eq(user.id, parseInt(userId)),
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const dataLaporanBulanan = await db.query.laporanBulanan.findMany({
+    orderBy: laporanBulanan.id,
+  });
+
+  return c.html(
+    <DefaultLayout
+      route="laporan-bulanan"
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+    >
+      <LaporanBulananPage laporanBulananData={dataLaporanBulanan} />
+    </DefaultLayout>
+  );
+});
+
+const laporanMusimanRoute = laporan.route('/musiman');
+laporanMusimanRoute.get('/', async (c) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: eq(user.id, parseInt(userId)),
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const dataLaporanMusiman = await db.query.laporanMusiman.findMany({
+    orderBy: laporanMusiman.id,
+  });
+
+  return c.html(
+    <DefaultLayout
+      route="laporan-musiman"
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+    >
+      <LaporanMusimanPage dataLaporanMusiman={dataLaporanMusiman} />
     </DefaultLayout>
   );
 });

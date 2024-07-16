@@ -21,7 +21,9 @@ export const DefaultLayout = ({
       <div class="col-span-3 col-start-12 grid items-center gap-5">
         {authNavigation || (
           <a href="/login">
-            <button class="rounded border px-2 py-1 bg-primary text-white">Login</button>
+            <button class="rounded border bg-primary px-2 py-1 text-white">
+              Login
+            </button>
           </a>
         )}
       </div>
@@ -81,7 +83,8 @@ export const DefaultLayout = ({
             <i id="laporan-icon" class="fa-solid fa-caret-right"></i>
           </button>
           <div id="laporan-dropdown" class="opening hidden flex-col gap-3 p-5">
-            <a href='/app/laporan/pengamatan'
+            <a
+              href="/app/laporan/pengamatan"
               class={`rounded-md px-4 py-2 text-left ${route === 'pengamatan' ? 'bg-primary text-white' : ''}`}
             >
               Pengamatan
@@ -94,17 +97,20 @@ export const DefaultLayout = ({
             </a>
             <a
               href="/app/laporan/sb"
-              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-sb' ? 'bg-primary text-white' : ''}`}>
+              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-sb' ? 'bg-primary text-white' : ''}`}
+            >
               Laporan Setengah Bulan
             </a>
             <a
               href="/app/laporan/bulanan"
-              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-bulanan' ? 'bg-primary text-white' : ''}`}>
+              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-bulanan' ? 'bg-primary text-white' : ''}`}
+            >
               Laporan Bulanan
             </a>
             <a
               href="/app/laporan/musiman"
-              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-bulanan' ? 'bg-primary text-white' : ''}`}>
+              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-musiman' ? 'bg-primary text-white' : ''}`}
+            >
               Laporan Musiman
             </a>
           </div>
