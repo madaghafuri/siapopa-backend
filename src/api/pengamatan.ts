@@ -5,13 +5,17 @@ import {
   Pengamatan,
   pengamatan as pengamatanSchema,
 } from '../db/schema/pengamatan.js';
-import { db, } from '../index.js';
+import { db } from '../index.js';
 import { SQL, and, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import {
   PhotoPengamatan,
   photoPengamatan,
 } from '../db/schema/photo-pengamatan.js';
-import { DetailRumpun, Kerusakan, detailRumpun } from '../db/schema/detail-rumpun.js';
+import {
+  DetailRumpun,
+  Kerusakan,
+  detailRumpun,
+} from '../db/schema/detail-rumpun.js';
 import { InsertRumpun, rumpun as rumpunSchema } from '../db/schema/rumpun.js';
 import { hasilPengamatan, validateFile, withPagination } from './helper.js';
 import { authorizeApi } from '../middleware.js';
@@ -33,7 +37,7 @@ pengamatan.post(
   validator('json', (value, c) => {
     type RumpunPengamatan = InsertRumpun & {
       detail_rumpun: DetailRumpun[];
-    }
+    };
     const { lokasi_id, tanaman_id, ...rest } = value as Pengamatan & {
       lokasi_pengamatan: {
         type: string;
@@ -94,17 +98,19 @@ pengamatan.post(
           .values(rumpunData)
           .returning();
 
-        const detailRumpunData = rumpun.map((val) => {
-          const dataRumpun = insertRumpun.find(
-            (rumpun) => rumpun.rumpun_ke === val.rumpun_ke
-          );
+        const detailRumpunData = rumpun
+          .map((val) => {
+            const dataRumpun = insertRumpun.find(
+              (rumpun) => rumpun.rumpun_ke === val.rumpun_ke
+            );
 
-          const detailRumpunList = val.detail_rumpun.map((dRumpun) => {
-            return { ...dRumpun, rumpun_id: dataRumpun?.id }
+            const detailRumpunList = val.detail_rumpun.map((dRumpun) => {
+              return { ...dRumpun, rumpun_id: dataRumpun?.id };
+            });
+
+            return detailRumpunList;
           })
-
-          return detailRumpunList;
-        }).flat();
+          .flat();
 
         await db.insert(detailRumpun).values(detailRumpunData);
         await db.insert(photoPengamatan).values(photoValue);
@@ -405,7 +411,7 @@ pengamatan.get('/pengamatan', async (c) => {
         phone: user.phone,
         photo: user.photo,
         validasi: user.validasi,
-        usergroup_id: user.usergroup_id
+        usergroup_id: user.usergroup_id,
       },
       laporan_harian: laporanHarian,
     })
@@ -419,7 +425,10 @@ pengamatan.get('/pengamatan', async (c) => {
     .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
     .leftJoin(desa, eq(desa.id, lokasi.desa_id))
     .leftJoin(user, eq(user.id, pengamatanSchema.pic_id))
-    .leftJoin(laporanHarian, eq(laporanHarian.pengamatan_id, pengamatanSchema.id))
+    .leftJoin(
+      laporanHarian,
+      eq(laporanHarian.pengamatan_id, pengamatanSchema.id)
+    )
     .where(
       and(
         !!lokasi_id ? eq(pengamatanSchema.lokasi_id, lokasi_id) : undefined,
@@ -466,7 +475,7 @@ pengamatan.get('/pengamatan', async (c) => {
         hasil_perhitungan: number;
         skala: string;
       }[];
-      bukti_pengamatan: PhotoPengamatan[]
+      bukti_pengamatan: PhotoPengamatan[];
     }>
   >((acc, row) => {
     const pengamatan = row.pengamatan;
@@ -511,7 +520,7 @@ pengamatan.get('/pengamatan', async (c) => {
             hasil_perhitungan: number;
             skala: string;
           }[];
-          bukti_pengamatan: PhotoPengamatan[]
+          bukti_pengamatan: PhotoPengamatan[];
         }
       );
     } else if (!!foo) {
@@ -540,18 +549,19 @@ pengamatan.get('/pengamatan', async (c) => {
 
   const ids = result.map((pengamatan) => pengamatan.pengamatan.id);
   const photos = await db.query.photoPengamatan.findMany({
-    where: inArray(photoPengamatan.id, ids),
-    orderBy: photoPengamatan.pengamatan_id
-  })
+    where: inArray(photoPengamatan.pengamatan_id, ids),
+  });
   result.forEach((value) => {
-    const buktiPengamatan = photos.filter((photo) => photo.pengamatan_id === value.pengamatan.id);
+    const buktiPengamatan = photos.filter(
+      (photo) => photo.pengamatan_id === value.pengamatan.id
+    );
 
     if (buktiPengamatan.length > 0) {
       value.bukti_pengamatan = buktiPengamatan;
     } else {
       value.bukti_pengamatan = [];
     }
-  })
+  });
 
   return c.json({
     status: 200,
