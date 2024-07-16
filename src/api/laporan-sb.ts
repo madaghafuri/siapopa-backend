@@ -10,7 +10,7 @@ import {
   luasKerusakanSb,
 } from '../db/schema/luas-kerusakan-sb.js';
 import { db } from '../index.js';
-import { SQL, and, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { SQL, and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { laporanHarian } from '../db/schema/laporan-harian.js';
 import { pengamatan } from '../db/schema/pengamatan.js';
 import { authorizeApi } from '../middleware.js';
@@ -47,7 +47,12 @@ laporanSb.post(
     return { opt_id, lokasi_id, pic_id, ...rest };
   }),
   async (c) => {
-    const { lokasi_laporan_setengah_bulanan, luas_kerusakan, laporan_harian, ...rest } = c.req.valid('json');
+    const {
+      lokasi_laporan_setengah_bulanan,
+      luas_kerusakan,
+      laporan_harian,
+      ...rest
+    } = c.req.valid('json');
     const [lat, long] = lokasi_laporan_setengah_bulanan.coordinates;
 
     try {
@@ -57,17 +62,18 @@ laporanSb.post(
         .returning();
 
       const insertLuasKerusakan = luas_kerusakan.map((value) => {
-        return { ...value, laporan_sb_id: insertedData[0].id }
-      })
+        return { ...value, laporan_sb_id: insertedData[0].id };
+      });
 
       await db.insert(luasKerusakanSb).values(insertLuasKerusakan);
 
-      await db.update(laporanHarian).set({
-        status_laporan_sb: true,
-        id_laporan_sb: insertedData[0].id,
-      }).where(
-        inArray(laporanSbSchema.id, laporan_harian)
-      )
+      await db
+        .update(laporanHarian)
+        .set({
+          status_laporan_sb: true,
+          id_laporan_sb: insertedData[0].id,
+        })
+        .where(inArray(laporanHarian.id, laporan_harian));
     } catch (error) {
       console.error(error);
       return c.json(
@@ -244,18 +250,16 @@ laporanSb.get('/laporan_sb', async (c) => {
   try {
     var selectData = await db.query.laporanSb.findMany({
       with: {
-        luas_kerusakan_sb: true
+        luas_kerusakan_sb: true,
       },
       where: and(
         !!user_id ? eq(laporanSbSchema.pic_id, parseInt(user_id)) : undefined,
         !!location_id ? eq(pengamatan.lokasi_id, location_id) : undefined,
-        !!start_date
-          ? gte(laporanSbSchema.start_date, start_date)
-          : undefined,
+        !!start_date ? gte(laporanSbSchema.start_date, start_date) : undefined,
         !!end_date ? lte(laporanSbSchema.end_date, end_date) : undefined
       ),
-      orderBy: laporanSbSchema.id
-    })
+      orderBy: laporanSbSchema.id,
+    });
   } catch (error) {
     console.error(error);
     return c.json(
@@ -281,5 +285,30 @@ laporanSb.get('/laporan_sb', async (c) => {
     status: 200,
     message: 'success',
     data: selectData,
+  });
+});
+laporanSb.get('/prev/laporan_sb', async (c) => {
+  const foo = await db
+    .select()
+    .from(laporanSbSchema)
+    .orderBy(
+      desc(laporanSbSchema.tanggal_laporan_sb),
+      desc(laporanSbSchema.periode_laporan_sb)
+    )
+    .catch((err) => {
+      console.error(err);
+      return c.json(
+        {
+          status: 500,
+          message: 'internal server error',
+        },
+        500
+      );
+    });
+
+  return c.json({
+    status: 200,
+    message: 'success',
+    data: foo,
   });
 });

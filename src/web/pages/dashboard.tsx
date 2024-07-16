@@ -8,7 +8,7 @@ const DashboardPage = () => {
         {html`
           <script>
             $(document).ready(function () {
-              const map = L.map('map').setView([-6.917, 107.619], 11);
+              const map = L.map('map').setView([-6.8673915, 106.9443265], 11);
               L.tileLayer(
                 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 {
@@ -17,7 +17,7 @@ const DashboardPage = () => {
                 }
               ).addTo(map);
 
-              const foo = fetch('/assets/Jabar_By_Kab.geojson')
+              const bar = fetch('/assets/jabar-geo.geojson')
                 .then((res) => res.json())
                 .then((data) => {
                   L.geoJson(data).addTo(map);
