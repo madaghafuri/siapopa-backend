@@ -31,9 +31,13 @@ export const LaporanBulananPage = ({
 }) => {
   return (
     <div class="flex flex-col gap-3 p-5 shadow-inner">
-      <div class="grid grid-cols-5 rounded bg-white p-5">
-        <select class="rounded border px-2 py-1"></select>
+      <div class="flex items-center gap-3 text-2xl">
+        <i class="fa-solid fa-table"></i>
+        <h1>Laporan Bulanan</h1>
       </div>
+      {/* <div class="grid grid-cols-5 rounded bg-white p-5">
+        <select class="rounded border px-2 py-1"></select>
+      </div> */}
       <Table
         id="laporan-bulanan-table"
         columns={laporanBulananColumn}

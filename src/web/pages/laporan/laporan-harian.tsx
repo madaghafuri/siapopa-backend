@@ -5,28 +5,48 @@ import { Provinsi } from '../../../db/schema/provinsi.js';
 import { KabupatenKota } from '../../../db/schema/kabupaten-kota.js';
 import { Kecamatan } from '../../../db/schema/kecamatan.js';
 import { Desa } from '../../../db/schema/desa.js';
-import { ColumnHeader } from '../../components/table.js';
+import { ColumnHeader, Table } from '../../components/table.js';
 import { SelectTanaman } from '../../../db/schema/tanaman.js';
 import { html } from 'hono/html';
 import { UserData } from '../master/user.js';
 
-export const columnHeaders: ColumnHeader<LaporanHarian & { pengamatan: Pengamatan; lokasi: Lokasi; pic: UserData }>[] = [
-  { headerName: 'signature', field: 'sign_pic' },
-  { headerName: 'tgl lapor', field: 'tanggal_laporan_harian' },
-  { headerName: 'POPT', field: 'pic' },
-  { headerName: 'wilayah', field: 'lokasi' },
-  { headerName: 'umur tanam', span: '1' },
-  { headerName: 'luas tanam', span: '2' },
+export const columnHeaders: ColumnHeader<
+  LaporanHarian & { pengamatan: Pengamatan; lokasi: Lokasi; pic: UserData }
+>[] = [
+  {
+    field: 'sign_pic',
+    headerName: 'signature',
+    valueGetter: (row) => (
+      <a href={row.sign_pic}>
+        <img class="h-10 w-10" src={row.sign_pic} alt="" />
+      </a>
+    ),
+  },
+  {
+    field: 'status_laporan_sb',
+    headerName: 'status laporan setengah bulan',
+    valueGetter: (row) => {
+      if (!row.status_laporan_sb)
+        return <i class="fa-solid fa-circle-xmark text-lg text-red-500"></i>;
+
+      return <i class="fa-solid fa-circle-check text-lg text-green-500"></i>;
+    },
+  },
+  { field: 'rekomendasi_pengendalian', headerName: 'rekomendasi pengendalian' },
+  { field: 'skala', headerName: 'skala' },
+  { field: 'luas_waspada', headerName: 'luas waspada' },
+  { field: 'tanggal_laporan_harian', headerName: 'tgl laporan' },
 ];
 
 export type DataLaporanHarian = LaporanHarian & {
-  pengamatan: Pengamatan; lokasi: Lokasi & {
+  pengamatan: Pengamatan;
+  lokasi: Lokasi & {
     provinsi: Provinsi;
     kabupaten_kota: KabupatenKota;
     kecamatan: Kecamatan;
-    desa: Desa
-  }
-}
+    desa: Desa;
+  };
+};
 
 const LaporanHarianPage = ({
   listLaporan,
@@ -39,7 +59,10 @@ const LaporanHarianPage = ({
 }) => {
   return (
     <div class="isolate flex flex-col gap-5 bg-background p-5 shadow-inner">
-      <h1 class="text-lg font-bold">Laporan Harian</h1>
+      <div class="flex items-center gap-3 text-2xl">
+        <i class="fa-solid fa-table"></i>
+        <h1>Laporan Harian</h1>
+      </div>
       <div
         hx-get="/app/laporan/harian/filter"
         hx-trigger="click from:#filter-submit"
@@ -68,7 +91,7 @@ const LaporanHarianPage = ({
         </select>
         <input
           type="text"
-          placeholder='Dari tanggal'
+          placeholder="Dari tanggal"
           name="start_date"
           onfocus="this.type='date'"
           onblur="this.type='text'"
@@ -76,7 +99,7 @@ const LaporanHarianPage = ({
         />
         <input
           type="text"
-          placeholder='Sampai tanggal'
+          placeholder="Sampai tanggal"
           name="end_date"
           onfocus="this.type='date'"
           onblur="this.type='text'"
@@ -90,28 +113,15 @@ const LaporanHarianPage = ({
           Filter
         </button>
       </div>
-      <table id="laporanTable" class="border-t-2 border-t-secondary bg-white rounded" style="width: 100%">
-        <thead >
-          <tr >
-            {columnHeaders.map((column) => {
-              return <th class={`border-b border-gray-200 px-4 py-2 capitalize text-sm font-medium text-blue-500`}>{column.headerName}</th>
-            })}
-          </tr>
-        </thead>
-        <tbody id="table-body">
-          {listLaporan.map((laporan) => {
-            return <tr key={laporan.id}>
-              {columnHeaders.map((column) => {
-                return <td class={`border-b border-gray-200 px-4 py-2`}>{laporan[column.field]}</td>
-              })}
-            </tr>
-          })}
-        </tbody>
-      </table>
+      <Table
+        id="laporan-harian-table"
+        columns={columnHeaders}
+        rowsData={listLaporan}
+      />
       {html`
         <script>
-          $(document).ready(function() {
-            $('#laporanTable').DataTable()
+          $(document).ready(function () {
+            $('#laporan-harian-table').DataTable();
           });
         </script>
       `}

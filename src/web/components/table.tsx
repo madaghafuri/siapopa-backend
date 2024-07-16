@@ -1,21 +1,21 @@
-import { JSX } from "hono/jsx";
+import { JSX } from 'hono/jsx';
 
 export type ColumnHeader<T extends Object = any> = {
   field?: keyof T;
   headerName: string;
   span?:
-  | '1'
-  | '2'
-  | '3'
-  | '4'
-  | '5'
-  | '6'
-  | '7'
-  | '8'
-  | '9'
-  | '10'
-  | '11'
-  | '12';
+    | '1'
+    | '2'
+    | '3'
+    | '4'
+    | '5'
+    | '6'
+    | '7'
+    | '8'
+    | '9'
+    | '10'
+    | '11'
+    | '12';
   valueGetter?: (row: T, index?: number) => T[keyof T] | any;
 };
 
@@ -32,13 +32,17 @@ const Table = ({
 } & JSX.TableElement) => {
   return (
     //@ts-ignore
-    <table class="bg-white border-t-2 border-t-secondary" style="width:100%" {...props}>
+    <table
+      class="border-t-2 border-t-secondary bg-white"
+      style="width:100%"
+      {...props}
+    >
       <thead>
         <tr class="">
           {columns.map((col) => {
             return (
               <th
-                class={`border-b border-gray-200 px-4 py-2 text-sm font-semibold capitalize text-blue-500 ${colSpan[col.span]}`}
+                class={`border-b border-gray-200 px-4 py-2 text-sm font-semibold capitalize text-blue-500`}
               >
                 {col.headerName}
               </th>
@@ -50,14 +54,11 @@ const Table = ({
       <tbody hx-get={reloadBody} id="#table-body">
         {rowsData.map((row, index) => {
           return (
-            <tr
-              key={row.id}
-              class=""
-            >
+            <tr key={row.id} class="">
               {columns.map((column) => {
                 return (
                   <td
-                    class={`border-b border-r border-gray-200 px-4 py-2 text-left text-sm font-normal ${colSpan[column.span]}`}
+                    class={`border-b border-r border-gray-200 px-4 py-2 text-left text-sm font-normal`}
                   >
                     {column?.valueGetter?.(row, index) || row[column.field]}
                   </td>
