@@ -131,7 +131,7 @@ const LaporanHarianPage = ({
           new Chart(ctx, {
             type: 'bar',
             data: {
-              labels: Utils.months({ count: 12 }),
+              labels: ['1', '2', '3', '4', '5', '6'],
               datasets: [
                 {
                   label: '# of Votes',

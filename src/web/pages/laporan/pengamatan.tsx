@@ -62,7 +62,7 @@ export const PengamatanPage = ({
         id="pengamatan-table"
         columns={pengamatanColumn}
         rowsData={pengamatanList}
-        className="hover row-border display nowrap max-w-full rounded-md bg-white"
+        className="hover row-border display nowrap max-w-full rounded-md bg-indigo-500"
       />
       {html`
         <script>
