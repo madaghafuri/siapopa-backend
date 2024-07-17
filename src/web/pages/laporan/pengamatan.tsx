@@ -62,12 +62,14 @@ export const PengamatanPage = ({
         id="pengamatan-table"
         columns={pengamatanColumn}
         rowsData={pengamatanList}
-        className="hover row-border border-t-2 border-t-secondary bg-white"
+        className="hover row-border display nowrap max-w-full rounded-md bg-white"
       />
       {html`
         <script>
           $(document).ready(function () {
-            $('#pengamatan-table').DataTable();
+            $('#pengamatan-table').DataTable({
+              scrollX: true,
+            });
           });
         </script>
       `}

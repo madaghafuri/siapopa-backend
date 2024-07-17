@@ -29,7 +29,7 @@ export const DefaultLayout = ({
       </div>
     </div>
     <div class="flex h-full max-h-[90vh]">
-      <section class="flex w-2/12 flex-col gap-4 border-r-2 px-5 py-10">
+      <section class="flex w-2/12 flex-col gap-4 truncate border-r-2 px-5 py-10 text-sm">
         <a href="/app/dashboard">
           <button
             class={`rounded-md px-4 py-2 text-left ${route === 'dashboard' ? 'bg-primary text-white' : ''}`}
@@ -116,7 +116,7 @@ export const DefaultLayout = ({
           </div>
         </div>
       </section>
-      <div class="isolate grow bg-background">{children}</div>
+      <div class="w-10/12 bg-background">{children}</div>
     </div>
   </MainLayout>
 );

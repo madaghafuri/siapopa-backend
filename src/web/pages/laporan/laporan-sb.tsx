@@ -8,7 +8,18 @@ import { columnHeaders } from './laporan-harian.js';
 import { LuasKerusakanSb } from '../../../db/schema/luas-kerusakan-sb.js';
 
 export const columnLaporanSb: ColumnHeader<LaporanSb>[] = [
-  { field: 'status_laporan_bulanan', headerName: 'status' },
+  { headerName: 'no', valueGetter: (_, index) => index + 1 },
+  {
+    field: 'status_laporan_bulanan',
+    headerName: 'status',
+    valueGetter: (row) => {
+      if (!row.status_laporan_bulanan) {
+        return <i class="fa-solid fa-circle-xmark text-red-500"></i>;
+      }
+
+      return <i class="fa-solid fa-circle-check text-green-500"></i>;
+    },
+  },
   { field: 'note', headerName: 'note' },
   {
     field: 'sign_pic',
@@ -99,42 +110,18 @@ export const LaporanSbPage = ({
           Filter
         </button>
       </div>
-      <table
+      <Table
         id="laporan-sb-table"
-        class="hover border-t-2 border-t-secondary bg-white"
-        style="width:100%"
-      >
-        <thead>
-          <tr>
-            {columnLaporanSb.map((value) => {
-              return (
-                <th class="border-b border-gray-200 px-4 py-2 text-sm font-medium capitalize text-blue-500">
-                  {value.headerName}
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody id="body-laporan-sb">
-          {laporanSbList.map((row) => {
-            return (
-              <tr key={row.id}>
-                {columnLaporanSb.map((column) => {
-                  return (
-                    <td class="border-b border-gray-200 text-center">
-                      {column?.valueGetter?.(row) || row[column.field]}
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+        className="hover row-border max-w-full rounded-md bg-white shadow-xl"
+        columns={columnLaporanSb}
+        rowsData={laporanSbList}
+      />
       {html`
         <script>
           $(document).ready(function () {
-            $('#laporan-sb-table').DataTable();
+            $('#laporan-sb-table').DataTable({
+              scrollX: true,
+            });
           });
         </script>
       `}
@@ -163,18 +150,24 @@ export const LaporanSbDetailPage = ({
         id="laporan-harian-table"
         columns={columnHeaders}
         rowsData={laporanSb.laporan_harian}
+        className="max-w-full rounded-md bg-white shadow-lg"
       />
       <h1 class="text-xl">Luas Kerusakan</h1>
       <Table
         id="luas-kerusakan-table"
         columns={luasKerusakanColumn}
         rowsData={laporanSb.luas_kerusakan}
+        className="max-w-full rounded-md bg-white shadow-lg"
       />
       {html`
         <script>
           $(document).ready(function () {
-            $('#laporan-harian-table').DataTable();
-            $('#luas-kerusakan-table').DataTable();
+            $('#laporan-harian-table').DataTable({
+              scrollX: true,
+            });
+            $('#luas-kerusakan-table').DataTable({
+              scrollX: true,
+            });
           });
         </script>
       `}

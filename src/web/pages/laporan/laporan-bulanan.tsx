@@ -42,11 +42,14 @@ export const LaporanBulananPage = ({
         id="laporan-bulanan-table"
         columns={laporanBulananColumn}
         rowsData={laporanBulananData}
+        className="hover display nowrap max-w-full rounded-md bg-white"
       />
       {html`
         <script>
           $(document).ready(function () {
-            $('#laporan-bulanan-table').DataTable();
+            $('#laporan-bulanan-table').DataTable({
+              scrollX: true,
+            });
           });
         </script>
       `}

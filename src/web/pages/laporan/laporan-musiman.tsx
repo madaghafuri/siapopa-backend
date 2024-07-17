@@ -26,11 +26,14 @@ export const LaporanMusimanPage = ({
         columns={laporanMusimanColumn}
         rowsData={dataLaporanMusiman}
         id="laporan-musiman-table"
+        className="display hover max-w-full rounded-md bg-white"
       />
       {html`
         <script>
           $(document).ready(function () {
-            $('#laporan-musiman-table').DataTable();
+            $('#laporan-musiman-table').DataTable({
+              scrollX: true,
+            });
           });
         </script>
       `}

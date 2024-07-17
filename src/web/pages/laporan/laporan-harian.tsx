@@ -69,7 +69,7 @@ const LaporanHarianPage = ({
         hx-include="*"
         hx-swap="innerHTML"
         hx-target="#table-body"
-        class="grid w-full grid-cols-4 gap-5 rounded border border-t-2 border-gray-200 border-t-secondary bg-white p-3 shadow-xl"
+        class="grid max-w-full grid-cols-4 gap-5 rounded border border-t-2 border-gray-200 border-t-secondary bg-white p-3 shadow-xl"
       >
         <select
           name="tanaman_id"
@@ -113,15 +113,40 @@ const LaporanHarianPage = ({
           Filter
         </button>
       </div>
+      <canvas id="laporan-harian-chart" class="bg-white"></canvas>
       <Table
         id="laporan-harian-table"
         columns={columnHeaders}
         rowsData={listLaporan}
+        className="display nowrap max-w-full rounded-md border-t-secondary bg-white"
       />
       {html`
         <script>
           $(document).ready(function () {
-            $('#laporan-harian-table').DataTable();
+            $('#laporan-harian-table').DataTable({
+              scrollX: true,
+            });
+          });
+          const ctx = document.getElementById('laporan-harian-chart');
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: Utils.months({ count: 12 }),
+              datasets: [
+                {
+                  label: '# of Votes',
+                  data: [12, 19, 3, 5, 2, 3],
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              scales: {
+                y: {
+                  beginAtZero: true,
+                },
+              },
+            },
           });
         </script>
       `}
