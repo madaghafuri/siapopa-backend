@@ -7,7 +7,7 @@ const DashboardPage = () => {
       <div id="map" class="min-h-[60vh]">
         {html`
           <script>
-            $(document).ready(function () {
+            $(document).ready(async function () {
               const map = L.map('map').setView([-6.8673915, 106.9443265], 11);
               L.tileLayer(
                 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -17,6 +17,11 @@ const DashboardPage = () => {
                 }
               ).addTo(map);
 
+              const foo = await fetch('/assets/jabar-geo.geojson')
+                .then((res) => res.json())
+                .then((data) => data);
+
+              console.log(foo);
               const bar = fetch('/assets/jabar-geo.geojson')
                 .then((res) => res.json())
                 .then((data) => {

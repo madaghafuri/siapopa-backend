@@ -34,7 +34,7 @@ import { detailRumpun, Kerusakan } from '../../db/schema/detail-rumpun.js';
 import { opt } from '../../db/schema/opt.js';
 import { hasilPengamatan } from '../../api/helper.js';
 import { userGroup } from '../../db/schema/user-group.js';
-import { laporanSb } from '../../db/schema/laporan-sb.js';
+import { LaporanSb, laporanSb } from '../../db/schema/laporan-sb.js';
 import {
   columnLaporanSb,
   LaporanSbDetailPage,
@@ -472,31 +472,73 @@ laporanSbRoute.get('/', async (c) => {
       console.error(err);
     });
 
-  const laporanSbData = await db.query.laporanSb.findMany({
-    with: {
-      laporanHarian: {
-        with: {
-          pengamatan: {
-            with: {
-              tanaman: true,
-              locations: {
-                with: {
-                  provinsi: true,
-                },
-              },
-            },
-          },
-        },
+  // const laporanSbData = await db.query.laporanSb.findMany({
+  //   with: {
+  //     laporanHarian: true,
+  //   },
+  //   limit: 10,
+  //   offset: 0,
+  //   where: and(
+  //     !!startDate ? gte(laporanSb.tanggal_laporan_sb, startDate) : undefined,
+  //     !!endDate ? lte(laporanSb.tanggal_laporan_sb, endDate) : undefined,
+  //     !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
+  //     !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined
+  //   ),
+  // });
+
+  const laporanSbData = await db
+    .select()
+    .from(laporanSb)
+    .leftJoin(
+      laporanHarianSchema,
+      eq(laporanHarianSchema.id_laporan_sb, laporanSb.id)
+    )
+    .leftJoin(pengamatan, eq(pengamatan.id, laporanHarianSchema.pengamatan_id))
+    .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
+    .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
+    .where(
+      and(
+        !!startDate ? gte(laporanSb.tanggal_laporan_sb, startDate) : undefined,
+        !!endDate ? lte(laporanSb.tanggal_laporan_sb, endDate) : undefined,
+        !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
+        !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined
+      )
+    );
+
+  const result = laporanSbData.reduce<
+    Record<
+      string,
+      LaporanSb & {
+        laporan_harian: (LaporanHarian & { pengamatan: Pengamatan })[];
+        lokasi: Lokasi & { provinsi: Provinsi };
+      }
+    >
+  >((acc, row, index) => {
+    const laporanSb = row.laporan_sb;
+    const laporanHarian = row.laporan_harian;
+    const pengamatan = row.pengamatan;
+    const lokasi = row.lokasi;
+    const provinsi = row.provinsi;
+
+    const aggLaporanHarian = { ...laporanHarian, pengamatan };
+
+    const finalRow = {
+      ...laporanSb,
+      laporan_harian: [aggLaporanHarian],
+      lokasi: {
+        ...lokasi,
+        provinsi,
       },
-    },
-    where: and(
-      !!startDate ? gte(laporanSb.tanggal_laporan_sb, startDate) : undefined,
-      !!endDate ? lte(laporanSb.tanggal_laporan_sb, endDate) : undefined,
-      !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
-      !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined
-    ),
-    orderBy: laporanSb.id,
-  });
+    };
+    if (!acc[laporanSb.id]) {
+      acc[laporanSb.id] = finalRow;
+    } else if (acc[laporanSb.id]) {
+      acc[laporanSb.id].laporan_harian.push(aggLaporanHarian);
+    }
+    return acc;
+  }, {});
+
+  const foo = Object.entries(result).map(([key, value]) => value);
 
   const komoditasOption = await db.query.tanaman.findMany({
     orderBy: tanaman.nama_tanaman,
@@ -513,7 +555,7 @@ laporanSbRoute.get('/', async (c) => {
       <LaporanSbPage
         komoditasOption={komoditasOption}
         provinsiOption={provinsiOption}
-        laporanSbList={laporanSbData}
+        laporanSbList={foo}
       />
     </DefaultLayout>
   );
