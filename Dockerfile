@@ -74,7 +74,11 @@ COPY --from=prerelease /app/assets ./assets
 COPY --from=prerelease /app/tailwind.config.js ./tailwind.config.js
 COPY --from=prerelease /app/postcss.config.js ./postcss.config.js
 
-USER bun
+RUN adduser --system --uid 1001 hono
+RUN chown -R hono:bun /app
+RUN chmod -R 755 /app
+
+USER hono
 EXPOSE 3000/tcp
 # DEV
 ENTRYPOINT [ "bun", "run", "build:css", "&&", "bun", "--hot", "./src/index.ts" ]
