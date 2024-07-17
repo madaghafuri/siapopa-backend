@@ -1,29 +1,26 @@
-import { Hono } from "hono";
-import { validator } from "hono/validator";
+import { Hono } from 'hono';
+import { validator } from 'hono/validator';
 import {
   InsertLaporanMusiman,
   LaporanMusiman,
   laporanMusiman as laporanMusimanSchema,
-} from "../db/schema/laporan-musiman.js";
-import { db } from "../index.js";
-import { and, eq, gte, lte } from "drizzle-orm";
-import {
-  LaporanBulanan,
-  laporanBulanan,
-} from "../db/schema/laporan-bulanan.js";
-import { user } from "../db/schema/user.js";
-import { laporanSb } from "../db/schema/laporan-sb.js";
-import { laporanHarian } from "../db/schema/laporan-harian.js";
-import { pengamatan } from "../db/schema/pengamatan.js";
-import { Lokasi, lokasi } from "../db/schema/lokasi.js";
-import { authorizeApi } from "../middleware.js";
+} from '../db/schema/laporan-musiman';
+import { db } from '../index';
+import { and, eq, gte, lte } from 'drizzle-orm';
+import { LaporanBulanan, laporanBulanan } from '../db/schema/laporan-bulanan';
+import { user } from '../db/schema/user';
+import { laporanSb } from '../db/schema/laporan-sb';
+import { laporanHarian } from '../db/schema/laporan-harian';
+import { pengamatan } from '../db/schema/pengamatan';
+import { Lokasi, lokasi } from '../db/schema/lokasi';
+import { authorizeApi } from '../middleware';
 
 export const laporanMusiman = new Hono();
-laporanMusiman.use("/laporan_musiman/*", authorizeApi);
+laporanMusiman.use('/laporan_musiman/*', authorizeApi);
 
 laporanMusiman.post(
-  "/laporan_musiman",
-  validator("json", (value, c) => {
+  '/laporan_musiman',
+  validator('json', (value, c) => {
     const { opt_id, pic_id, ...rest } = value as InsertLaporanMusiman & {
       lokasi_id: string;
       lokasi_laporan_bulanan: {
@@ -37,16 +34,16 @@ laporanMusiman.post(
         {
           status: 401,
           message:
-            "Permintaan tidak dapat dilanjutkan. Kekurangan data opt_id atau pic_id",
+            'Permintaan tidak dapat dilanjutkan. Kekurangan data opt_id atau pic_id',
         },
-        401,
+        401
       );
     }
 
     return { opt_id, pic_id, ...rest };
   }),
   async (c) => {
-    const { lokasi_id, lokasi_laporan_bulanan, ...rest } = c.req.valid("json");
+    const { lokasi_id, lokasi_laporan_bulanan, ...rest } = c.req.valid('json');
     const [lat, long] = lokasi_laporan_bulanan.coordinates;
 
     try {
@@ -59,22 +56,22 @@ laporanMusiman.post(
       return c.json(
         {
           status: 500,
-          message: "internal server error",
+          message: 'internal server error',
         },
-        500,
+        500
       );
     }
 
     return c.json({
       status: 200,
-      message: "success",
+      message: 'success',
       data: insertLaporan[0],
     });
-  },
+  }
 );
 laporanMusiman.put(
-  "/laporan_musiman/:laporanMusimanId",
-  validator("json", (value, c) => {
+  '/laporan_musiman/:laporanMusimanId',
+  validator('json', (value, c) => {
     const { opt_id, pic_id, ...rest } = value as InsertLaporanMusiman & {
       lokasi_id: string;
       lokasi_laporan_musiman: {
@@ -88,17 +85,17 @@ laporanMusiman.put(
         {
           status: 401,
           message:
-            "Tidak dapat melanjutkan permintaan. Kekurangan data opt_id atau pic_id",
+            'Tidak dapat melanjutkan permintaan. Kekurangan data opt_id atau pic_id',
         },
-        401,
+        401
       );
     }
 
     return { opt_id, pic_id, ...rest };
   }),
   async (c) => {
-    const laporanMusimanId = c.req.param("laporanMusimanId");
-    const { lokasi_laporan_musiman, lokasi_id, ...rest } = c.req.valid("json");
+    const laporanMusimanId = c.req.param('laporanMusimanId');
+    const { lokasi_laporan_musiman, lokasi_id, ...rest } = c.req.valid('json');
     const [lat, long] = lokasi_laporan_musiman.coordinates;
 
     try {
@@ -112,21 +109,21 @@ laporanMusiman.put(
       return c.json(
         {
           status: 500,
-          message: "internal server error",
+          message: 'internal server error',
         },
-        500,
+        500
       );
     }
 
     return c.json({
       status: 200,
-      message: "success",
+      message: 'success',
       data: updateData[0],
     });
-  },
+  }
 );
-laporanMusiman.delete("/laporan_musiman/:laporanMusimanId", async (c) => {
-  const laporanMusimanId = c.req.param("laporanMusimanId");
+laporanMusiman.delete('/laporan_musiman/:laporanMusimanId', async (c) => {
+  const laporanMusimanId = c.req.param('laporanMusimanId');
 
   try {
     await db
@@ -137,19 +134,19 @@ laporanMusiman.delete("/laporan_musiman/:laporanMusimanId", async (c) => {
     return c.json(
       {
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       },
-      500,
+      500
     );
   }
 
   return c.json({
     status: 200,
-    message: "berhasil menghapus laporan",
+    message: 'berhasil menghapus laporan',
   });
 });
-laporanMusiman.get("/laporan_musiman/:laporanMusimanId", async (c) => {
-  const laporanMusimanId = parseInt(c.req.param("laporanMusimanId"));
+laporanMusiman.get('/laporan_musiman/:laporanMusimanId', async (c) => {
+  const laporanMusimanId = parseInt(c.req.param('laporanMusimanId'));
 
   try {
     var selectLaporan = await db
@@ -157,7 +154,7 @@ laporanMusiman.get("/laporan_musiman/:laporanMusimanId", async (c) => {
       .from(laporanMusimanSchema)
       .leftJoin(
         laporanBulanan,
-        eq(laporanBulanan.laporan_musiman_id, laporanMusimanSchema.id),
+        eq(laporanBulanan.laporan_musiman_id, laporanMusimanSchema.id)
       )
       .leftJoin(laporanSb, eq(laporanSb.laporan_bulanan_id, laporanBulanan.id))
       .leftJoin(laporanHarian, eq(laporanHarian.id_laporan_sb, laporanSb.id))
@@ -169,9 +166,9 @@ laporanMusiman.get("/laporan_musiman/:laporanMusimanId", async (c) => {
     return c.json(
       {
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       },
-      500,
+      500
     );
   }
 
@@ -179,9 +176,9 @@ laporanMusiman.get("/laporan_musiman/:laporanMusimanId", async (c) => {
     return c.json(
       {
         status: 404,
-        message: "Laporan tidak ditemukan",
+        message: 'Laporan tidak ditemukan',
       },
-      404,
+      404
     );
   }
 
@@ -220,24 +217,24 @@ laporanMusiman.get("/laporan_musiman/:laporanMusimanId", async (c) => {
 
   return c.json({
     status: 200,
-    message: "success",
+    message: 'success',
     data: result,
   });
 });
-laporanMusiman.get("/laporan_musiman", async (c) => {
+laporanMusiman.get('/laporan_musiman', async (c) => {
   const { user_id, location_id, start_date, end_date, per_page, page } =
     c.req.query() as Record<
-      | "user_id"
-      | "location_id"
-      | "start_date"
-      | "end_date"
-      | "per_page"
-      | "page",
+      | 'user_id'
+      | 'location_id'
+      | 'start_date'
+      | 'end_date'
+      | 'per_page'
+      | 'page',
       string
     >;
 
-  const limit = parseInt(per_page || "10");
-  const offset = (parseInt(page || "1") - 1) * limit;
+  const limit = parseInt(per_page || '10');
+  const offset = (parseInt(page || '1') - 1) * limit;
 
   try {
     var selectLaporan = await db.query.laporanMusiman.findMany({
@@ -250,7 +247,7 @@ laporanMusiman.get("/laporan_musiman", async (c) => {
         !!start_date
           ? gte(laporanMusimanSchema.start_date, start_date)
           : undefined,
-        !!end_date ? lte(laporanMusimanSchema, end_date) : undefined,
+        !!end_date ? lte(laporanMusimanSchema, end_date) : undefined
       ),
       limit,
       offset,
@@ -260,9 +257,9 @@ laporanMusiman.get("/laporan_musiman", async (c) => {
     return c.json(
       {
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       },
-      500,
+      500
     );
   }
 
@@ -270,15 +267,15 @@ laporanMusiman.get("/laporan_musiman", async (c) => {
     return c.json(
       {
         status: 404,
-        message: "Laporan tidak ditemukan",
+        message: 'Laporan tidak ditemukan',
       },
-      404,
+      404
     );
   }
 
   return c.json({
     status: 200,
-    message: "success",
+    message: 'success',
     data: selectLaporan,
   });
 });

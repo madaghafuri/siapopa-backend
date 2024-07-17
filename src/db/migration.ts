@@ -1,4 +1,6 @@
-import { migrate } from "drizzle-orm/node-postgres/migrator";
-import { db } from "../index.js";
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { db } from '../index';
 
-await migrate(db, { migrationsFolder: "./drizzle" });
+(async () => {
+  await migrate(db, { migrationsFolder: './drizzle' });
+})();

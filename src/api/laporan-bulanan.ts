@@ -1,23 +1,23 @@
-import { Hono } from "hono";
-import { validator } from "hono/validator";
+import { Hono } from 'hono';
+import { validator } from 'hono/validator';
 import {
   InsertLaporanBulanan,
   laporanBulanan as laporanBulananSchema,
-} from "../db/schema/laporan-bulanan.js";
-import { db } from "../index.js";
-import { and, eq, gte, inArray, lte, sql, SQL } from "drizzle-orm";
-import { laporanSb } from "../db/schema/laporan-sb.js";
-import { user } from "../db/schema/user.js";
-import { lokasi } from "../db/schema/lokasi.js";
-import { authorizeApi } from "../middleware.js";
+} from '../db/schema/laporan-bulanan.js';
+import { db } from '../index.js';
+import { and, eq, gte, inArray, lte, sql, SQL } from 'drizzle-orm';
+import { laporanSb } from '../db/schema/laporan-sb.js';
+import { user } from '../db/schema/user';
+import { lokasi } from '../db/schema/lokasi';
+import { authorizeApi } from '../middleware';
 
 export const laporanBulanan = new Hono();
 
-laporanBulanan.use("/laporan_bulanan/*", authorizeApi);
+laporanBulanan.use('/laporan_bulanan/*', authorizeApi);
 
 laporanBulanan.post(
-  "/laporan_bulanan",
-  validator("json", (value, c) => {
+  '/laporan_bulanan',
+  validator('json', (value, c) => {
     const { opt_id, pic_id, lokasi_id, ...rest } =
       value as InsertLaporanBulanan & {
         lokasi_laporan_bulanan: { type: string; coordinates: [number, number] };
@@ -29,16 +29,17 @@ laporanBulanan.post(
       return c.json(
         {
           status: 401,
-          message: "missing required data",
+          message: 'missing required data',
         },
-        401,
+        401
       );
     }
 
     return { opt_id, pic_id, lokasi_id, ...rest };
   }),
   async (c) => {
-    const { lokasi_laporan_bulanan, lokasi_id, laporan_sb, ...rest } = c.req.valid("json");
+    const { lokasi_laporan_bulanan, lokasi_id, laporan_sb, ...rest } =
+      c.req.valid('json');
     const [lat, long] = lokasi_laporan_bulanan.coordinates;
 
     try {
@@ -49,29 +50,32 @@ laporanBulanan.post(
 
       await db
         .update(laporanSb)
-        .set({ status_laporan_bulanan: true, laporan_bulanan_id: insertLaporan[0].id })
+        .set({
+          status_laporan_bulanan: true,
+          laporan_bulanan_id: insertLaporan[0].id,
+        })
         .where(inArray(laporanSb.id, laporan_sb));
     } catch (error) {
       console.error(error);
       return c.json(
         {
           status: 500,
-          message: "internal server error",
+          message: 'internal server error',
         },
-        500,
+        500
       );
     }
 
     return c.json({
       status: 200,
-      message: "success",
+      message: 'success',
       data: insertLaporan[0],
     });
-  },
+  }
 );
 laporanBulanan.put(
-  "/laporan_bulanan/:laporanBulananId",
-  validator("json", (value) => {
+  '/laporan_bulanan/:laporanBulananId',
+  validator('json', (value) => {
     const data = value as InsertLaporanBulanan & {
       lokasi_id: string;
       lokasi_laporan_bulanan: {
@@ -83,8 +87,8 @@ laporanBulanan.put(
     return data;
   }),
   async (c) => {
-    const { lokasi_laporan_bulanan, ...rest } = c.req.valid("json");
-    const laporanBulananId = c.req.param("laporanBulananId");
+    const { lokasi_laporan_bulanan, ...rest } = c.req.valid('json');
+    const laporanBulananId = c.req.param('laporanBulananId');
     const [lat, long] = lokasi_laporan_bulanan.coordinates;
 
     try {
@@ -98,21 +102,21 @@ laporanBulanan.put(
       return c.json(
         {
           status: 500,
-          message: "internal server error",
+          message: 'internal server error',
         },
-        500,
+        500
       );
     }
 
     return c.json({
       status: 200,
-      message: "success",
+      message: 'success',
       data: updatedData[0],
     });
-  },
+  }
 );
-laporanBulanan.delete("/laporan_bulanan/:laporanBulananId", async (c) => {
-  const laporanBulananId = c.req.param("laporanBulananId");
+laporanBulanan.delete('/laporan_bulanan/:laporanBulananId', async (c) => {
+  const laporanBulananId = c.req.param('laporanBulananId');
 
   try {
     await db
@@ -123,19 +127,19 @@ laporanBulanan.delete("/laporan_bulanan/:laporanBulananId", async (c) => {
     return c.json(
       {
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       },
-      500,
+      500
     );
   }
 
   return c.json({
     status: 200,
-    message: "Berhasil menghapus laporan bulanan",
+    message: 'Berhasil menghapus laporan bulanan',
   });
 });
-laporanBulanan.get("/laporan_bulanan/:laporanBulananId", async (c) => {
-  const laporanBulananId = c.req.param("laporanBulananId");
+laporanBulanan.get('/laporan_bulanan/:laporanBulananId', async (c) => {
+  const laporanBulananId = c.req.param('laporanBulananId');
 
   try {
     var selectData = await db
@@ -143,7 +147,7 @@ laporanBulanan.get("/laporan_bulanan/:laporanBulananId", async (c) => {
       .from(laporanBulananSchema)
       .leftJoin(
         laporanSb,
-        eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id),
+        eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id)
       )
       .where(eq(laporanBulananSchema.id, parseInt(laporanBulananId)));
   } catch (error) {
@@ -151,9 +155,9 @@ laporanBulanan.get("/laporan_bulanan/:laporanBulananId", async (c) => {
     return c.json(
       {
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       },
-      500,
+      500
     );
   }
 
@@ -161,22 +165,22 @@ laporanBulanan.get("/laporan_bulanan/:laporanBulananId", async (c) => {
     return c.json(
       {
         status: 404,
-        message: "Data laporan bulanan tidak ditemukan",
+        message: 'Data laporan bulanan tidak ditemukan',
       },
-      404,
+      404
     );
   }
 
   return c.json({
     status: 200,
-    message: "succes",
+    message: 'succes',
     data: selectData[0],
   });
 });
-laporanBulanan.get("/laporan_bulanan", async (c) => {
+laporanBulanan.get('/laporan_bulanan', async (c) => {
   const { user_id, location_id, start_date, end_date } =
     c.req.query() as Record<
-      "user_id" | "location_id" | "start_date" | "end_date",
+      'user_id' | 'location_id' | 'start_date' | 'end_date',
       string
     >;
 
@@ -187,7 +191,7 @@ laporanBulanan.get("/laporan_bulanan", async (c) => {
       .leftJoin(user, eq(user.id, laporanBulananSchema.pic_id))
       .leftJoin(
         laporanSb,
-        eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id),
+        eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id)
       )
       .where(
         and(
@@ -196,17 +200,17 @@ laporanBulanan.get("/laporan_bulanan", async (c) => {
           !!start_date
             ? gte(laporanBulananSchema.start_date, start_date)
             : undefined,
-          !!end_date ? lte(laporanBulananSchema.end_date, end_date) : undefined,
-        ),
+          !!end_date ? lte(laporanBulananSchema.end_date, end_date) : undefined
+        )
       );
   } catch (error) {
     console.error(error);
     return c.json(
       {
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       },
-      500,
+      500
     );
   }
 
@@ -214,15 +218,15 @@ laporanBulanan.get("/laporan_bulanan", async (c) => {
     return c.json(
       {
         status: 404,
-        message: "Laporan bulanan tidak ditemukan",
+        message: 'Laporan bulanan tidak ditemukan',
       },
-      404,
+      404
     );
   }
 
   return c.json({
     status: 200,
-    message: "success",
+    message: 'success',
     data: selectData,
   });
 });

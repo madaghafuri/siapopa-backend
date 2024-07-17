@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { validator } from 'hono/validator';
-import { db, lucia } from '../index.js';
-import { InsertUser, user } from '../db/schema/user.js';
+import { db, lucia } from '../index';
+import { InsertUser, user } from '../db/schema/user';
 import { and, eq } from 'drizzle-orm';
 import { JwtVariables } from 'hono/jwt';
 
