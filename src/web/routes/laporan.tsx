@@ -44,6 +44,7 @@ import { LaporanBulananPage } from '../pages/laporan/laporan-bulanan.js';
 import { laporanBulanan } from '../../db/schema/laporan-bulanan.js';
 import { laporanMusiman } from '../../db/schema/laporan-musiman.js';
 import { LaporanMusimanPage } from '../pages/laporan/laporan-musiman.js';
+import { luasKerusakanSb } from '../../db/schema/luas-kerusakan-sb.js';
 
 export const laporan = new Hono<{
   Variables: {
@@ -538,7 +539,7 @@ laporanSbRoute.get('/', async (c) => {
     return acc;
   }, {});
 
-  const foo = Object.entries(result).map(([key, value]) => value);
+  const foo = Object.entries(result).map(([_, value]) => value);
 
   const komoditasOption = await db.query.tanaman.findMany({
     orderBy: tanaman.nama_tanaman,
@@ -639,20 +640,43 @@ laporanSbRoute.get('/:laporanSbId', async (c) => {
       console.error(err);
     });
 
-  const laporanSbData = await db.query.laporanSb.findFirst({
-    with: {
-      laporanHarian: true,
-      luas_kerusakan_sb: true,
-    },
-    where: eq(laporanSb.id, parseInt(laporanSbId)),
-  });
+  const laporanSbData = await db
+    .select()
+    .from(laporanSb)
+    .leftJoin(
+      laporanHarianSchema,
+      eq(laporanHarianSchema.id_laporan_sb, laporanSb.id)
+    )
+    .where(eq(laporanSb.id, parseInt(laporanSbId)));
+
+  const luasKerusakanQuery = await db
+    .select()
+    .from(luasKerusakanSb)
+    .where(eq(luasKerusakanSb.laporan_sb_id, parseInt(laporanSbId)));
+
+  const result = laporanSbData.reduce((acc, row) => {
+    const laporanSb = row.laporan_sb;
+    const laporanHarian = row.laporan_harian;
+
+    if (!acc[laporanSb.id]) {
+      acc[laporanSb.id] = {
+        ...laporanSb,
+        laporan_harian: [laporanHarian],
+      };
+    } else if (acc[laporanSb.id]) {
+      acc[laporanSb.id].laporan_harian.push(laporanHarian);
+    }
+    return acc;
+  }, {});
+
+  result[laporanSbId].luas_kerusakan = luasKerusakanQuery;
 
   return c.html(
     <DefaultLayout
       route="laporan-sb"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
     >
-      <LaporanSbDetailPage laporanSb={laporanSbData} />
+      <LaporanSbDetailPage laporanSb={result[laporanSbId]} />
     </DefaultLayout>
   );
 });

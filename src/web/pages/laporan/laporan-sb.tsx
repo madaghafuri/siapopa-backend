@@ -1,8 +1,11 @@
 import { html } from 'hono/html';
 import { LaporanSb } from '../../../db/schema/laporan-sb.js';
-import { ColumnHeader } from '../../components/table.js';
+import { ColumnHeader, Table } from '../../components/table.js';
 import { SelectTanaman } from '../../../db/schema/tanaman.js';
 import { Provinsi } from '../../../db/schema/provinsi.js';
+import { LaporanHarian } from '../../../db/schema/laporan-harian.js';
+import { columnHeaders } from './laporan-harian.js';
+import { LuasKerusakanSb } from '../../../db/schema/luas-kerusakan-sb.js';
 
 export const columnLaporanSb: ColumnHeader<LaporanSb>[] = [
   { field: 'status_laporan_bulanan', headerName: 'status' },
@@ -139,26 +142,39 @@ export const LaporanSbPage = ({
   );
 };
 
+const luasKerusakanColumn: ColumnHeader<LuasKerusakanSb>[] = [
+  { field: 'kategori_kerusakan', headerName: 'kategori kerusakan' },
+  { field: 'kategori_serangan', headerName: 'kategori serangan' },
+  { field: 'luas_kerusakan', headerName: 'luas kerusakan' },
+];
+
 export const LaporanSbDetailPage = ({
   laporanSb,
 }: {
-  laporanSb: LaporanSb;
+  laporanSb: LaporanSb & {
+    laporan_harian: LaporanHarian[];
+    luas_kerusakan: LuasKerusakanSb[];
+  };
 }) => {
   return (
     <div class="flex flex-col gap-5 p-5 shadow-inner">
-      <div>Data</div>
-      <table
+      <h1 class="text-xl">Laporan Harian</h1>
+      <Table
         id="laporan-harian-table"
-        class="border-t-2 border-t-secondary bg-white"
-        style="width:100%"
-      >
-        <thead></thead>
-        <tbody></tbody>
-      </table>
+        columns={columnHeaders}
+        rowsData={laporanSb.laporan_harian}
+      />
+      <h1 class="text-xl">Luas Kerusakan</h1>
+      <Table
+        id="luas-kerusakan-table"
+        columns={luasKerusakanColumn}
+        rowsData={laporanSb.luas_kerusakan}
+      />
       {html`
         <script>
           $(document).ready(function () {
             $('#laporan-harian-table').DataTable();
+            $('#luas-kerusakan-table').DataTable();
           });
         </script>
       `}
