@@ -2,6 +2,7 @@
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "build:css": "tailwindcss -i ./src/style.css -o ./dist/output.css --watch",
+    "build:css:prod": "tailwindcss -i ./src/style.css -o ./dist/output.css",
     "db:migrate": "bun run src/db/migration.ts"
   },
   "type": "module",

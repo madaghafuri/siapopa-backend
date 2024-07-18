@@ -61,7 +61,7 @@ WORKDIR /app
 COPY --from=install /temp/dev/node_modules ./node_modules
 COPY . .
 # PROD
-RUN bun run build:css
+RUN bun run build:css:prod
 
 FROM base as release
 WORKDIR /app
@@ -73,6 +73,9 @@ COPY --from=prerelease /app/tsconfig.json ./tsconfig.json
 COPY --from=prerelease /app/assets ./assets
 COPY --from=prerelease /app/tailwind.config.js ./tailwind.config.js
 COPY --from=prerelease /app/postcss.config.js ./postcss.config.js
+COPY --from=prerelease /app/drizzle ./drizzle
+COPY --from=prerelease /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=prerelease /app/run.sh ./run.sh
 
 RUN adduser --system --uid 1001 hono
 RUN chown -R hono:bun /app
@@ -80,8 +83,6 @@ RUN chmod -R 755 /app
 
 USER hono
 EXPOSE 3000/tcp
-# DEV
-ENTRYPOINT [ "bun", "run", "build:css", "&&", "bun", "--hot", "./src/index.ts" ]
 
 # PROD
-# ENTRYPOINT [ "bun", "run", "./src/db/migration.ts", "&&", "bun", "./src/index.ts" ]
+ENTRYPOINT ["sh", "run.sh"]

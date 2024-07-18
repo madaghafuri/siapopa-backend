@@ -13,6 +13,7 @@ import { UserData } from '../master/user.js';
 export const columnHeaders: ColumnHeader<
   LaporanHarian & { pengamatan: Pengamatan; lokasi: Lokasi; pic: UserData }
 >[] = [
+  { headerName: 'no', valueGetter: (_, index) => index + 1 },
   {
     field: 'sign_pic',
     headerName: 'signature',
