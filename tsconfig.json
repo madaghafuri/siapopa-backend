@@ -1,18 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2021",
-    "module": "ES2022",
-    "moduleResolution": "Bundler",
     "strict": false,
     "skipLibCheck": true,
-    "types": ["typed-htmx", "node"],
+    "types": ["typed-htmx"],
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
-    "outDir": "./dist",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "plugins": [{ "name": "typescript-lit-html-plugin" }]
-  },
-  "exclude": ["node_modules"],
-  "include": ["src/**/*"]
+    "jsxImportSource": "hono/jsx"
+  }
 }

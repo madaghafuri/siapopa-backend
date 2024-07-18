@@ -7,10 +7,10 @@ import {
   serial,
   text,
 } from 'drizzle-orm/pg-core';
-import { pengamatan } from './pengamatan.js';
-import { opt } from './opt.js';
-import { user } from './user.js';
-import { laporanSb } from './laporan-sb.js';
+import { pengamatan } from './pengamatan';
+import { opt } from './opt';
+import { user } from './user';
+import { laporanSb } from './laporan-sb';
 import { relations } from 'drizzle-orm';
 
 export const laporanHarian = pgTable('laporan_harian', {
@@ -25,7 +25,7 @@ export const laporanHarian = pgTable('laporan_harian', {
   pic_id: integer('pic_id').references(() => user.id),
   sign_pic: text('sign_pic'),
   status_laporan_sb: boolean('status_laporan_sb').default(false),
-  skala: text('skala')
+  skala: text('skala'),
 });
 
 export const laporanHarianRelations = relations(laporanHarian, ({ one }) => ({

@@ -1,6 +1,6 @@
 import { integer, pgEnum, pgTable, serial } from 'drizzle-orm/pg-core';
-import { rumpun } from './rumpun.js';
-import { opt } from './opt.js';
+import { rumpun } from './rumpun';
+import { opt } from './opt';
 import { relations } from 'drizzle-orm';
 
 const ListKerusakan = [

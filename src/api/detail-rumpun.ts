@@ -1,21 +1,21 @@
-import { Hono } from "hono";
-import { JwtVariables } from "hono/jwt";
-import { validator } from "hono/validator";
+import { Hono } from 'hono';
+import { JwtVariables } from 'hono/jwt';
+import { validator } from 'hono/validator';
 import {
   DetailRumpun,
   detailRumpun as detailRumpunSchema,
-} from "../db/schema/detail-rumpun.js";
-import { db } from "../index.js";
-import { eq } from "drizzle-orm";
-import { authorizeApi } from "../middleware.js";
+} from '../db/schema/detail-rumpun';
+import { db } from '../index';
+import { eq } from 'drizzle-orm';
+import { authorizeApi } from '../middleware';
 
 export const detailRumpun = new Hono<{ Variables: JwtVariables }>();
 
-detailRumpun.use("/detail_rumpun/*", authorizeApi);
+detailRumpun.use('/detail_rumpun/*', authorizeApi);
 
 detailRumpun.post(
-  "/detail_rumpun",
-  validator("json", (value, c) => {
+  '/detail_rumpun',
+  validator('json', (value, c) => {
     const { rumpun_id } = value;
 
     if (!rumpun_id) {
@@ -23,21 +23,17 @@ detailRumpun.post(
         {
           status: 401,
           message:
-            "Tidak dapat melanjutkan permintaan. Data rumpun_id dibutuhkan",
+            'Tidak dapat melanjutkan permintaan. Data rumpun_id dibutuhkan',
         },
-        401,
+        401
       );
     }
 
     return value as DetailRumpun;
   }),
   async (c) => {
-    const {
-      rumpun_id,
-      opt_id,
-      jumlah_opt,
-      skala_kerusakan,
-    } = c.req.valid("json");
+    const { rumpun_id, opt_id, jumlah_opt, skala_kerusakan } =
+      c.req.valid('json');
 
     const insertedData = await db
       .insert(detailRumpunSchema)
@@ -53,22 +49,22 @@ detailRumpun.post(
       return c.json(
         {
           status: 500,
-          message: "internal server error",
+          message: 'internal server error',
         },
-        500,
+        500
       );
     }
 
     return c.json({
       status: 200,
-      message: "Berhasil input data OPT",
+      message: 'Berhasil input data OPT',
       data: insertedData[0],
     });
-  },
+  }
 );
 detailRumpun.get(
-  "/detail_rumpun",
-  validator("query", (value, c) => {
+  '/detail_rumpun',
+  validator('query', (value, c) => {
     const { rumpun_id } = value;
 
     if (!rumpun_id) {
@@ -76,15 +72,15 @@ detailRumpun.get(
         {
           status: 401,
           message:
-            "Permintaan tidak dapat dilanjutkan. Data rumpun_id tidak adak",
+            'Permintaan tidak dapat dilanjutkan. Data rumpun_id tidak adak',
         },
-        401,
+        401
       );
     }
-    return value as Record<"rumpun_id" | "page" | "per_page", string>;
+    return value as Record<'rumpun_id' | 'page' | 'per_page', string>;
   }),
   async (c) => {
-    const { rumpun_id, page, per_page } = c.req.valid("query");
+    const { rumpun_id, page, per_page } = c.req.valid('query');
 
     const parsedOffset = ((parseInt(page) || 1) - 1) * parseInt(per_page) || 10;
 
@@ -99,21 +95,21 @@ detailRumpun.get(
       return c.json(
         {
           status: 404,
-          message: "Detail rumpun tidak ditemukan",
+          message: 'Detail rumpun tidak ditemukan',
         },
-        404,
+        404
       );
     }
 
     return c.json({
       status: 200,
-      message: "success",
+      message: 'success',
       data: listDetailRumpun,
     });
-  },
+  }
 );
-detailRumpun.delete("/detail_rumpun/:detailRumpunId", async (c) => {
-  const detailRumpunId = c.req.param("detailRumpunId");
+detailRumpun.delete('/detail_rumpun/:detailRumpunId', async (c) => {
+  const detailRumpunId = c.req.param('detailRumpunId');
 
   try {
     await db
@@ -124,20 +120,20 @@ detailRumpun.delete("/detail_rumpun/:detailRumpunId", async (c) => {
     return c.json(
       {
         status: 500,
-        message: "internal server error",
+        message: 'internal server error',
       },
-      500,
+      500
     );
   }
 
   return c.json({
     status: 200,
-    message: "success",
+    message: 'success',
   });
 });
 detailRumpun.put(
-  "/detail_rumpun/:detailRumpunId",
-  validator("json", (value, c) => {
+  '/detail_rumpun/:detailRumpunId',
+  validator('json', (value, c) => {
     const {
       detail_rumpun_id,
       pengamatan_id,
@@ -150,9 +146,8 @@ detailRumpun.put(
     return value as DetailRumpun;
   }),
   async (c) => {
-    const detailRumpunId = c.req.param("detailRumpunId");
-    const { opt_id, jumlah_opt, skala_kerusakan } =
-      c.req.valid("json");
+    const detailRumpunId = c.req.param('detailRumpunId');
+    const { opt_id, jumlah_opt, skala_kerusakan } = c.req.valid('json');
 
     const updatedDetailRumpun = await db
       .update(detailRumpunSchema)
@@ -164,16 +159,16 @@ detailRumpun.put(
       return c.json(
         {
           status: 500,
-          message: "internal server error",
+          message: 'internal server error',
         },
-        500,
+        500
       );
     }
 
     return c.json({
       status: 200,
-      message: "Berhasil update data OPT",
+      message: 'Berhasil update data OPT',
       data: updatedDetailRumpun[0],
     });
-  },
+  }
 );

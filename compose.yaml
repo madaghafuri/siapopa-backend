@@ -22,7 +22,7 @@ services:
     restart: on-failure
     develop:
       watch:
-        - action: sync+restart
+        - action: sync
           path: ./src
           target: /app/src
           ignore:
@@ -49,9 +49,9 @@ services:
       - POSTGRES_HOST_AUTH_METHOD=trust
       - POSTGRES_PASSWORD=postgres
     ports:
-      - "5432:5432/tcp"
+      - '5432:5432/tcp'
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: ['CMD', 'pg_isready']
       interval: 10s
       timeout: 5s
       retries: 5

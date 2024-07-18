@@ -1,10 +1,9 @@
 import { Hono } from 'hono';
 import { validator } from 'hono/validator';
-import { db, lucia } from '../index.js';
-import { InsertUser, user } from '../db/schema/user.js';
+import { db, lucia } from '../index';
+import { InsertUser, user } from '../db/schema/user';
 import { and, eq } from 'drizzle-orm';
 import { JwtVariables } from 'hono/jwt';
-import bcrypt from 'bcrypt';
 
 export const auth = new Hono<{ Variables: JwtVariables }>();
 
@@ -51,7 +50,8 @@ auth.post(
       );
     }
 
-    const comparePass = bcrypt.compareSync(password, findUser.password);
+    // const comparePass = bcrypt.compareSync(password, findUser.password);
+    const comparePass = await Bun.password.verify(password, findUser.password);
 
     if (!comparePass) {
       return c.json(
@@ -110,7 +110,10 @@ auth.post(
   async (c) => {
     const data = c.req.valid('json');
 
-    const hPass = bcrypt.hashSync(data.password, 10);
+    const hPass = await Bun.password.hash(data.password, {
+      algorithm: 'bcrypt',
+      cost: 10,
+    });
 
     try {
       await db

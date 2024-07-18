@@ -8,13 +8,13 @@ import {
   serial,
   text,
 } from 'drizzle-orm/pg-core';
-import { tanaman } from './tanaman.js';
-import { lokasi } from './lokasi.js';
-import { user } from './user.js';
+import { tanaman } from './tanaman';
+import { lokasi } from './lokasi';
+import { user } from './user';
 import { relations } from 'drizzle-orm';
-import { laporanHarian } from './laporan-harian.js';
-import { rumpun } from './rumpun.js';
-import { photoPengamatan } from './photo-pengamatan.js';
+import { laporanHarian } from './laporan-harian';
+import { rumpun } from './rumpun';
+import { photoPengamatan } from './photo-pengamatan';
 
 export const pengamatan = pgTable('pengamatan', {
   id: serial('id').primaryKey(),

@@ -1,5 +1,5 @@
 import { integer, pgEnum, pgTable, serial } from 'drizzle-orm/pg-core';
-import { laporanSb } from './laporan-sb.js';
+import { laporanSb } from './laporan-sb';
 import { relations } from 'drizzle-orm';
 
 export const serangan = pgEnum('kategori_serangan', [

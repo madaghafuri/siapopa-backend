@@ -1,13 +1,13 @@
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { user } from "./user.js";
+import { integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { user } from './user';
 
-export const sessionTable = pgTable("session", {
-  id: text("id").primaryKey(),
-  userId: integer("user_id")
+export const sessionTable = pgTable('session', {
+  id: text('id').primaryKey(),
+  userId: integer('user_id')
     .notNull()
     .references(() => user.id),
-  expiresAt: timestamp("expires_at", {
+  expiresAt: timestamp('expires_at', {
     withTimezone: true,
-    mode: "date",
+    mode: 'date',
   }).notNull(),
 });

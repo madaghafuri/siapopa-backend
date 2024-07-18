@@ -6,19 +6,19 @@ import {
 } from '../db/schema/laporan-harian.js';
 import { db } from '../index.js';
 import { and, eq, gte, lte, sql } from 'drizzle-orm';
-import { lokasi } from '../db/schema/lokasi.js';
-import { pengamatan } from '../db/schema/pengamatan.js';
-import { rumpun } from '../db/schema/rumpun.js';
-import { detailRumpun } from '../db/schema/detail-rumpun.js';
-import { hasilPengamatan, withPagination } from './helper.js';
-import { authorizeApi } from '../middleware.js';
-import { opt } from '../db/schema/opt.js';
-import { tanaman } from '../db/schema/tanaman.js';
-import { provinsi } from '../db/schema/provinsi.js';
-import { kabupatenKota } from '../db/schema/kabupaten-kota.js';
-import { kecamatan } from '../db/schema/kecamatan.js';
-import { desa } from '../db/schema/desa.js';
-import { user } from '../db/schema/user.js';
+import { lokasi } from '../db/schema/lokasi';
+import { pengamatan } from '../db/schema/pengamatan';
+import { rumpun } from '../db/schema/rumpun';
+import { detailRumpun } from '../db/schema/detail-rumpun';
+import { hasilPengamatan, withPagination } from './helper';
+import { authorizeApi } from '../middleware';
+import { opt } from '../db/schema/opt';
+import { tanaman } from '../db/schema/tanaman';
+import { provinsi } from '../db/schema/provinsi';
+import { kabupatenKota } from '../db/schema/kabupaten-kota';
+import { kecamatan } from '../db/schema/kecamatan';
+import { desa } from '../db/schema/desa';
+import { user } from '../db/schema/user';
 
 export const laporanHarian = new Hono();
 

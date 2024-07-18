@@ -28,6 +28,7 @@ import { Fragment } from 'hono/jsx/jsx-runtime';
 import {
   PengamatanDetailPage,
   PengamatanPage,
+  pengamatanColumn,
 } from '../pages/laporan/pengamatan.js';
 import { rumpun } from '../../db/schema/rumpun.js';
 import { detailRumpun, Kerusakan } from '../../db/schema/detail-rumpun.js';
@@ -223,13 +224,13 @@ laporanHarian.get(
 
     return c.html(
       <Fragment>
-        {result.map((row) => {
+        {result.map((row, index) => {
           return (
             <tr key={row.id}>
               {columnHeaders.map((column) => {
                 return (
                   <td class="bordery-gray-200 border-b px-4 py-2 text-right">
-                    {row[column.field]}
+                    {column?.valueGetter?.(row, index) || row[column.field]}
                   </td>
                 );
               })}
@@ -266,7 +267,23 @@ pengamatanRoute.get('/', async (c) => {
     });
 
   const pengamatanList = await db.query.pengamatan.findMany({
+    with: {
+      tanaman: true,
+      locations: {
+        with: {
+          provinsi: true,
+        },
+      },
+      pic: true,
+    },
     orderBy: pengamatan.id,
+  });
+
+  const tanamanList = await db.query.tanaman.findMany({
+    orderBy: (tanaman, { asc }) => asc(tanaman.id),
+  });
+  const provinsiList = await db.query.provinsi.findMany({
+    orderBy: (provinsi, { asc }) => asc(provinsi.id),
   });
 
   return c.html(
@@ -274,8 +291,96 @@ pengamatanRoute.get('/', async (c) => {
       route="pengamatan"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
     >
-      <PengamatanPage pengamatanList={pengamatanList} />
+      <PengamatanPage
+        pengamatanList={pengamatanList}
+        komoditasOption={tanamanList}
+        provinsiOption={provinsiList}
+      />
     </DefaultLayout>
+  );
+});
+pengamatanRoute.get('/filter', async (c) => {
+  const provinsiIds = c.req.queries('provinsi_id[]');
+  const foo = c.req.queries('tanaman_id[]');
+  const tanamanIds = !!foo ? foo.map((val) => parseInt(val)) : [];
+  const { start_date, end_date } = c.req.query();
+
+  const bar = { ...pengamatan.$inferSelect };
+  console.log(bar);
+
+  const pengamatanList = await db
+    .select({
+      id: pengamatan.id,
+      tanaman_id: pengamatan.tanaman_id,
+      lokasi_id: pengamatan.lokasi_id,
+      hari_ke: pengamatan.hari_ke,
+      blok: pengamatan.blok,
+      luas_hamparan: pengamatan.luas_hamparan,
+      luas_diamati: pengamatan.luas_diamati,
+      luas_hasil_panen: pengamatan.luas_hasil_panen,
+      luas_persemaian: pengamatan.luas_persemaian,
+      ph_tanah: pengamatan.ph_tanah,
+      komoditas: pengamatan.komoditas,
+      varietas: pengamatan.varietas,
+      dari_umur: pengamatan.dari_umur,
+      hingga_umur: pengamatan.hingga_umur,
+      pola_tanama: pengamatan.pola_tanam,
+      pic_id: pengamatan.pic_id,
+      sign_pic: pengamatan.sign_pic,
+      tanggal_pengamatan: pengamatan.tanggal_pengamatan,
+      point_pengamatan: pengamatan.point_pengamatan,
+      status_laporan_harian: pengamatan.status_laporan_harian,
+      locations: {
+        ...lokasi,
+        provinsi,
+      },
+      tanaman,
+    })
+    .from(pengamatan)
+    .leftJoin(tanaman, eq(tanaman.id, pengamatan.tanaman_id))
+    .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
+    .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
+    .where(
+      and(
+        !!provinsiIds && provinsiIds.length > 0
+          ? inArray(provinsi.id, provinsiIds)
+          : undefined,
+        !!tanamanIds && tanamanIds.length > 0
+          ? inArray(tanaman.id, tanamanIds)
+          : undefined,
+        !!start_date
+          ? gte(pengamatan.tanggal_pengamatan, start_date)
+          : undefined,
+        !!end_date ? lte(pengamatan.tanggal_pengamatan, end_date) : undefined
+      )
+    );
+
+  const newUrl = new URLSearchParams();
+  !!start_date && newUrl.append('start_date', start_date);
+  !!end_date && newUrl.append('end_date', end_date);
+  !!provinsiIds &&
+    provinsiIds.length > 0 &&
+    provinsiIds.forEach((val) => newUrl.append('provinsi_id[]', val));
+  !!tanamanIds &&
+    tanamanIds.length > 0 &&
+    tanamanIds.forEach((val) => newUrl.append('tanaman_id[]', val.toString()));
+
+  return c.html(
+    <Fragment>
+      {pengamatanList.map((val, index) => {
+        return (
+          <tr key={val.id}>
+            {pengamatanColumn.map((col) => {
+              return (
+                <td>{col?.valueGetter?.(val, index) || val[col.field]}</td>
+              );
+            })}
+          </tr>
+        );
+      })}
+    </Fragment>,
+    200,
+    { 'HX-Replace-Url': '/app/laporan/pengamatan?' + newUrl.toString() }
   );
 });
 pengamatanRoute.get('/:pengamatanId', async (c) => {

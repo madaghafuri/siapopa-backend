@@ -16,7 +16,7 @@ export type ColumnHeader<T extends Object = any> = {
     | '10'
     | '11'
     | '12';
-  valueGetter?: (row: T, index?: number) => T[keyof T] | any;
+  valueGetter?: (row: T | any, index?: number) => T[keyof T] | any;
 };
 
 const Table = ({
@@ -29,7 +29,7 @@ const Table = ({
   rowsData: any[];
   columns: ColumnHeader[];
   reloadBody?: string;
-} & JSX.TableElement) => {
+} & Partial<HTMLTableElement>) => {
   return (
     //@ts-ignore
     <table
@@ -51,7 +51,7 @@ const Table = ({
         </tr>
       </thead>
 
-      <tbody hx-get={reloadBody} id="#table-body">
+      <tbody hx-get={reloadBody} id="table-body">
         {rowsData.map((row, index) => {
           return (
             <tr key={row.id} class="">

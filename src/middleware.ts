@@ -1,9 +1,8 @@
 import { Session } from 'hono-sessions';
 import { createMiddleware } from 'hono/factory';
-import { db, lucia } from './index.js';
-import { userGroup } from './db/schema/user-group.js';
+import { db, lucia } from './index';
 import { eq } from 'drizzle-orm';
-import { user } from './db/schema/user.js';
+import { user } from './db/schema/user';
 
 export const authorize = createMiddleware<{
   Variables: { session: Session; session_rotation_key: boolean };

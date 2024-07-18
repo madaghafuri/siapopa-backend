@@ -13,6 +13,7 @@ import { UserData } from '../master/user.js';
 export const columnHeaders: ColumnHeader<
   LaporanHarian & { pengamatan: Pengamatan; lokasi: Lokasi; pic: UserData }
 >[] = [
+  { headerName: 'no', valueGetter: (_, index) => index + 1 },
   {
     field: 'sign_pic',
     headerName: 'signature',
@@ -131,7 +132,7 @@ const LaporanHarianPage = ({
           new Chart(ctx, {
             type: 'bar',
             data: {
-              labels: Utils.months({ count: 12 }),
+              labels: ['1', '2', '3', '4', '5', '6'],
               datasets: [
                 {
                   label: '# of Votes',

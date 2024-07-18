@@ -1,24 +1,36 @@
 import { html } from 'hono/html';
-import { Pengamatan } from '../../../db/schema/pengamatan.js';
-import { ColumnHeader, Table } from '../../components/table.js';
-import { Lokasi } from '../../../db/schema/lokasi.js';
-import { SelectTanaman } from '../../../db/schema/tanaman.js';
-import { SelectUser } from '../../../db/schema/user.js';
-import { Kerusakan } from '../../../db/schema/detail-rumpun.js';
-import { Provinsi } from '../../../db/schema/provinsi.js';
-import { KabupatenKota } from '../../../db/schema/kabupaten-kota.js';
-import { Kecamatan } from '../../../db/schema/kecamatan.js';
-import { Desa } from '../../../db/schema/desa.js';
+import { Pengamatan } from '../../../db/schema/pengamatan';
+import { ColumnHeader, Table } from '../../components/table';
+import { Lokasi } from '../../../db/schema/lokasi';
+import { SelectTanaman } from '../../../db/schema/tanaman';
+import { SelectUser } from '../../../db/schema/user';
+import { Kerusakan } from '../../../db/schema/detail-rumpun';
+import { Provinsi } from '../../../db/schema/provinsi';
+import { KabupatenKota } from '../../../db/schema/kabupaten-kota';
+import { Kecamatan } from '../../../db/schema/kecamatan';
+import { Desa } from '../../../db/schema/desa';
 import { Fragment } from 'hono/jsx/jsx-runtime';
-import { SelectRumpun } from '../../../db/schema/rumpun.js';
+import { SelectRumpun } from '../../../db/schema/rumpun';
 
-export const pengamatanColumn: ColumnHeader<Pengamatan>[] = [
+export const pengamatanColumn: ColumnHeader<
+  Pengamatan & {
+    tanaman: SelectTanaman;
+    locations: Lokasi & {
+      provinsi: Provinsi;
+    };
+    pic: SelectUser;
+  }
+>[] = [
   { headerName: 'no', valueGetter: (_, index) => index + 1 },
+  {
+    headerName: 'Jawa Barat',
+    valueGetter: (row) => row.locations.provinsi.nama_provinsi,
+  },
   { headerName: 'blok', field: 'blok' },
   { headerName: 'hari ke', field: 'hari_ke' },
   { headerName: 'ph tanah', field: 'ph_tanah' },
   { headerName: 'varietas', field: 'varietas' },
-  { headerName: 'komoditas', field: 'komoditas' },
+  { headerName: 'komoditas', valueGetter: (row) => row.tanaman.nama_tanaman },
   { headerName: 'dari umur', field: 'dari_umur' },
   { headerName: 'hingga umur', field: 'hingga_umur' },
   { headerName: 'pola tanam', field: 'pola_tanam' },
@@ -45,8 +57,12 @@ export const rumpunColumn: ColumnHeader<SelectRumpun>[] = [
 
 export const PengamatanPage = ({
   pengamatanList,
+  komoditasOption,
+  provinsiOption,
 }: {
   pengamatanList: Pengamatan[];
+  komoditasOption: SelectTanaman[];
+  provinsiOption: Provinsi[];
 }) => {
   return (
     <div class="flex flex-col gap-5 p-5 shadow-inner">
@@ -54,10 +70,42 @@ export const PengamatanPage = ({
         <i class="fa-solid fa-table"></i>
         <h1>Pengamatan</h1>
       </div>
-      {/* <div class="grid grid-cols-4 gap-5 bg-white rounded border-t-secondary border-t-2 p-5">
-      <select class="px-4 py-2 border border-gray-200 rounded"></select>
-      <select class="px-4 py-2 border-gray-200 rounded"></select>
-    </div> */}
+      <div
+        hx-get="/app/laporan/pengamatan/filter"
+        hx-trigger="click from:#filter-submit"
+        hx-include="*"
+        hx-swap="innerHTML"
+        hx-target="#table-body"
+        class="grid grid-cols-4 gap-5 rounded border-t-2 border-t-secondary bg-white p-5"
+      >
+        <select
+          name="tanaman_id[]"
+          multiple
+          class="rounded border border-gray-200 px-4 py-2"
+        >
+          <option value="">PILIH KOMODITAS</option>
+          {komoditasOption.map((val) => {
+            return <option value={val.id}>{val.nama_tanaman}</option>;
+          })}
+        </select>
+        <select
+          name="provinsi_id[]"
+          multiple
+          class="rounded border border-gray-200 px-4 py-2"
+        >
+          <option value="">PILIH PROVINSI</option>
+          {provinsiOption.map((value) => {
+            return <option value={value.id}>{value.nama_provinsi}</option>;
+          })}
+        </select>
+        <button
+          id="filter-submit"
+          class="rounded bg-primary px-4 py-2 text-white"
+          type="button"
+        >
+          Filter
+        </button>
+      </div>
       <Table
         id="pengamatan-table"
         columns={pengamatanColumn}
