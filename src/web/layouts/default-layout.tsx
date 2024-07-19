@@ -37,7 +37,7 @@ export const DefaultLayout = ({
             Dashboard
           </button>
         </a>
-        <div class="rounded-md border">
+        <div class="max-w-full rounded-md border">
           <button
             class={`flex w-full items-center justify-between gap-5 border-b-2 px-4 py-2 text-left ${route === 'input-data' ? 'bg-primary text-white' : ''}`}
             type="button"
@@ -73,9 +73,9 @@ export const DefaultLayout = ({
             </a>
           </div>
         </div>
-        <div class="rounded-md border">
+        <div class="max-w-full rounded-md border">
           <button
-            class="flex w-full items-center justify-between gap-5 border-b-2 px-4 py-2 text-left"
+            class="flex w-full items-center justify-between gap-5 truncate border-b-2 px-4 py-2 text-left"
             type="button"
             _="on click toggle between .hidden and .flex on #laporan-dropdown then toggle .rotate-90 on #laporan-icon"
           >
@@ -85,31 +85,31 @@ export const DefaultLayout = ({
           <div id="laporan-dropdown" class="opening hidden flex-col gap-3 p-5">
             <a
               href="/app/laporan/pengamatan"
-              class={`rounded-md px-4 py-2 text-left ${route === 'pengamatan' ? 'bg-primary text-white' : ''}`}
+              class={`truncate rounded-md px-4 py-2 text-left ${route === 'pengamatan' ? 'bg-primary text-white' : ''}`}
             >
               Pengamatan
             </a>
             <a
               href="/app/laporan/harian"
-              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-harian' ? 'bg-primary text-white' : ''}`}
+              class={`truncate rounded-md px-4 py-2 text-left ${route === 'laporan-harian' ? 'bg-primary text-white' : ''}`}
             >
               Laporan Harian
             </a>
             <a
               href="/app/laporan/sb"
-              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-sb' ? 'bg-primary text-white' : ''}`}
+              class={`truncate rounded-md px-4 py-2 text-left ${route === 'laporan-sb' ? 'bg-primary text-white' : ''}`}
             >
               Laporan Setengah Bulan
             </a>
             <a
               href="/app/laporan/bulanan"
-              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-bulanan' ? 'bg-primary text-white' : ''}`}
+              class={`truncate rounded-md px-4 py-2 text-left ${route === 'laporan-bulanan' ? 'bg-primary text-white' : ''}`}
             >
               Laporan Bulanan
             </a>
             <a
               href="/app/laporan/musiman"
-              class={`rounded-md px-4 py-2 text-left ${route === 'laporan-musiman' ? 'bg-primary text-white' : ''}`}
+              class={`truncate rounded-md px-4 py-2 text-left ${route === 'laporan-musiman' ? 'bg-primary text-white' : ''}`}
             >
               Laporan Musiman
             </a>

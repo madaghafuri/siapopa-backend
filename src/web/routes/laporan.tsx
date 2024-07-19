@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { DefaultLayout } from '../layouts/default-layout.js';
 import { Session } from 'hono-sessions';
 import { db } from '../../index.js';
-import { and, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { SQL, and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { SelectUser, user } from '../../db/schema/user.js';
 import Profile from '../components/profile.js';
 import LaporanHarianPage, {
@@ -108,8 +108,8 @@ laporanHarian.get('/', async (c) => {
           : undefined
       )
     )
-    .orderBy(laporanHarianSchema.id)
-    .limit(25)
+    .orderBy(desc(laporanHarianSchema.tanggal_laporan_harian))
+    .limit(50)
     .offset(0);
 
   const tanamanList = await db.query.tanaman.findMany({
@@ -201,7 +201,7 @@ laporanHarian.get(
             : undefined
         )
       )
-      .orderBy(laporanHarianSchema.id)
+      .orderBy(desc(laporanHarianSchema.tanggal_laporan_harian))
       .limit(25)
       .offset(0);
 
@@ -276,7 +276,7 @@ pengamatanRoute.get('/', async (c) => {
       },
       pic: true,
     },
-    orderBy: pengamatan.id,
+    orderBy: (pengamatan, { desc }) => desc(pengamatan.tanggal_pengamatan),
   });
 
   const tanamanList = await db.query.tanaman.findMany({
@@ -353,7 +353,8 @@ pengamatanRoute.get('/filter', async (c) => {
           : undefined,
         !!end_date ? lte(pengamatan.tanggal_pengamatan, end_date) : undefined
       )
-    );
+    )
+    .orderBy(desc(pengamatan.tanggal_pengamatan));
 
   const newUrl = new URLSearchParams();
   !!start_date && newUrl.append('start_date', start_date);
@@ -477,7 +478,8 @@ pengamatanRoute.get('/:pengamatanId', async (c) => {
     .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
     .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
     .leftJoin(desa, eq(desa.id, lokasi.desa_id))
-    .where(eq(pengamatan.id, parseInt(pengamatanId)));
+    .where(eq(pengamatan.id, parseInt(pengamatanId)))
+    .orderBy(desc(pengamatan.tanggal_pengamatan));
 
   const result = pengamatanQuery.reduce<
     Record<
@@ -578,20 +580,6 @@ laporanSbRoute.get('/', async (c) => {
       console.error(err);
     });
 
-  // const laporanSbData = await db.query.laporanSb.findMany({
-  //   with: {
-  //     laporanHarian: true,
-  //   },
-  //   limit: 10,
-  //   offset: 0,
-  //   where: and(
-  //     !!startDate ? gte(laporanSb.tanggal_laporan_sb, startDate) : undefined,
-  //     !!endDate ? lte(laporanSb.tanggal_laporan_sb, endDate) : undefined,
-  //     !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
-  //     !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined
-  //   ),
-  // });
-
   const laporanSbData = await db
     .select()
     .from(laporanSb)
@@ -609,7 +597,8 @@ laporanSbRoute.get('/', async (c) => {
         !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
         !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined
       )
-    );
+    )
+    .orderBy(desc(laporanSb.tanggal_laporan_sb));
 
   const result = laporanSbData.reduce<
     Record<
@@ -696,7 +685,7 @@ laporanSbRoute.get('/filter', async (c) => {
       !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
       !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined
     ),
-    orderBy: laporanSb.id,
+    orderBy: (laporan, { desc }) => desc(laporan.tanggal_laporan_sb),
   });
 
   const newUrl = new URLSearchParams('');
@@ -800,7 +789,7 @@ laporanBulananRoute.get('/', async (c) => {
     });
 
   const dataLaporanBulanan = await db.query.laporanBulanan.findMany({
-    orderBy: laporanBulanan.id,
+    orderBy: (laporan, { desc }) => desc(laporan.tanggal_laporan_bulanan),
   });
 
   return c.html(
@@ -827,7 +816,7 @@ laporanMusimanRoute.get('/', async (c) => {
     });
 
   const dataLaporanMusiman = await db.query.laporanMusiman.findMany({
-    orderBy: laporanMusiman.id,
+    orderBy: (laporan, { desc }) => desc(laporan.tanggal),
   });
 
   return c.html(
