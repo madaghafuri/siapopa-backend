@@ -34,7 +34,7 @@ signature.post(
     const arrBuff = await file.arrayBuffer();
     const buffer = Buffer.from(arrBuff);
 
-    if (!(await Bun.file(resolve(uploadPath, file.name)).exists())) {
+    if (!(await Bun.file(uploadPath).exists())) {
       // mkdirSync(uploadPath, { recursive: true })
       await mkdir(uploadPath, { recursive: true });
     }
@@ -86,7 +86,7 @@ pengamatan.post(
     const arrBuff = await file.arrayBuffer();
     const buffer = Buffer.from(arrBuff);
 
-    if (!(await Bun.file(resolve(uploadPath, file.name)).exists())) {
+    if (!(await Bun.file(uploadPath).exists())) {
       await mkdir(uploadPath, { recursive: true });
     }
 

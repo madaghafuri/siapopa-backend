@@ -80,7 +80,6 @@ export const PengamatanPage = ({
       >
         <select
           name="tanaman_id[]"
-          multiple
           class="rounded border border-gray-200 px-4 py-2"
         >
           <option value="">PILIH KOMODITAS</option>
@@ -90,7 +89,6 @@ export const PengamatanPage = ({
         </select>
         <select
           name="provinsi_id[]"
-          multiple
           class="rounded border border-gray-200 px-4 py-2"
         >
           <option value="">PILIH PROVINSI</option>

@@ -78,8 +78,9 @@ COPY --from=prerelease /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=prerelease /app/run.sh ./run.sh
 
 RUN adduser --system --uid 1001 hono
-RUN chown -R hono:bun /app
-RUN chmod -R 755 /app
+RUN mkdir -p /app/uploads
+RUN chown -R hono:bun /app/uploads
+RUN chmod -R 775 /app/uploads
 
 USER hono
 EXPOSE 3000/tcp

@@ -1,14 +1,14 @@
-import { LaporanHarian } from '../../../db/schema/laporan-harian.js';
-import { Pengamatan } from '../../../db/schema/pengamatan.js';
-import { Lokasi } from '../../../db/schema/lokasi.js';
-import { Provinsi } from '../../../db/schema/provinsi.js';
-import { KabupatenKota } from '../../../db/schema/kabupaten-kota.js';
-import { Kecamatan } from '../../../db/schema/kecamatan.js';
-import { Desa } from '../../../db/schema/desa.js';
-import { ColumnHeader, Table } from '../../components/table.js';
-import { SelectTanaman } from '../../../db/schema/tanaman.js';
+import { LaporanHarian } from '../../../db/schema/laporan-harian';
+import { Pengamatan } from '../../../db/schema/pengamatan';
+import { Lokasi } from '../../../db/schema/lokasi';
+import { Provinsi } from '../../../db/schema/provinsi';
+import { KabupatenKota } from '../../../db/schema/kabupaten-kota';
+import { Kecamatan } from '../../../db/schema/kecamatan';
+import { Desa } from '../../../db/schema/desa';
+import { ColumnHeader, Table } from '../../components/table';
+import { SelectTanaman } from '../../../db/schema/tanaman';
 import { html } from 'hono/html';
-import { UserData } from '../master/user.js';
+import { UserData } from '../master/user';
 
 export const columnHeaders: ColumnHeader<
   LaporanHarian & { pengamatan: Pengamatan; lokasi: Lokasi; pic: UserData }
