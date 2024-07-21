@@ -97,11 +97,15 @@ export const PengamatanPage = ({
           })}
         </select>
         <button
-          id="filter-submit"
           class="rounded bg-primary px-4 py-2 text-white"
+          hx-indicator="#loading"
           type="button"
+          id="filter-submit"
         >
-          Filter
+          <div id="loading">
+            <p>Filter</p>
+            <i class="fa-solid fa-spinner"></i>
+          </div>
         </button>
       </div>
       <Table
