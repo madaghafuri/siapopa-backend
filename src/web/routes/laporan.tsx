@@ -176,6 +176,8 @@ laporanHarian.get(
           kecamatan,
           desa,
         },
+        tanaman: tanaman,
+        pic: user,
       })
       .from(laporanHarianSchema)
       .leftJoin(
@@ -209,11 +211,15 @@ laporanHarian.get(
       const laporan = value.laporan_harian;
       const pengamatan = value.pengamatan;
       const lokasi = value.lokasi;
+      const pic = value.pic;
+      const tanaman = value.tanaman;
 
       return {
         ...laporan,
         pengamatan,
         lokasi,
+        pic,
+        tanaman,
       };
     });
     const newUrl = new URLSearchParams();
@@ -324,7 +330,7 @@ pengamatanRoute.get('/filter', async (c) => {
       varietas: pengamatan.varietas,
       dari_umur: pengamatan.dari_umur,
       hingga_umur: pengamatan.hingga_umur,
-      pola_tanama: pengamatan.pola_tanam,
+      pola_tanam: pengamatan.pola_tanam,
       pic_id: pengamatan.pic_id,
       sign_pic: pengamatan.sign_pic,
       tanggal_pengamatan: pengamatan.tanggal_pengamatan,

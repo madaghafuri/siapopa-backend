@@ -19,6 +19,12 @@ import { Fragment } from 'hono/jsx/jsx-runtime';
 import { authorizeWebInput } from '../../middleware.js';
 import { ModalTanaman } from '../components/master/modal-tanaman.js';
 import { ModalUserGroup } from '../components/master/modal-usergroup.js';
+import { LokasiPage } from '../pages/master/lokasi.js';
+import { lokasi } from '../../db/schema/lokasi.js';
+import { provinsi } from '../../db/schema/provinsi.js';
+import { kabupatenKota } from '../../db/schema/kabupaten-kota.js';
+import { kecamatan } from '../../db/schema/kecamatan.js';
+import { desa } from '../../db/schema/desa.js';
 
 export const master = new Hono<{
   Variables: {
@@ -256,7 +262,7 @@ master.get('/user', async (c) => {
       route="user"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
     >
-      <DataUser listUser={selectUser} user={selectedUser || null} />
+      <DataUser listUser={selectUser} />
     </DefaultLayout>
   );
 });
@@ -352,5 +358,55 @@ master.get('/usergroup/reload', async (c) => {
         );
       })}
     </Fragment>
+  );
+});
+
+const lokasiRoute = master.route('/lokasi');
+
+lokasiRoute.get('/', async (c) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: (user, { eq }) => eq(user.id, parseInt(userId)),
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const lokasiData = await db
+    .select({
+      id: lokasi.id,
+      alamat: lokasi.alamat,
+      kode_post: lokasi.kode_post,
+      provinsi_id: lokasi.provinsi_id,
+      kabkot_id: lokasi.kabkot_id,
+      kecamatan_id: lokasi.kecamatan_id,
+      desa_id: lokasi.desa_id,
+      pic_id: lokasi.pic_id,
+      provinsi: provinsi,
+      kabupaten_kota: kabupatenKota,
+      kecamatan: kecamatan,
+      desa: desa,
+      pic: user,
+    })
+    .from(lokasi)
+    .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
+    .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
+    .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
+    .leftJoin(desa, eq(desa.id, lokasi.desa_id))
+    .leftJoin(user, eq(user.id, lokasi.pic_id));
+
+  return c.html(
+    <DefaultLayout
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      route="lokasi"
+    >
+      <LokasiPage
+        user={!!selectedUser ? selectedUser : null}
+        lokasiList={lokasiData}
+      />
+    </DefaultLayout>
   );
 });

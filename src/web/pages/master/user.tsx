@@ -1,5 +1,4 @@
 import { html } from 'hono/html';
-import { AuthenticatedUser } from '../../components/profile.js';
 
 export type UserData = {
   user_name: string;
@@ -10,13 +9,7 @@ export type UserData = {
   user_group: string;
 };
 
-const DataUser = ({
-  listUser,
-  user,
-}: {
-  listUser: UserData[];
-  user?: AuthenticatedUser;
-}) => {
+const DataUser = ({ listUser }: { listUser: UserData[] }) => {
   return (
     <div class="grid p-5 shadow-inner">
       <table id="userTable" class="row-border" style="width:100%">
@@ -60,18 +53,6 @@ const DataUser = ({
           });
         </script>
       `}
-      {!!user ? (
-        <div>
-          <button
-            class="rounded bg-primary px-2 py-1 text-white"
-            hx-get="/app/master/user/create"
-            hx-target="body"
-            hx-swap="beforeend"
-          >
-            Add Tanaman
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 };

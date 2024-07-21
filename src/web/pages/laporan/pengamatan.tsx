@@ -16,9 +16,9 @@ export const pengamatanColumn: ColumnHeader<
   Pengamatan & {
     tanaman: SelectTanaman;
     locations: Lokasi & {
-      provinsi: Provinsi;
+      provinsi?: Provinsi;
     };
-    pic: SelectUser;
+    pic?: SelectUser;
   }
 >[] = [
   { headerName: 'no', valueGetter: (_, index) => index + 1 },

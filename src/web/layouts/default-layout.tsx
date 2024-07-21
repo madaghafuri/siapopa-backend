@@ -71,6 +71,12 @@ export const DefaultLayout = ({
             >
               OPT
             </a>
+            <a
+              href="/app/master/lokasi"
+              class={`rounded-md px-4 py-2 text-left ${route === 'lokasi' ? 'bg-primary text-white' : ''}`}
+            >
+              Lokasi
+            </a>
           </div>
         </div>
         <div class="max-w-full rounded-md border">

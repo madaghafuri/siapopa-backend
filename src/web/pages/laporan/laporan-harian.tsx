@@ -8,10 +8,10 @@ import { Desa } from '../../../db/schema/desa';
 import { ColumnHeader, Table } from '../../components/table';
 import { SelectTanaman } from '../../../db/schema/tanaman';
 import { html } from 'hono/html';
-import { UserData } from '../master/user';
+import { SelectUser } from '../../../db/schema/user';
 
 export const columnHeaders: ColumnHeader<
-  LaporanHarian & { pengamatan: Pengamatan; lokasi: Lokasi; pic: UserData }
+  LaporanHarian & { pengamatan: Pengamatan; lokasi: Lokasi; pic: SelectUser }
 >[] = [
   { headerName: 'no', valueGetter: (_, index) => index + 1 },
   {
