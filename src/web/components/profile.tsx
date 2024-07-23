@@ -15,24 +15,22 @@ export type AuthenticatedUser = {
 const Profile = ({ user }: { user: AuthenticatedUser }) => {
   return (
     <div
-      _="on click toggle between .hidden and .flex on #dropdown-menu"
-      class="relative"
+      _="on click toggle between .hidden and .flex on #dropdown-menu then toggle .rotate-90 on #icon-down"
+      class="py-3"
     >
-      <div class="grid grid-cols-4 items-center justify-between gap-5 rounded-lg border px-4 py-2">
-        <div>
-          {user.photo ? (
-            <img alt="profile photo" src={user.photo} />
-          ) : (
-            <i class="fa-solid fa-user"></i>
-          )}
-        </div>
+      <div class="flex items-center justify-between gap-5 rounded-lg border px-4 py-2">
+        {user.photo ? (
+          <img alt="" src={user.photo} />
+        ) : (
+          <i class="fa-solid fa-user h-10 w-10 rounded-full"></i>
+        )}
         <div>
           <h4 class="font-bold">{user.name}</h4>
           <h5 class="text-xs uppercase">
             {user.userGroup?.group_name || 'Guest'}
           </h5>
         </div>
-        <i class="fa-solid fa-caret-down col-start-4"></i>
+        <i id="icon-down" class="fa-solid fa-caret-right"></i>
       </div>
       <div
         id="dropdown-menu"

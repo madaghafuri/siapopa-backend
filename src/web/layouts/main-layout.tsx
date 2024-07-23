@@ -2,7 +2,7 @@ export const MainLayout = ({ children }: { children?: any }) => {
   return (
     <html>
       <head>
-        <title>SIAPOPA</title>
+        <title>SITAMPAN</title>
         <link rel="stylesheet" href="/dist/output.css" />
         <script
           src="https://unpkg.com/htmx.org@1.9.12"

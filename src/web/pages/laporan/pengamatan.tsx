@@ -65,7 +65,7 @@ export const PengamatanPage = ({
   provinsiOption: Provinsi[];
 }) => {
   return (
-    <div class="flex flex-col gap-5 p-5 shadow-inner">
+    <div class="isolate flex flex-col gap-5 p-5 shadow-inner">
       <div class="flex items-center gap-3 text-2xl">
         <i class="fa-solid fa-table"></i>
         <h1>Pengamatan</h1>
@@ -112,7 +112,7 @@ export const PengamatanPage = ({
         id="pengamatan-table"
         columns={pengamatanColumn}
         rowsData={pengamatanList}
-        className="hover row-border display nowrap max-w-full rounded-md bg-white"
+        className="hover display nowrap max-w-full rounded-md bg-white"
       />
       {html`
         <script>

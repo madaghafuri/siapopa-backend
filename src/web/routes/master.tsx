@@ -25,6 +25,7 @@ import { provinsi } from '../../db/schema/provinsi.js';
 import { kabupatenKota } from '../../db/schema/kabupaten-kota.js';
 import { kecamatan } from '../../db/schema/kecamatan.js';
 import { desa } from '../../db/schema/desa.js';
+import { ModalLokasi } from '../components/master/modal-lokasi.js';
 
 export const master = new Hono<{
   Variables: {
@@ -407,6 +408,26 @@ lokasiRoute.get('/', async (c) => {
         user={!!selectedUser ? selectedUser : null}
         lokasiList={lokasiData}
       />
+    </DefaultLayout>
+  );
+});
+lokasiRoute.get('/create', async (c) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: (user, { eq }) => eq(user.id, parseInt(userId)),
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  return c.html(
+    <DefaultLayout
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      route="lokasi"
+    >
+      <ModalLokasi />
     </DefaultLayout>
   );
 });

@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { DefaultLayout } from '../layouts/default-layout.js';
 import { Session } from 'hono-sessions';
 import { db } from '../../index.js';
-import { SQL, and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { SelectUser, user } from '../../db/schema/user.js';
 import Profile from '../components/profile.js';
 import LaporanHarianPage, {
@@ -42,8 +42,6 @@ import {
   LaporanSbPage,
 } from '../pages/laporan/laporan-sb.js';
 import { LaporanBulananPage } from '../pages/laporan/laporan-bulanan.js';
-import { laporanBulanan } from '../../db/schema/laporan-bulanan.js';
-import { laporanMusiman } from '../../db/schema/laporan-musiman.js';
 import { LaporanMusimanPage } from '../pages/laporan/laporan-musiman.js';
 import { luasKerusakanSb } from '../../db/schema/luas-kerusakan-sb.js';
 

@@ -13,12 +13,11 @@ export const DefaultLayout = ({
   user?: SelectUser & { userGroup: SelectUserGroup };
 }) => (
   <MainLayout>
-    <div class="grid max-h-[10vh] grid-cols-12 items-center gap-5 border-b-2 py-3 pr-6">
-      <button>
+    <div class="grid max-h-[10vh] grid-cols-12 items-center gap-5 border-b-2">
+      <button _="on click toggle between .flex and .hidden on #side-nav then toggle between .{'w-10/12'} and .{'w-full'} on #main-content">
         <i class="fa-solid fa-bars"></i>
       </button>
-      <img class="col-span-2 h-14" src="/assets/logo1x.svg" alt="" />
-      <div class="col-span-3 col-start-12 grid items-center gap-5">
+      <div class="col-span-2 col-start-10 items-center">
         {authNavigation || (
           <a href="/login">
             <button class="rounded border bg-primary px-2 py-1 text-white">
@@ -29,7 +28,10 @@ export const DefaultLayout = ({
       </div>
     </div>
     <div class="flex h-full max-h-[90vh]">
-      <section class="flex w-2/12 flex-col gap-4 truncate border-r-2 px-5 py-10 text-sm">
+      <section
+        id="side-nav"
+        class="opening closing flex w-2/12 flex-col gap-4 truncate border-r-2 px-5 py-10 text-sm"
+      >
         <a href="/app/dashboard">
           <button
             class={`rounded-md px-4 py-2 text-left ${route === 'dashboard' ? 'bg-primary text-white' : ''}`}
@@ -122,7 +124,9 @@ export const DefaultLayout = ({
           </div>
         </div>
       </section>
-      <div class="w-10/12 bg-background">{children}</div>
+      <div id="main-content" class="w-10/12 bg-background">
+        {children}
+      </div>
     </div>
   </MainLayout>
 );

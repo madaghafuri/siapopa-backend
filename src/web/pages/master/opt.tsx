@@ -1,5 +1,7 @@
 import { html } from 'hono/html';
 import { AuthenticatedUser } from '../../components/profile.js';
+import { ColumnHeader, Table } from '../../components/table.js';
+import { SelectOPT } from '../../../db/schema/opt.js';
 
 export type OptWithTanaman = {
   kode_opt: string;
@@ -8,6 +10,15 @@ export type OptWithTanaman = {
   tanaman_id: number;
   nama_tanaman: string;
 };
+
+export const optColumn: ColumnHeader<SelectOPT & { nama_tanaman: string}>[] = [
+  { headerName: "no", valueGetter: (_, index) => index + 1},
+  { headerName: 'nama opt', field: 'nama_opt'},
+  { field: 'jenis', headerName: 'jenis'},
+  { headerName: 'komoditas', valueGetter: (row) => row.nama_tanaman},
+  { field: 'status', headerName: 'status'},
+  { field: 'kode_opt', headerName: 'kode'}
+]
 
 const DataOPT = ({
   listOpt,
@@ -18,40 +29,7 @@ const DataOPT = ({
 }) => {
   return (
     <div class="grid p-5 shadow-inner">
-      <table id="optTable" class="row-border" style="width:100%">
-        <thead>
-          <tr>
-            <th class="border-b border-gray-200 px-4 py-2" style="width: 5%">
-              No.
-            </th>
-            <th class="border-b border-gray-200 px-4 py-2" style="width: 15%">
-              Kode OPT
-            </th>
-            <th class="border-b border-gray-200 px-4 py-2">Nama OPT</th>
-            <th class="border-b border-gray-200 px-4 py-2">Status</th>
-            <th class="border-b border-gray-200 px-4 py-2">Tanaman</th>
-          </tr>
-        </thead>
-        <tbody hx-get="/app/master/opt/reload" hx-trigger="newOpt from:body">
-          {listOpt.map((opt, index) => (
-            <tr key={opt.kode_opt}>
-              <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
-                {index + 1}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2" style="width: 15%">
-                {opt.kode_opt}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">{opt.nama_opt}</td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {opt.status === 'mutlak' ? 'Mutlak' : 'Tidak Mutlak'}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {opt.nama_tanaman}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Table id='optTable' className="rounded-md bg-white hover" columns={optColumn} rowsData={listOpt} />
       {html`
         <script>
           $(document).ready(function () {

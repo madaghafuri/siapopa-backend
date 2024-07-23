@@ -47,6 +47,15 @@ export const LokasiPage = ({
 }) => {
   return (
     <div class="p-5 shadow-inner">
+      <button
+        type="button"
+        hx-get="/app/master/lokasi/create"
+        hx-target="body"
+        hx-swap="beforeend"
+        class="rounded bg-primary px-2 py-1 text-white"
+      >
+        Add Data
+      </button>
       <Table
         columns={lokasiColumn}
         rowsData={lokasiList}

@@ -56,6 +56,12 @@ body {
   animation-timing-function: ease;
 }
 
+.closing {
+  animation-name: fadeOut;
+  animation-duration: 300ms;
+  animation-timing-function: ease;
+}
+
 #modal {
   /* Underlay covers entire screen. */
   position: fixed;

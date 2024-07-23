@@ -59,7 +59,7 @@ const LaporanHarianPage = ({
   provinsiOption: Provinsi[];
 }) => {
   return (
-    <div class="isolate flex flex-col gap-5 bg-background p-5 shadow-inner">
+    <div class="isolate flex flex-col gap-5 p-5 shadow-inner">
       <div class="flex items-center gap-3 text-2xl">
         <i class="fa-solid fa-table"></i>
         <h1>Laporan Harian</h1>

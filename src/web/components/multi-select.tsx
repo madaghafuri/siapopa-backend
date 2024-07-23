@@ -1,14 +1,9 @@
 import { html } from 'hono/html';
 
-export const MultiSelect = () => {
+export const MultiSelect = ({ options }: { options: any[] }) => {
   return (
-    <div x-data="{ open: false }">
-      <div x-show="open">Content...</div>
-      {html`
-        <script>
-          $('');
-        </script>
-      `}
-    </div>
+    <select class="">
+      <option></option>
+    </select>
   );
 };
