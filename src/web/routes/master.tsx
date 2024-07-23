@@ -452,17 +452,29 @@ kabkotRoute.get('/', async (c) => {
       console.error(err);
     });
 
+  const dataKabKot = await db.query.kabupatenKota.findMany({
+    columns: {
+      point_kabkot: false,
+      area_kabkot: false,
+    },
+    with: {
+      provinsi: true,
+    },
+    orderBy: (kabkot, { asc }) => asc(kabkot.id),
+  });
+
   return c.html(
     <DefaultLayout
       route="kabupaten-kota"
       authNavigation={!!selectUser ? <Profile user={selectUser} /> : null}
     >
-      <KabupatenKotaPage />
+      <KabupatenKotaPage kabkotList={dataKabKot} />
     </DefaultLayout>
   );
 });
 kabkotRoute.post(
   '/',
+  authorizeWebInput,
   validator('form', (value) => value),
   async (c) => {
     const body = await c.req.formData();
@@ -482,6 +494,8 @@ kabkotRoute.post(
       ],
     });
 
-    return c.text('hello world');
+    return c.text('hello world', 200, {
+      'HX-Reswap': 'none',
+    });
   }
 );
