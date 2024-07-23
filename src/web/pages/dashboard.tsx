@@ -17,14 +17,10 @@ const DashboardPage = () => {
                 }
               ).addTo(map);
 
-              const foo = await fetch('/assets/jabar-geo.geojson')
-                .then((res) => res.json())
-                .then((data) => data);
-
-              console.log(foo);
-              const bar = fetch('/assets/jabar-geo.geojson')
+              const bar = fetch('/assets/3201.geojson')
                 .then((res) => res.json())
                 .then((data) => {
+                  console.log(data);
                   L.geoJson(data).addTo(map);
                 });
             });

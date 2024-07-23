@@ -4,6 +4,12 @@
     "skipLibCheck": true,
     "types": ["typed-htmx"],
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
+    "jsxImportSource": "hono/jsx",
+    "plugins": [
+      {
+        "name": "typescript-lit-html-plugin",
+        "tags": ["html", "raw"]
+      }
+    ]
   }
 }

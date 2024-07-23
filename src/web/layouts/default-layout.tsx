@@ -79,6 +79,12 @@ export const DefaultLayout = ({
             >
               Lokasi
             </a>
+            <a
+              href="/app/master/kabkot"
+              class={`rounded-md px-4 py-2 text-left ${route === 'kabupaten-kota' ? 'bg-primary text-white' : ''}`}
+            >
+              Kabupaten Kota
+            </a>
           </div>
         </div>
         <div class="max-w-full rounded-md border">

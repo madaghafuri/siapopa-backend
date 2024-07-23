@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { Session } from 'hono-sessions';
 import { db } from '../../index.js';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { user } from '../../db/schema/user.js';
 import { DefaultLayout } from '../layouts/default-layout.js';
 import Profile, { AuthenticatedUser } from '../components/profile.js';
@@ -26,6 +26,7 @@ import { kabupatenKota } from '../../db/schema/kabupaten-kota.js';
 import { kecamatan } from '../../db/schema/kecamatan.js';
 import { desa } from '../../db/schema/desa.js';
 import { ModalLokasi } from '../components/master/modal-lokasi.js';
+import { KabupatenKotaPage } from '../pages/master/kabupaten-kota.js';
 
 export const master = new Hono<{
   Variables: {
@@ -431,3 +432,56 @@ lokasiRoute.get('/create', async (c) => {
     </DefaultLayout>
   );
 });
+
+const kabkotRoute = master.route('/kabkot');
+kabkotRoute.get('/', async (c) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  const selectUser = await db.query.user
+    .findFirst({
+      columns: {
+        password: false,
+      },
+      with: {
+        userGroup: true,
+      },
+      where: (user, { eq }) => eq(user.id, parseInt(userId)),
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  return c.html(
+    <DefaultLayout
+      route="kabupaten-kota"
+      authNavigation={!!selectUser ? <Profile user={selectUser} /> : null}
+    >
+      <KabupatenKotaPage />
+    </DefaultLayout>
+  );
+});
+kabkotRoute.post(
+  '/',
+  validator('form', (value) => value),
+  async (c) => {
+    const body = await c.req.formData();
+    const geom = body.get('geom');
+    const id = body.get('id') as string;
+    const nama_kabkot = body.get('nama_kabkot') as string;
+
+    const geomData = await (geom as Blob).json();
+    await db.insert(kabupatenKota).values({
+      id,
+      nama_kabkot,
+      provinsi_id: '32',
+      area_kabkot: sql`ST_GeomFromGeoJSON(${JSON.stringify(geomData.features[0].geometry)})`,
+      point_kabkot: [
+        geomData.features[0].properties.longitude,
+        geomData.features[0].properties.latitude,
+      ],
+    });
+
+    return c.text('hello world');
+  }
+);

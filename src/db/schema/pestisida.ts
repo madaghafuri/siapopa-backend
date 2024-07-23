@@ -3,6 +3,7 @@ import {
   pgEnum,
   pgTable,
   serial,
+  text,
   timestamp,
 } from 'drizzle-orm/pg-core';
 import { opt } from './opt';
@@ -21,6 +22,6 @@ export const pestisida = pgTable('pestisida', {
   opt_id: integer('opt_id').references(() => opt.id),
   tanaman_id: integer('tanaman_id').references(() => tanaman.id),
   volume: integer('volume'),
-  lokasi_id: integer('lokasi_id').references(() => lokasi.id),
+  lokasi_id: text('lokasi_id').references(() => lokasi.id),
   created_at: timestamp('created_at').defaultNow(),
 });

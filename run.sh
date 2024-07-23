@@ -4,14 +4,14 @@ set -e
 echo "Creating Volume..."
 bun run db:migrate & PID=$!
 # Wait for migration to finish
-wait $PID
+wait
 
 # dev
-# echo "Rebuilding CSS..."
-# bun run build:css & PID=$!
-# wait $PID
+echo "Rebuilding CSS..."
+bun run build:css & PID=$!
+wait $PID
 
 echo "Starting production server..."
-bun run /app/src/index.ts
+bun run --hot /app/src/index.ts
 
-wait $PID
+wait
