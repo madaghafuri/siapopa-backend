@@ -86,6 +86,18 @@ export const DefaultLayout = ({
             >
               Kabupaten Kota
             </a>
+            <a
+              href="/app/master/golongan-pestisida"
+              class={`rounded-md px-4 py-2 text-left ${route === 'golongan-pestisida' ? 'bg-primary text-white' : ''}`}
+            >
+              Golongan Pestisida
+            </a>
+            <a
+              href="/app/master/stock-pestisida"
+              class={`rounded-md px-4 py-2 text-left ${route === 'stock-pestisida' ? 'bg-primary text-white' : ''}`}
+            >
+              Stock Pestisida
+            </a>
           </div>
         </div>
         <div class="max-w-full rounded-md border">
