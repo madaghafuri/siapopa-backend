@@ -179,3 +179,17 @@ body {
   @apply animate-spin;
   display: none;
 }
+
+.htmx-loading {
+  opacity: 0;
+}
+
+.htmx-request .htmx-loading {
+  @apply animate-spin;
+  opacity: 1;
+}
+
+.htmx-request.htmx-loading {
+  @apply animate-spin;
+  opacity: 1;
+}

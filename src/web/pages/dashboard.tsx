@@ -2,8 +2,10 @@ import { html } from 'hono/html';
 
 const DashboardPage = () => {
   return (
-    <div class="p-3">
-      <h1 class="text-2xl font-bold">Dashboard</h1>
+    <div class="p-5 shadow-inner">
+      <div class="grid grid-cols-4 rounded border-t-2 border-t-secondary bg-white p-5 shadow-lg">
+        <div class=""></div>
+      </div>
       <div id="map" class="min-h-[60vh]">
         {html`
           <script>

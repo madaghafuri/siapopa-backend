@@ -7,11 +7,11 @@ bun run db:migrate & PID=$!
 wait
 
 # dev
-echo "Rebuilding CSS..."
-bun run build:css & PID=$!
-wait $PID
+# echo "Rebuilding CSS..."
+# bun run build:css & PID=$!
+# wait $PID
 
 echo "Starting production server..."
-bun run --hot /app/src/index.ts
+bun run /app/src/index.ts
 
 wait

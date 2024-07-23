@@ -1,5 +1,3 @@
-import { JSX } from 'hono/jsx';
-
 export type ColumnHeader<T extends Object = any> = {
   field?: keyof T;
   headerName: string;
