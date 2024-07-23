@@ -17,6 +17,7 @@ export const DefaultLayout = ({
       <button _="on click toggle between .flex and .hidden on #side-nav then toggle between .{'w-10/12'} and .{'w-full'} on #main-content">
         <i class="fa-solid fa-bars"></i>
       </button>
+      <img src="/assets/logo1x.svg" alt="" />
       <div class="col-span-2 col-start-10 items-center">
         {authNavigation || (
           <a href="/login">

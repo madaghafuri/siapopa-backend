@@ -11,6 +11,7 @@ import { Kecamatan } from '../../../db/schema/kecamatan';
 import { Desa } from '../../../db/schema/desa';
 import { Fragment } from 'hono/jsx/jsx-runtime';
 import { SelectRumpun } from '../../../db/schema/rumpun';
+import { PhotoPengamatan } from '../../../db/schema/photo-pengamatan';
 
 export const pengamatanColumn: ColumnHeader<
   Pengamatan & {
@@ -147,6 +148,7 @@ export const PengamatanDetailPage = ({
       skala: Kerusakan;
       hasil_perhitungan: string;
     }[];
+    bukti_pengamatan?: PhotoPengamatan[];
   };
   rumpunData: SelectRumpun[];
 }) => {
@@ -278,6 +280,15 @@ export const PengamatanDetailPage = ({
               );
             })}
           </div>
+        </div>
+        <div class="flex flex-row items-center gap-5">
+          {pengamatan.bukti_pengamatan.map((photo) => {
+            return (
+              <a href={photo.path}>
+                <img src={photo.path} class="aspect-[4/3] h-40 w-40" alt="" />
+              </a>
+            );
+          })}
         </div>
       </div>
 

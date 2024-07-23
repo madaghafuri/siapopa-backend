@@ -44,6 +44,7 @@ import {
 import { LaporanBulananPage } from '../pages/laporan/laporan-bulanan.js';
 import { LaporanMusimanPage } from '../pages/laporan/laporan-musiman.js';
 import { luasKerusakanSb } from '../../db/schema/luas-kerusakan-sb.js';
+import { PhotoPengamatan } from '../../db/schema/photo-pengamatan.js';
 
 export const laporan = new Hono<{
   Variables: {
@@ -504,6 +505,7 @@ pengamatanRoute.get('/:pengamatanId', async (c) => {
           skala: Kerusakan;
           hasil_perhitungan: string;
         }[];
+        bukti_pengamatan?: PhotoPengamatan[];
       }
     >
   >((acc, row) => {
@@ -545,10 +547,15 @@ pengamatanRoute.get('/:pengamatanId', async (c) => {
     return acc;
   }, {});
 
+  const buktiPengamatanData = await db.query.photoPengamatan.findMany({
+    where: (photo, { eq }) => eq(photo.pengamatan_id, parseInt(pengamatanId)),
+  });
+
   const rumpunList = await db.query.rumpun.findMany({
     where: eq(rumpun.pengamatan_id, parseInt(pengamatanId)),
     orderBy: rumpun.id,
   });
+  result[pengamatanId].bukti_pengamatan = buktiPengamatanData;
 
   return c.html(
     <DefaultLayout
