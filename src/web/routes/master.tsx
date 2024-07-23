@@ -27,6 +27,10 @@ import { kecamatan } from '../../db/schema/kecamatan.js';
 import { desa } from '../../db/schema/desa.js';
 import { ModalLokasi } from '../components/master/modal-lokasi.js';
 import { KabupatenKotaPage } from '../pages/master/kabupaten-kota.js';
+import DataStockPestisida from '../pages/master/stock-pestisida.js';
+import { pestisida } from '../../db/schema/pestisida.js';
+import { golonganPestisida } from '../../db/schema/golongan-pestisida.js';
+import DataGolonganPestisida from '../pages/master/golongan-pestisida.js';
 
 export const master = new Hono<{
   Variables: {
@@ -499,3 +503,79 @@ kabkotRoute.post(
     });
   }
 );
+
+master.get('/stock-pestisida', async (c) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: eq(user.id, parseInt(userId)),
+      with: {
+        userGroup: true,
+      },
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const selectStockPestisida = await db
+    .select({
+      satuan: pestisida.satuan,
+      nama_opt: opt.nama_opt,
+      nama_tanaman: tanaman.nama_tanaman,
+      volume: pestisida.volume,
+      provinsi: provinsi.nama_provinsi,
+      kabupatenKota: kabupatenKota.nama_kabkot,
+      kecamatan: kecamatan.nama_kecamatan,
+      desa: desa.nama_desa,
+      nama_golongan: golonganPestisida.nama_golongan
+    })
+    .from(pestisida)
+    .leftJoin(opt, eq(opt.id, pestisida.opt_id))
+    .leftJoin(tanaman, eq(tanaman.id, opt.tanaman_id))
+    .leftJoin(lokasi, eq(lokasi.id, pestisida.lokasi_id))
+    .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
+    .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
+    .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
+    .leftJoin(desa, eq(desa.id, lokasi.desa_id))
+    .leftJoin(golonganPestisida, eq(golonganPestisida.id, pestisida.golongan_pestisida_id));
+
+  return c.html(
+    <DefaultLayout
+      route="stock-pestisida"
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+    >
+      <DataStockPestisida listStockPestisida={selectStockPestisida} user={selectedUser || null} />
+    </DefaultLayout>
+  );
+});
+
+master.get('/golongan-pestisida', async (c) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  const selectedUser = await db.query.user
+    .findFirst({
+      where: eq(user.id, parseInt(userId)),
+      with: {
+        userGroup: true,
+      },
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const selectGolonganPestisida = await db
+    .select()
+    .from(golonganPestisida)
+
+  return c.html(
+    <DefaultLayout
+      route="golongan-pestisida"
+      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+    >
+      <DataGolonganPestisida listGolonganPestisida={selectGolonganPestisida} user={selectedUser || null} />
+    </DefaultLayout>
+  );
+});

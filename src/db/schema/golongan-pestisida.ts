@@ -5,3 +5,5 @@ export const golonganPestisida = pgTable('golongan_pestisida', {
   nama_golongan: text('nama_golongan'),
   created_at: timestamp('created_at').defaultNow(),
 });
+
+export type SelectGolonganPestisida = typeof golonganPestisida.$inferSelect;
