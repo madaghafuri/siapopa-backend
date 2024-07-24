@@ -43,6 +43,7 @@ export const client = new Client({
   database: 'siapopa-dev',
   ssl: false,
 });
+
 (async () => await client.connect())();
 export const db = drizzle(client, {
   schema: {
