@@ -411,10 +411,10 @@ lokasiRoute.get('/', async (c) => {
   const lokasiData = await withPagination(
     lokasiDataQuery,
     parseInt(page || '1'),
-    parseInt(per_page || '25')
+    parseInt(per_page || '10')
   );
 
-  console.log(page);
+  const newUrl = new URLSearchParams(c.req.query());
 
   if (c.req.header('hx-request') && c.req.header('hx-target') == 'table-body') {
     return c.html(
@@ -435,7 +435,7 @@ lokasiRoute.get('/', async (c) => {
       </Fragment>,
       200,
       {
-        'HX-Push-Url': c.req.url,
+        'HX-Push-Url': '/app/master/lokasi?' + newUrl.toString(),
       }
     );
   }
