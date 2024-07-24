@@ -49,7 +49,11 @@ export const authorizeWebInput = createMiddleware<{
   const session = c.get('session');
   const userId = session.get('user_id') as string;
 
-  if (!userId) {
+  if (!userId && c.req.header('HX-Request')) {
+    return c.text('Unauthorized', 302, {
+      'HX-Redirect': '/login',
+    });
+  } else if (!userId) {
     return c.redirect('/login');
   }
 
@@ -60,11 +64,24 @@ export const authorizeWebInput = createMiddleware<{
     where: eq(user.id, parseInt(userId)),
   });
 
-  if (!selectUser) {
+  if (!selectUser && c.req.header('hx-request')) {
+    return c.text('Unauthorized', 302, {
+      'HX-Reswap': 'none',
+      'HX-Redirect': '/login',
+    });
+  } else if (!selectUser) {
     return c.redirect('/app/dashboard');
   }
 
-  if (selectUser.userGroup.group_name !== 'bptph') {
+  if (
+    c.req.header('hx-request') &&
+    selectUser.userGroup.group_name !== 'bptph'
+  ) {
+    return c.text('Unauthorized', 302, {
+      'HX-Reswap': 'none',
+      'HX-Redirect': '/login',
+    });
+  } else if (selectUser.userGroup.group_name !== 'bptph') {
     return c.redirect('/app/dashboard');
   }
 
