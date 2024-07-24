@@ -1,9 +1,28 @@
 import { html } from 'hono/html';
+import { KabupatenKota } from '../../db/schema/kabupaten-kota';
 
-const DashboardPage = () => {
+const DashboardPage = ({
+  kabkotOptions,
+}: {
+  kabkotData: Partial<Omit<KabupatenKota, 'area_kabkot'>>;
+  kabkotOptions: Partial<KabupatenKota>[];
+}) => {
   return (
-    <div class="p-3">
-      <h1 class="text-2xl font-bold">Dashboard</h1>
+    <div class="p-5 shadow-inner">
+      <div class="grid grid-cols-4 rounded border-t-2 border-t-secondary bg-white p-5 shadow-lg">
+        <div class="">
+          <select
+            name="kabkot_id"
+            id="dropdown-kabupaten"
+            class="rounded border border-gray-200 px-2 py-1"
+          >
+            <option value="">Pilih Kabupaten Kota</option>
+            {kabkotOptions.map((val) => {
+              return <option value={val.id}>{val.nama_kabkot}</option>;
+            })}
+          </select>
+        </div>
+      </div>
       <div id="map" class="min-h-[60vh]">
         {html`
           <script>
@@ -17,22 +36,34 @@ const DashboardPage = () => {
                 }
               ).addTo(map);
 
-              const bar = fetch('/assets/3201.geojson')
-                .then((res) => res.json())
-                .then((data) => {
-                  console.log(data);
-                  L.geoJson(data).addTo(map);
+              $('#dropdown-kabupaten').change(async function () {
+                const selectedVal = $(this).val();
+
+                if (!selectedVal) return;
+                $.ajax({
+                  url: '/app/dashboard/map',
+                  method: 'GET',
+                  data: {
+                    kabkot_id: selectedVal,
+                  },
+                  success: (res) => {
+                    map.eachLayer(function (layer) {
+                      if (layer instanceof L.GeoJSON) {
+                        map.removeLayer(layer);
+                      }
+                    });
+                    const poly = L.geoJSON(res.data[0].area_kabkot).addTo(map);
+                    map.fitBounds(poly.getBounds());
+                    poly.bindPopup('I am a polygon');
+                  },
+                  error: () => {
+                    console.log('error');
+                  },
                 });
+              });
             });
           </script>
         `}
-        Map
-      </div>
-      <div
-        class="text-xl font-bold text-blue-500"
-        onclick="alert('Hello World')"
-      >
-        Leaflet
       </div>
     </div>
   );
