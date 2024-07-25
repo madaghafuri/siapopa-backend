@@ -26,7 +26,7 @@ export const lokasiRelations = relations(lokasi, ({ one }) => ({
     fields: [lokasi.provinsi_id],
     references: [provinsi.id],
   }),
-  kabkot: one(kabupatenKota, {
+  kabupaten_kota: one(kabupatenKota, {
     fields: [lokasi.kabkot_id],
     references: [kabupatenKota.id],
   }),

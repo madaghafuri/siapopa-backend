@@ -383,36 +383,40 @@ lokasiRoute.get('/', async (c) => {
       console.error(err);
     });
 
-  const lokasiDataQuery = db
-    .select({
-      id: lokasi.id,
-      alamat: lokasi.alamat,
-      kode_post: lokasi.kode_post,
-      provinsi_id: lokasi.provinsi_id,
-      kabkot_id: lokasi.kabkot_id,
-      kecamatan_id: lokasi.kecamatan_id,
-      desa_id: lokasi.desa_id,
-      pic_id: lokasi.pic_id,
-      provinsi: provinsi,
-      kabupaten_kota: kabupatenKota,
-      kecamatan: kecamatan,
-      desa: desa,
-      pic: user,
-    })
-    .from(lokasi)
-    .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
-    .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
-    .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
-    .leftJoin(desa, eq(desa.id, lokasi.desa_id))
-    .leftJoin(user, eq(user.id, lokasi.pic_id))
-    .where(and(!!alamat ? ilike(lokasi.alamat, `%${alamat}%`) : undefined))
-    .$dynamic();
-
-  const lokasiData = await withPagination(
-    lokasiDataQuery,
-    parseInt(page || '1'),
-    parseInt(per_page || '10')
-  );
+  const lokasiData = await db.query.lokasi.findMany({
+    with: {
+      provinsi: {
+        columns: {
+          area_provinsi: false,
+          point_provinsi: false,
+        },
+      },
+      kabupaten_kota: {
+        columns: {
+          area_kabkot: false,
+          point_kabkot: false,
+        },
+      },
+      kecamatan: {
+        columns: {
+          area_kecamatan: false,
+          point_kecamatan: false,
+        },
+      },
+      desa: {
+        columns: {
+          area_desa: false,
+          point_desa: false,
+        },
+      },
+    },
+    where: (lokasi, { ilike, and }) =>
+      and(!!alamat ? ilike(lokasi.alamat, `%${alamat}%`) : undefined),
+    limit: parseInt(page || '10'),
+    offset:
+      parseInt(page || '10') * parseInt(per_page || '1') -
+      parseInt(page || '10'),
+  });
 
   const newUrl = new URLSearchParams(c.req.query());
 

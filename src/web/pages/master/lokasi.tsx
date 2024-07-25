@@ -9,10 +9,10 @@ import { ColumnHeader, Table } from '../../components/table';
 
 export const lokasiColumn: ColumnHeader<
   Lokasi & {
-    provinsi: Provinsi;
-    kabupaten_kota: KabupatenKota;
-    kecamatan: Kecamatan;
-    desa: Desa;
+    provinsi: Partial<Provinsi>;
+    kabupaten_kota: Partial<KabupatenKota>;
+    kecamatan: Partial<Kecamatan>;
+    desa: Partial<Desa>;
     pic?: SelectUser;
   }
 >[] = [
@@ -38,10 +38,10 @@ export const LokasiPage = ({
 }: {
   user: SelectUser;
   lokasiList: (Lokasi & {
-    provinsi: Provinsi;
-    kabupaten_kota: KabupatenKota;
-    kecamatan: Kecamatan;
-    desa: Desa;
+    provinsi: Partial<Provinsi>;
+    kabupaten_kota: Partial<KabupatenKota>;
+    kecamatan: Partial<Kecamatan>;
+    desa: Partial<Desa>;
     pic?: SelectUser;
   })[];
 }) => {

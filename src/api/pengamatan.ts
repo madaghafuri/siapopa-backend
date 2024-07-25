@@ -260,7 +260,7 @@ pengamatan.get('/pengamatan/:pengamatanId', async (c) => {
       locations: {
         with: {
           provinsi: true,
-          kabkot: true,
+          kabupaten_kota: true,
           kecamatan: true,
           desa: true,
         },

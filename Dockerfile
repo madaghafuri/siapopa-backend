@@ -10,6 +10,7 @@ RUN cd /temp/dev && bun install --frozen-lockfile
 FROM base AS prerelease
 WORKDIR /app
 COPY --from=install /temp/dev/node_modules ./node_modules
+COPY --from=install /temp/dev/package.json ./package.json
 COPY . .
 # PROD
 RUN bun run build:css:prod
