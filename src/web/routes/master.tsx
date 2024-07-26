@@ -1,37 +1,38 @@
 import { Hono } from 'hono';
 import { Session } from 'hono-sessions';
-import { db } from '../../index.js';
+import { db } from '../../';
 import { and, eq, ilike, sql } from 'drizzle-orm';
-import { user } from '../../db/schema/user.js';
-import { DefaultLayout } from '../layouts/default-layout.js';
-import Profile, { AuthenticatedUser } from '../components/profile.js';
-import { InsertTanaman, tanaman } from '../../db/schema/tanaman.js';
+import { user } from '../../db/schema/user';
+import { DefaultLayout } from '../layouts/default-layout';
+import Profile, { AuthenticatedUser } from '../components/profile';
+import { InsertTanaman, tanaman } from '../../db/schema/tanaman';
 import { validator } from 'hono/validator';
-import { InsertOPT, opt } from '../../db/schema/opt.js';
-import DataOPT from '../pages/master/opt.js';
-import { ModalOpt } from '../components/master/modal-opt.js';
-import { InsertUserGroup, userGroup } from '../../db/schema/user-group.js';
-import DataUser from '../pages/master/user.js';
-import DataUserGroup from '../pages/master/usergroup.js';
-import DataTanaman from '../pages/master/tanaman.js';
-import Modal, { ModalContent, ModalHeader } from '../components/modal.js';
+import { InsertOPT, opt } from '../../db/schema/opt';
+import DataOPT from '../pages/master/opt';
+import { ModalOpt } from '../components/master/modal-opt';
+import { InsertUserGroup, userGroup } from '../../db/schema/user-group';
+import DataUser from '../pages/master/user';
+import DataUserGroup from '../pages/master/usergroup';
+import DataTanaman from '../pages/master/tanaman';
+import Modal, { ModalContent, ModalHeader } from '../components/modal';
 import { Fragment } from 'hono/jsx/jsx-runtime';
-import { authorizeWebInput } from '../../middleware.js';
-import { ModalTanaman } from '../components/master/modal-tanaman.js';
-import { ModalUserGroup } from '../components/master/modal-usergroup.js';
-import { lokasiColumn, LokasiPage } from '../pages/master/lokasi.js';
-import { lokasi } from '../../db/schema/lokasi.js';
-import { provinsi } from '../../db/schema/provinsi.js';
-import { kabupatenKota } from '../../db/schema/kabupaten-kota.js';
-import { kecamatan } from '../../db/schema/kecamatan.js';
-import { desa } from '../../db/schema/desa.js';
-import { ModalLokasi } from '../components/master/modal-lokasi.js';
-import { KabupatenKotaPage } from '../pages/master/kabupaten-kota.js';
-import DataStockPestisida from '../pages/master/stock-pestisida.js';
-import { pestisida } from '../../db/schema/pestisida.js';
-import { golonganPestisida } from '../../db/schema/golongan-pestisida.js';
-import DataGolonganPestisida from '../pages/master/golongan-pestisida.js';
-import { withPagination } from '../../api/helper.js';
+import { authorizeWebInput } from '../../middleware';
+import { ModalTanaman } from '../components/master/modal-tanaman';
+import { ModalUserGroup } from '../components/master/modal-usergroup';
+import { lokasiColumn, LokasiPage } from '../pages/master/lokasi';
+import { lokasi } from '../../db/schema/lokasi';
+import { provinsi } from '../../db/schema/provinsi';
+import { kabupatenKota } from '../../db/schema/kabupaten-kota';
+import { kecamatan } from '../../db/schema/kecamatan';
+import { desa } from '../../db/schema/desa';
+import { ModalLokasi } from '../components/master/modal-lokasi';
+import { KabupatenKotaPage } from '../pages/master/kabupaten-kota';
+import DataStockPestisida from '../pages/master/stock-pestisida';
+import { pestisida } from '../../db/schema/pestisida';
+import { golonganPestisida } from '../../db/schema/golongan-pestisida';
+import DataGolonganPestisida from '../pages/master/golongan-pestisida';
+import { withPagination } from '../../api/helper';
+import { peramalanColumn, PeramalanPage } from '../pages/master/peramalan';
 
 export const master = new Hono<{
   Variables: {
@@ -622,6 +623,97 @@ master.get('/golongan-pestisida', async (c) => {
       <DataGolonganPestisida
         listGolonganPestisida={selectGolonganPestisida}
         user={selectedUser || null}
+      />
+    </DefaultLayout>
+  );
+});
+
+const peramalanRoute = master.route('/peramalan');
+peramalanRoute.get('/', async (c) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  const { page, per_page } = c.req.query();
+  const kabkot_id = c.req.queries('kabkot_id[]');
+  const kode_opt = c.req.queries('kode_opt[]');
+  const perPage = parseInt(per_page || '10');
+
+  const selectUser = await db.query.user
+    .findFirst({
+      where: (user, { eq }) => eq(user.id, parseInt(userId)),
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const kabkotOption = await db.query.kabupatenKota.findMany({
+    columns: {
+      point_kabkot: false,
+      area_kabkot: false,
+    },
+    orderBy: (kabkot, { asc }) => asc(kabkot.id),
+  });
+
+  const optOption = await db.query.opt.findMany({
+    orderBy: (opt, { desc }) => desc(opt.id),
+  });
+
+  const peramalanData = await db.query.peramalan.findMany({
+    with: {
+      kabupaten_kota: {
+        columns: {
+          area_kabkot: false,
+          point_kabkot: false,
+        },
+      },
+      opt: true,
+    },
+    where: (peramalan, { and, inArray }) =>
+      and(
+        !!kabkot_id ? inArray(peramalan.kabkot_id, kabkot_id) : undefined,
+        !!kode_opt ? inArray(peramalan.kode_opt, kode_opt) : undefined
+      ),
+    orderBy: (peramalan, { desc }) => desc(peramalan.updated_date),
+    limit: perPage,
+    offset: (parseInt(page || '1') - 1) * perPage,
+  });
+  const newUrl = new URLSearchParams();
+  !!kabkot_id && kabkot_id.forEach((val) => newUrl.append('kabkot_id[]', val));
+  !!kode_opt && kode_opt.forEach((val) => newUrl.append('kode_opt[]', val));
+
+  if (c.req.header('hx-request')) {
+    return c.html(
+      <Fragment>
+        {peramalanData.map((row, index) => {
+          return (
+            <tr key={row.id}>
+              {peramalanColumn.map((col) => {
+                return (
+                  <td class="border-b border-r border-gray-200 px-4 py-2 text-left text-sm font-normal">
+                    {col?.valueGetter?.(row, index) || row[col.field]}
+                  </td>
+                );
+              })}
+            </tr>
+          );
+        })}
+      </Fragment>,
+      200,
+      {
+        'HX-Push-Url': '/app/master/peramalan?' + newUrl.toString(),
+      }
+    );
+  }
+
+  return c.html(
+    <DefaultLayout
+      route="peramalan"
+      authNavigation={!!selectUser ? <Profile user={selectUser} /> : null}
+    >
+      <PeramalanPage
+        peramalanData={peramalanData}
+        kabupatenData={kabkotOption}
+        optOption={optOption}
       />
     </DefaultLayout>
   );

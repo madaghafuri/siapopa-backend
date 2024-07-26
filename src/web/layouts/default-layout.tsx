@@ -98,6 +98,12 @@ export const DefaultLayout = ({
             >
               Stock Pestisida
             </a>
+            <a
+              href="/app/master/peramalan"
+              class={`rounded-md px-4 py-2 text-left ${route === 'peramalan' ? 'bg-primary text-white' : ''}`}
+            >
+              Peramalan
+            </a>
           </div>
         </div>
         <div class="max-w-full rounded-md border">

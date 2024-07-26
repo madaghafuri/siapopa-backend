@@ -24,6 +24,8 @@ import * as tanaman from './db/schema/tanaman';
 import * as userGroup from './db/schema/user-group';
 import * as validasiLaporan from './db/schema/validasi-laporan';
 import * as session from './db/schema/session';
+import * as pestisida from './db/schema/pestisida';
+import * as peramalan from './db/schema/peramalan';
 import web from './web/route';
 import { serveStatic } from 'hono/bun';
 import { CookieStore, Session, sessionMiddleware } from 'hono-sessions';
@@ -68,6 +70,8 @@ export const db = drizzle(client, {
     ...user,
     ...validasiLaporan,
     ...session,
+    ...pestisida,
+    ...peramalan,
   },
 });
 const adapter = new DrizzlePostgreSQLAdapter(

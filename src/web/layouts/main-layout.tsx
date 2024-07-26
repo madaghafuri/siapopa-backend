@@ -51,6 +51,11 @@ export const MainLayout = ({ children }: { children?: any }) => {
           src="https://cdn.datatables.net/2.0.8/js/dataTables.js"
         ></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
+        <link
+          href="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.min.css"
+          rel="stylesheet"
+        />
       </head>
       <body>{children}</body>
     </html>
