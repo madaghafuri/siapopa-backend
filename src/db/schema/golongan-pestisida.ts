@@ -7,3 +7,4 @@ export const golonganPestisida = pgTable('golongan_pestisida', {
 });
 
 export type SelectGolonganPestisida = typeof golonganPestisida.$inferSelect;
+export type InsertGolonganPestisida = typeof golonganPestisida.$inferInsert;

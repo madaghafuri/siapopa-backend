@@ -15,18 +15,21 @@ export type ColumnHeader<T extends Object = any> = {
     | '11'
     | '12';
   valueGetter?: (row: T, index?: number) => T[keyof T] | any;
+  width?: string;
 };
 
 const Table = ({
   rowsData,
   columns,
   reloadBody,
+  triggerData,
   ...props
 }: {
   children?: any;
   rowsData: any[];
   columns: ColumnHeader[];
   reloadBody?: string;
+  triggerData?: string;
 } & Partial<HTMLTableElement>) => {
   return (
     //@ts-ignore
@@ -40,7 +43,8 @@ const Table = ({
           {columns.map((col) => {
             return (
               <th
-                class={`border-b border-gray-200 px-4 py-2 text-sm font-semibold capitalize text-blue-500`}
+                class={`border-b border-gray-200 px-4 py-2`}
+                style={{ width: col.width }}
               >
                 {col.headerName}
               </th>
@@ -49,14 +53,15 @@ const Table = ({
         </tr>
       </thead>
 
-      <tbody hx-get={reloadBody} id="table-body">
+      <tbody hx-get={reloadBody} hx-trigger={triggerData} id="table-body">
         {rowsData.map((row, index) => {
           return (
             <tr key={row.id} class="">
               {columns.map((column) => {
                 return (
                   <td
-                    class={`border-b border-r border-gray-200 px-4 py-2 text-left text-sm font-normal`}
+                    class={`border-b border-gray-200 px-4 py-2`}
+                    style={{ width: column.width }}
                   >
                     {column?.valueGetter?.(row, index) || row[column.field]}
                   </td>
