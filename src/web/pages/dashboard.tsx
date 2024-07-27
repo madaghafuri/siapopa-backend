@@ -28,13 +28,28 @@ const DashboardPage = ({
           <script>
             $(document).ready(async function () {
               const map = L.map('map').setView([-6.8673915, 106.9443265], 11);
-              L.tileLayer(
+              const streetMap = L.tileLayer(
                 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 {
                   attribution:
                     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 }
-              ).addTo(map);
+              );
+
+              const baseMap = L.tileLayer(
+                'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                {
+                  attribution: '©OpenStreetMap, ©CartoDB',
+                }
+              );
+              baseMap.addTo(map);
+
+              const baseLayers = {
+                'Base Map': baseMap,
+                'Street Map': streetMap,
+              };
+
+              L.control.layers(baseLayers).addTo(map);
 
               $('#dropdown-kabupaten').change(async function () {
                 const selectedVal = $(this).val();

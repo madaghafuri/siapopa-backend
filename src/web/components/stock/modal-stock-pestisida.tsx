@@ -10,38 +10,44 @@ import { Kecamatan } from '../../../db/schema/kecamatan.js';
 import { Desa } from '../../../db/schema/desa.js';
 import { SelectPestisida } from '../../../db/schema/pestisida.js';
 
-export const ModalStockPestisida = ({ 
-  listGolongan, 
-  listBahanAktif, 
-  listOpt, 
-  listTanaman, 
+export const ModalStockPestisida = ({
+  listGolongan,
+  listBahanAktif,
+  listOpt,
+  listTanaman,
   listProvinsi,
   listKabKot,
   listKecamatan,
   listDesa,
-  pestisida 
-}: { 
-  listTanaman?: SelectTanaman[], 
-  listOpt?: SelectOPT[], 
-  listGolongan?: SelectGolonganPestisida[], 
-  listBahanAktif?: SelectBahanAktif[], 
-  listProvinsi?: Provinsi[],
-  listKabKot?: KabupatenKota[],
-  listKecamatan?: Kecamatan[],
-  listDesa?: Desa[],
-  pestisida?: SelectPestisida 
+  pestisida,
+}: {
+  listTanaman?: SelectTanaman[];
+  listOpt?: SelectOPT[];
+  listGolongan?: SelectGolonganPestisida[];
+  listBahanAktif?: SelectBahanAktif[];
+  listProvinsi?: Partial<Provinsi>[];
+  listKabKot?: Partial<KabupatenKota>[];
+  listKecamatan?: Partial<Kecamatan>[];
+  listDesa?: Partial<Desa>[];
+  pestisida?: SelectPestisida;
 }) => {
   const isEditing = !!pestisida;
 
   return (
     <Modal>
       <ModalHeader>
-        <h2 class="text-xl font-bold">{isEditing ? 'Edit' : 'Create'} Pestisida</h2>
+        <h2 class="text-xl font-bold">
+          {isEditing ? 'Edit' : 'Create'} Pestisida
+        </h2>
       </ModalHeader>
       <ModalContent>
         <form
           class="flex flex-col gap-3"
-          hx-post={isEditing ? `/app/stock/stock-pestisida/edit/${pestisida?.id}` : "/app/stock/stock-pestisida"}
+          hx-post={
+            isEditing
+              ? `/app/stock/stock-pestisida/edit/${pestisida?.id}`
+              : '/app/stock/stock-pestisida'
+          }
           hx-target="#error-message"
           hx-swap="innerHTML"
           hx-trigger="submit"
@@ -52,11 +58,13 @@ export const ModalStockPestisida = ({
               <select
                 name="golongan_pestisida_id"
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               >
                 <option value="">Select Golongan Pestisida</option>;
                 {listGolongan.map((value) => {
-                  return <option value={value.id}>{value.nama_golongan}</option>;
+                  return (
+                    <option value={value.id}>{value.nama_golongan}</option>
+                  );
                 })}
               </select>
             </div>
@@ -68,7 +76,7 @@ export const ModalStockPestisida = ({
                 defaultValue={pestisida?.merk_dagang || ''}
                 value={pestisida?.merk_dagang || ''}
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               />
             </div>
           </div>
@@ -81,7 +89,7 @@ export const ModalStockPestisida = ({
                 value={pestisida?.bahan_aktif_id || ''}
                 multiple
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               >
                 {listBahanAktif.map((value) => {
                   return <option value={value.id}>{value.nama_bahan}</option>;
@@ -91,11 +99,11 @@ export const ModalStockPestisida = ({
             <div>
               <label>Komoditas*</label>
               <select
-                id='komoditas'
+                id="komoditas"
                 name="tanaman_id"
                 multiple
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               >
                 {listTanaman.map((value) => {
                   return <option value={value.id}>{value.nama_tanaman}</option>;
@@ -107,11 +115,11 @@ export const ModalStockPestisida = ({
             <div>
               <label>OPT Sasaran*</label>
               <select
-                id='sasaran'
+                id="sasaran"
                 name="opt_id"
                 multiple
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               >
                 <option value="">Select OPT Sasaran</option>;
                 {listOpt.map((value) => {
@@ -124,7 +132,7 @@ export const ModalStockPestisida = ({
               <select
                 name="satuan"
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               >
                 <option value="">Select Satuan</option>
                 <option value="kg">Kg</option>
@@ -135,7 +143,7 @@ export const ModalStockPestisida = ({
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
-          <div>
+            <div>
               <label>Volume*</label>
               <input
                 type="number"
@@ -143,7 +151,7 @@ export const ModalStockPestisida = ({
                 defaultValue={pestisida?.volume || ''}
                 value={pestisida?.volume || ''}
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               />
             </div>
             <div>
@@ -152,12 +160,12 @@ export const ModalStockPestisida = ({
                 type="date"
                 name="expired_date"
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               />
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
-          <div>
+            <div>
               <label>Periode Bulan*</label>
               <input
                 type="month"
@@ -165,7 +173,7 @@ export const ModalStockPestisida = ({
                 defaultValue={pestisida?.periode_bulan || ''}
                 value={pestisida?.periode_bulan || ''}
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               />
             </div>
             <div>
@@ -174,21 +182,23 @@ export const ModalStockPestisida = ({
                 type="month"
                 name="tahun_pengadaan"
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               />
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
-          <div>
+            <div>
               <label>Provinsi*</label>
               <select
                 name="provinsi"
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               >
                 <option value="">Select Provinsi</option>;
                 {listProvinsi.map((value) => {
-                  return <option value={value.id}>{value.nama_provinsi}</option>;
+                  return (
+                    <option value={value.id}>{value.nama_provinsi}</option>
+                  );
                 })}
               </select>
             </div>
@@ -197,7 +207,7 @@ export const ModalStockPestisida = ({
               <select
                 name="kabupaten_kota"
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               >
                 <option value="">Select Kabupaten/Kota</option>;
                 {listKabKot.map((value) => {
@@ -207,16 +217,18 @@ export const ModalStockPestisida = ({
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
-          <div>
+            <div>
               <label>Kecamatan*</label>
               <select
                 name="kecamatan"
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               >
                 <option value="">Select Kecamatan</option>;
                 {listKecamatan.map((value) => {
-                  return <option value={value.id}>{value.nama_kecamatan}</option>;
+                  return (
+                    <option value={value.id}>{value.nama_kecamatan}</option>
+                  );
                 })}
               </select>
             </div>
@@ -225,7 +237,7 @@ export const ModalStockPestisida = ({
               <select
                 name="lokasi_id"
                 required
-                class="rounded border px-2 py-1 w-full"
+                class="w-full rounded border px-2 py-1"
               >
                 <option value="">Select Desa</option>;
                 {listDesa.map((value) => {
@@ -246,12 +258,11 @@ export const ModalStockPestisida = ({
             </div>
           </button>
         </form>
-        {html`
-        <script>
-          $(document).ready(function() {
-              $('#bahan_aktif').select2();
-              $('#komoditas').select2();
-              $('#sasaran').select2();
+        {html` <script>
+          $(document).ready(function () {
+            $('#bahan_aktif').select2();
+            $('#komoditas').select2();
+            $('#sasaran').select2();
           });
         </script>`}
       </ModalContent>

@@ -13,7 +13,7 @@ export const DefaultLayout = ({
   user?: SelectUser & { userGroup: SelectUserGroup };
 }) => (
   <MainLayout>
-    <div class="grid max-h-[10vh] grid-cols-12 items-center gap-5 border-b-2">
+    <div class="grid min-h-[10vh] grid-cols-12 items-center gap-5 border-b-2">
       <button _="on click toggle between .flex and .hidden on #side-nav then toggle between .{'w-10/12'} and .{'w-full'} on #main-content">
         <i class="fa-solid fa-bars"></i>
       </button>
@@ -28,7 +28,7 @@ export const DefaultLayout = ({
         )}
       </div>
     </div>
-    <div class="flex h-full max-h-[90vh]">
+    <div class="flex min-h-[90vh]">
       <section
         id="side-nav"
         class="opening closing flex w-2/12 flex-col gap-4 truncate border-r-2 px-5 py-10 text-sm"
@@ -103,7 +103,10 @@ export const DefaultLayout = ({
             Laporan Stock
             <i id="laporan-stock-icon" class="fa-solid fa-caret-right"></i>
           </button>
-          <div id="laporan-stock-dropdown" class="opening hidden flex-col gap-3 p-5">
+          <div
+            id="laporan-stock-dropdown"
+            class="opening hidden flex-col gap-3 p-5"
+          >
             <a
               href="/app/stock/golongan-pestisida"
               class={`rounded-md px-4 py-2 text-left ${route === 'golongan-pestisida' ? 'bg-primary text-white' : ''}`}

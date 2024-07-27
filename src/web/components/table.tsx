@@ -43,7 +43,7 @@ const Table = ({
           {columns.map((col) => {
             return (
               <th
-                class={`border-b border-gray-200 px-4 py-2`}
+                class={`border-b border-gray-200 px-4 py-2 text-sm font-medium capitalize text-blue-500`}
                 style={{ width: col.width }}
               >
                 {col.headerName}
