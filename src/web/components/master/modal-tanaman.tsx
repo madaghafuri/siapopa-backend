@@ -1,15 +1,18 @@
+import { SelectTanaman } from '../../../db/schema/tanaman.js';
 import Modal, { ModalContent, ModalHeader } from '../modal.js';
 
-export const ModalTanaman = () => {
+export const ModalTanaman = ({ tanaman }: { tanaman?: SelectTanaman }) => {
+  const isEditing = !!tanaman;
+
   return (
     <Modal>
       <ModalHeader>
-        <h1 class="font-bold">Create Tanaman</h1>
+        <h1 class="font-bold">{isEditing ? 'Edit' : 'Create'} Tanaman</h1>
       </ModalHeader>
       <ModalContent>
         <form
           class="flex flex-col gap-5"
-          hx-post="/app/master/tanaman"
+          hx-post={isEditing ? `/app/master/tanaman/edit/${tanaman?.id}` : "/app/master/tanaman"}
           hx-target="#error-message"
           hx-swap="innerHTML"
           hx-trigger="submit"
@@ -19,6 +22,7 @@ export const ModalTanaman = () => {
             <input
               type="text"
               name="nama_tanaman"
+              value={tanaman?.nama_tanaman || ''}
               class="rounded border px-2 py-1"
             />
           </div>
@@ -29,7 +33,7 @@ export const ModalTanaman = () => {
             type="submit"
           >
             <div id="loading">
-              <p>Create</p>
+              <p>{isEditing ? 'Update' : 'Create'}</p>
               <i class="fa-solid fa-spinner"></i>
             </div>
           </button>

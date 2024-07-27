@@ -20,14 +20,16 @@ const DataBahanAktif = ({
     <div class="grid p-5 shadow-inner">
       {!!user ? (
         <div>
-          <button
-            class="rounded bg-primary px-2 py-1 text-white"
-            hx-get="/app/stock/bahan-aktif/create"
-            hx-target="body"
-            hx-swap="beforeend"
-          >
-            Add Bahan Aktif
-          </button>
+          {user.usergroup_id === 5 && (
+            <button
+              class="rounded bg-primary px-2 py-1 text-white"
+              hx-get="/app/stock/bahan-aktif/create"
+              hx-target="body"
+              hx-swap="beforeend"
+            >
+              Add Bahan Aktif
+            </button>
+          )}
         </div>
       ) : null}
       <table id="bahanAktifTable" class="border-t-2 border-t-secondary bg-white" style="width:100%">
@@ -37,7 +39,9 @@ const DataBahanAktif = ({
               No.
             </th>
             <th class="border-b border-gray-200 px-4 py-2">Bahan Aktif</th>
-            <th class="border-b border-gray-200 px-4 py-2" style="width: 10%">Actions</th>
+            {user && user.usergroup_id === 5 && (
+              <th class="border-b border-gray-200 px-4 py-2" style="width: 10%">Actions</th>
+            )}
           </tr>
         </thead>
         <tbody
@@ -52,13 +56,14 @@ const DataBahanAktif = ({
               <td class="border-b border-gray-200 px-4 py-2">
                 {bahan.nama_bahan}
               </td>
-              <td class="border-b border-gray-200 px-4 py-2" style="width: 10%">
-              <div class="flex items-center space-x-2">
-                  <button
-                    class="text-blue-500 hover:text-blue-700 px-4"
-                    hx-get={`/app/stock/bahan-aktif/edit/${bahan.id}`}
-                    hx-target="body"
-                    hx-swap="beforeend"
+              {user && user.usergroup_id === 5 && (
+                <td class="border-b border-gray-200 px-4 py-2" style="width: 10%">
+                  <div class="flex items-center space-x-2">
+                    <button
+                      class="text-blue-500 hover:text-blue-700 px-4"
+                      hx-get={`/app/stock/bahan-aktif/edit/${bahan.id}`}
+                      hx-target="body"
+                      hx-swap="beforeend"
                     >
                       <i class="fa fa-edit"></i>
                     </button>
@@ -68,11 +73,12 @@ const DataBahanAktif = ({
                       hx-target="#bahanAktifTable"
                       hx-swap="outerHTML"
                       hx-confirm="Are you sure you want to delete this item?"
-                      >
-                        <i class="fa fa-trash"></i>
+                    >
+                      <i class="fa fa-trash"></i>
                     </button>
-                </div>
-              </td>
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

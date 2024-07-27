@@ -14,6 +14,7 @@ const DataGolonganPestisida = ({
     <div class="grid p-5 shadow-inner">
       {!!user ? (
         <div>
+          {user.usergroup_id === 5 && (
           <button
             class="rounded bg-primary px-2 py-1 text-white"
             hx-get="/app/stock/golongan-pestisida/create"
@@ -22,6 +23,7 @@ const DataGolonganPestisida = ({
           >
             Add Golongan Pestisida
           </button>
+          )}
         </div>
       ) : null}
       <table id="golonganPestisidaTable" class="border-t-2 border-t-secondary bg-white" style="width:100%">
@@ -31,7 +33,9 @@ const DataGolonganPestisida = ({
               No.
             </th>
             <th class="border-b border-gray-200 px-4 py-2">Golongan Pestisida</th>
+            {user && user.usergroup_id === 5 && (
             <th class="border-b border-gray-200 px-4 py-2" style="width: 10%">Actions</th>
+            )}
           </tr>
         </thead>
         <tbody
@@ -46,6 +50,7 @@ const DataGolonganPestisida = ({
               <td class="border-b border-gray-200 px-4 py-2">
                 {golongan.nama_golongan}
               </td>
+              {user && user.usergroup_id === 5 && (
               <td class="border-b border-gray-200 px-4 py-2" style="width: 10%">
               <div class="flex items-center space-x-2">
                   <button
@@ -67,6 +72,7 @@ const DataGolonganPestisida = ({
                     </button>
                 </div>
               </td>
+              )}
             </tr>
           ))}
         </tbody>
