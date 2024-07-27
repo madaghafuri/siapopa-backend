@@ -86,6 +86,12 @@ export const DefaultLayout = ({
             >
               Kabupaten Kota
             </a>
+            <a
+              href="/app/master/peramalan"
+              class={`rounded-md px-4 py-2 text-left ${route === 'peramalan' ? 'bg-primary text-white' : ''}`}
+            >
+              Peramalan
+            </a>
           </div>
         </div>
         <div class="max-w-full rounded-md border">
@@ -115,12 +121,6 @@ export const DefaultLayout = ({
               class={`rounded-md px-4 py-2 text-left ${route === 'stock-pestisida' ? 'bg-primary text-white' : ''}`}
             >
               Stock Pestisida
-            </a>
-            <a
-              href="/app/master/peramalan"
-              class={`rounded-md px-4 py-2 text-left ${route === 'peramalan' ? 'bg-primary text-white' : ''}`}
-            >
-              Peramalan
             </a>
           </div>
         </div>
