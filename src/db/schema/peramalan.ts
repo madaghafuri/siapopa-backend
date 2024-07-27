@@ -24,7 +24,7 @@ export const peramalan = pgTable('peramalan', {
   mt: musimTanam('mt'),
   mt_tahun: integer('mt_tahun'),
   mt_min: integer('mt_min'),
-  mt_prakiraan: integer('mr_prakiraan'),
+  mt_prakiraan: integer('mt_prakiraan'),
   mt_max: integer('mt_max'),
   klts: integer('klts'),
   rasio: integer('rasio'),
