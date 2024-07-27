@@ -8,6 +8,7 @@ import Profile, { AuthenticatedUser } from './components/profile.js';
 import { dashboard } from './routes/dashboard.js';
 import { master } from './routes/master.js';
 import { laporan } from './routes/laporan.js';
+import { stock } from './routes/stock.js';
 
 const web = new Hono<{
   Variables: {
@@ -47,6 +48,8 @@ web.route('/master', master);
 
 // laporan
 web.route('/laporan', laporan);
+
+web.route('/stock', stock);
 
 web.get('/lokasi', async (c) => {
   const session = c.get('session');

@@ -86,14 +86,32 @@ export const DefaultLayout = ({
             >
               Kabupaten Kota
             </a>
+          </div>
+        </div>
+        <div class="max-w-full rounded-md border">
+          <button
+            class="flex w-full items-center justify-between gap-5 truncate border-b-2 px-4 py-2 text-left"
+            type="button"
+            _="on click toggle between .hidden and .flex on #laporan-stock-dropdown then toggle .rotate-90 on #laporan-stock-icon"
+          >
+            Laporan Stock
+            <i id="laporan-stock-icon" class="fa-solid fa-caret-right"></i>
+          </button>
+          <div id="laporan-stock-dropdown" class="opening hidden flex-col gap-3 p-5">
             <a
-              href="/app/master/golongan-pestisida"
+              href="/app/stock/golongan-pestisida"
               class={`rounded-md px-4 py-2 text-left ${route === 'golongan-pestisida' ? 'bg-primary text-white' : ''}`}
             >
               Golongan Pestisida
             </a>
             <a
-              href="/app/master/stock-pestisida"
+              href="/app/stock/bahan-aktif"
+              class={`rounded-md px-4 py-2 text-left ${route === 'bahan-aktif' ? 'bg-primary text-white' : ''}`}
+            >
+              Bahan Aktif
+            </a>
+            <a
+              href="/app/stock/stock-pestisida"
               class={`rounded-md px-4 py-2 text-left ${route === 'stock-pestisida' ? 'bg-primary text-white' : ''}`}
             >
               Stock Pestisida
