@@ -83,7 +83,7 @@ tanamanRoute.post(
 tanamanRoute.get('/create', async (c) => {
   return c.html(<ModalTanaman />);
 });
-tanamanRoute.get('/tanaman/reload', async (c) => {
+tanamanRoute.get('/reload', async (c) => {
   const selectedTanaman = await db.select().from(tanaman).orderBy(tanaman.id);
 
   return c.html(
