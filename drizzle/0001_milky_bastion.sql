@@ -1,1 +1,0 @@
-ALTER TABLE "rumpun" ADD COLUMN "luas_spot_hopperburn" integer;
