@@ -48,25 +48,6 @@ peramalanRoute.get('/', async (c) => {
     orderBy: (opt, { desc }) => desc(opt.id),
   });
 
-  const peramalanData = await db.query.peramalan.findMany({
-    with: {
-      kabupaten_kota: {
-        columns: {
-          area_kabkot: false,
-          point_kabkot: false,
-        },
-      },
-      opt: true,
-    },
-    where: (peramalan, { and, inArray }) =>
-      and(
-        !!kabkot_id ? inArray(peramalan.kabkot_id, kabkot_id) : undefined,
-        !!kode_opt ? inArray(peramalan.kode_opt, kode_opt) : undefined
-      ),
-    orderBy: (peramalan, { desc }) => desc(peramalan.updated_date),
-    limit: perPage,
-    offset: (parseInt(page || '1') - 1) * perPage,
-  });
   const newUrl = new URLSearchParams();
   !!kabkot_id && kabkot_id.forEach((val) => newUrl.append('kabkot_id[]', val));
   !!kode_opt && kode_opt.forEach((val) => newUrl.append('kode_opt[]', val));
@@ -91,6 +72,26 @@ peramalanRoute.get('/', async (c) => {
     .groupBy(peramalan.kode_opt, opt.nama_opt)
     .orderBy(asc(sql`cast(${peramalan.kode_opt} as int)`));
 
+  const peramalanDataByKabKot = await db
+    .select({
+      kabkot_id: peramalan.kabkot_id,
+      nama_kabkot: kabupatenKota.nama_kabkot,
+      klts_mt_2023: sql<number>`sum(${peramalan.klts_sebelumnya})`,
+      klts_mt_2024: sql<number>`sum(${peramalan.klts_antara})`,
+      mt_2024: {
+        minimum: sql<number>`sum(${peramalan.mt_min})`,
+        prakiraan: sql<number>`sum(${peramalan.mt_prakiraan})`,
+        maksimum: sql<number>`sum(${peramalan.mt_max})`,
+      },
+      klts: sql<number>`sum(${peramalan.klts})`,
+      rasio: sql<number>`sum(${peramalan.rasio})`,
+      rasio_max: sql<number>`sum(${peramalan.rasio_max})`,
+    })
+    .from(peramalan)
+    .leftJoin(kabupatenKota, eq(kabupatenKota.id, peramalan.kabkot_id))
+    .groupBy(peramalan.kabkot_id, kabupatenKota.nama_kabkot)
+    .orderBy(asc(sql`cast(${peramalan.kabkot_id} as int)`));
+
   if (c.req.header('hx-request')) {
     return c.html(<Fragment></Fragment>, 200, {
       'HX-Push-Url': '/app/master/peramalan?' + newUrl.toString(),
@@ -106,6 +107,7 @@ peramalanRoute.get('/', async (c) => {
         kabupatenData={kabkotOption}
         optOption={optOption}
         peramalanDataByOptList={peramalanDataByOpt}
+        peramalanDataByKabKotList={peramalanDataByKabKot}
       />
     </DefaultLayout>
   );

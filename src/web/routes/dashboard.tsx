@@ -1,12 +1,14 @@
 import { Hono } from 'hono';
-import { db } from '../../index.js';
-import { and, eq, sql } from 'drizzle-orm';
-import { user } from '../../db/schema/user.js';
-import { DefaultLayout } from '../layouts/default-layout.js';
-import DashboardPage from '../pages/dashboard.js';
-import Profile, { AuthenticatedUser } from '../components/profile.js';
+import { db } from '../../';
+import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { user } from '../../db/schema/user';
+import { DefaultLayout } from '../layouts/default-layout';
+import DashboardPage from '../pages/dashboard';
+import Profile, { AuthenticatedUser } from '../components/profile';
 import { Session } from 'hono-sessions';
-import { kabupatenKota } from '../../db/schema/kabupaten-kota.js';
+import { kabupatenKota } from '../../db/schema/kabupaten-kota';
+import { peramalan } from '../../db/schema/peramalan';
+import { opt } from '../../db/schema/opt';
 
 export const dashboard = new Hono<{
   Variables: {
@@ -54,6 +56,10 @@ dashboard.get('/', async (c) => {
     orderBy: (kabkot, { asc }) => asc(kabkot.id),
   });
 
+  const optOptions = await db.query.opt.findMany({
+    orderBy: (opt, { asc }) => asc(sql`cast(${opt.id} as int)`),
+  });
+
   return c.html(
     <DefaultLayout
       route="dashboard"
@@ -63,12 +69,50 @@ dashboard.get('/', async (c) => {
         ) : null
       }
     >
-      <DashboardPage kabkotData={kabkotData[0]} kabkotOptions={kabkotOptions} />
+      <DashboardPage
+        kabkotData={kabkotData[0]}
+        kabkotOptions={kabkotOptions}
+        optOptions={optOptions}
+      />
     </DefaultLayout>
   );
 });
 dashboard.get('/map', async (c) => {
-  const { kabkot_id } = c.req.query();
+  const kabkotIds = c.req.queries('kabkot_id[]');
+  const kodeOptList = c.req.queries('kode_opt[]');
+
+  const peramalanData = await db
+    .select({
+      kabkot_id: peramalan.kabkot_id,
+      nama_kabkot: kabupatenKota.nama_kabkot,
+      area_kabkot: sql`ST_AsGeoJSON(${kabupatenKota.area_kabkot})::jsonb`,
+      klts_mt_2023: sql<number>`sum(${peramalan.klts_sebelumnya})`,
+      klts_mt_2024: sql<number>`sum(${peramalan.klts_antara})`,
+      mt_2024: {
+        minimum: sql<number>`sum(${peramalan.mt_min})`,
+        prakiraan: sql<number>`sum(${peramalan.mt_prakiraan})`,
+        maksimum: sql<number>`sum(${peramalan.mt_max})`,
+      },
+      klts: sql<number>`sum(${peramalan.klts})`,
+      rasio: sql<number>`sum(${peramalan.rasio})`,
+      rasio_max: sql<number>`sum(${peramalan.rasio_max})`,
+    })
+    .from(peramalan)
+    .leftJoin(kabupatenKota, eq(kabupatenKota.id, peramalan.kabkot_id))
+    .groupBy(
+      peramalan.kabkot_id,
+      kabupatenKota.nama_kabkot,
+      kabupatenKota.area_kabkot,
+      kabupatenKota.id
+    )
+    .where(
+      and(
+        !!kodeOptList && kodeOptList.length > 0
+          ? inArray(peramalan.kode_opt, kodeOptList)
+          : undefined
+      )
+    )
+    .orderBy(asc(sql`cast(${kabupatenKota.id} as int)`));
 
   const kabKotData = await db
     .select({
@@ -78,11 +122,17 @@ dashboard.get('/map', async (c) => {
       provinsi_id: kabupatenKota.provinsi_id,
     })
     .from(kabupatenKota)
-    .where(and(!!kabkot_id ? eq(kabupatenKota.id, kabkot_id) : undefined));
+    .where(
+      and(
+        !!kabkotIds && kabkotIds.length > 0
+          ? inArray(kabupatenKota.id, kabkotIds)
+          : undefined
+      )
+    );
 
   return c.json({
     status: 200,
     message: 'success',
-    data: kabKotData,
+    data: peramalanData,
   });
 });
