@@ -68,7 +68,10 @@ const DashboardPage = ({
               position: 'bottomright',
             });
             info.onAdd = function (map) {
-              const div = L.DomUtil.create('div', 'info legend'),
+              const div = L.DomUtil.create(
+                  'div',
+                  'info legend bg-white p-2 shadow-lg rounded'
+                ),
                 grades = [0, 3, 5, 10],
                 labels = [];
 
@@ -154,6 +157,9 @@ const DashboardPage = ({
                         {
                           label: 'Rasio KLTS terhadap Prakiraan Serangan',
                           data: res.data.map((value) => value.rasio),
+                          backgroundColor: res.data.map((value) =>
+                            getColor(value.rasio)
+                          ),
                         },
                       ],
                     },
