@@ -193,3 +193,20 @@ body {
   @apply animate-spin;
   opacity: 1;
 }
+
+/** PREVENT LEAFLET FOCUS SQUARE BOX */
+path.leaflet-interactive:focus {
+  outline: none;
+}
+
+.legend {
+  line-height: 18px;
+  color: #555;
+}
+.legend i {
+  width: 18px;
+  height: 18px;
+  float: left;
+  margin-right: 8px;
+  opacity: 0.7;
+}
