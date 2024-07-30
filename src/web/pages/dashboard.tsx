@@ -1,14 +1,11 @@
 import { html } from 'hono/html';
 import { KabupatenKota } from '../../db/schema/kabupaten-kota';
 import { SelectOPT } from '../../db/schema/opt';
-import { ToolTip } from '../components/leaflet/tooltip';
 
 const DashboardPage = ({
-  kabkotOptions,
   optOptions,
 }: {
   kabkotData: Partial<Omit<KabupatenKota, 'area_kabkot'>>;
-  kabkotOptions: Partial<KabupatenKota>[];
   optOptions: SelectOPT[];
 }) => {
   return (
@@ -116,6 +113,11 @@ const DashboardPage = ({
 
             $('#filter-prakiraan').click(function () {
               const kodeOptList = $('#dropdown-opt').val();
+              $('#filter-prakiraan')
+                .children()
+                .replaceWith(
+                  '<i class="fa-solid fa-spinner animate-spin"></i>'
+                );
 
               if (!kodeOptList || kodeOptList.length === 0) return;
               $.ajax({
@@ -167,6 +169,16 @@ const DashboardPage = ({
                   const regencies = L.featureGroup(layerGroup).addTo(map);
                   map.fitBounds(regencies.getBounds());
                 },
+                error: (res) => {
+                  if (!!chart) chart.destroy();
+                  map.eachLayer((layer) => {
+                    if (layer instanceof L.GeoJSON) {
+                      map.removeLayer(layer);
+                    }
+                  });
+                },
+              }).done(function () {
+                $('#filter-prakiraan').children().replaceWith('Filter');
               });
             });
           });

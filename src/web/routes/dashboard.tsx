@@ -8,7 +8,6 @@ import Profile, { AuthenticatedUser } from '../components/profile';
 import { Session } from 'hono-sessions';
 import { kabupatenKota } from '../../db/schema/kabupaten-kota';
 import { peramalan } from '../../db/schema/peramalan';
-import { opt } from '../../db/schema/opt';
 
 export const dashboard = new Hono<{
   Variables: {
@@ -48,14 +47,6 @@ dashboard.get('/', async (c) => {
     .from(kabupatenKota)
     .where(and(!!kabkot_id ? eq(kabupatenKota.id, kabkot_id) : undefined));
 
-  const kabkotOptions = await db.query.kabupatenKota.findMany({
-    columns: {
-      point_kabkot: false,
-      area_kabkot: false,
-    },
-    orderBy: (kabkot, { asc }) => asc(kabkot.id),
-  });
-
   const optOptions = await db.query.opt.findMany({
     orderBy: (opt, { asc }) => asc(sql`cast(${opt.id} as int)`),
   });
@@ -69,11 +60,7 @@ dashboard.get('/', async (c) => {
         ) : null
       }
     >
-      <DashboardPage
-        kabkotData={kabkotData[0]}
-        kabkotOptions={kabkotOptions}
-        optOptions={optOptions}
-      />
+      <DashboardPage kabkotData={kabkotData[0]} optOptions={optOptions} />
     </DefaultLayout>
   );
 });
@@ -129,6 +116,16 @@ dashboard.get('/map', async (c) => {
           : undefined
       )
     );
+
+  if (peramalanData.length === 0) {
+    return c.json(
+      {
+        status: 404,
+        message: 'data not found',
+      },
+      404
+    );
+  }
 
   return c.json({
     status: 200,
