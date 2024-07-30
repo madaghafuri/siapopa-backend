@@ -1,6 +1,35 @@
-import { SelectTanaman } from '../../../db/schema/tanaman.js';
+import { SelectTanaman } from '../../../db/schema/tanaman';
 import { html } from 'hono/html';
-import { AuthenticatedUser } from '../../components/profile.js';
+import { AuthenticatedUser } from '../../components/profile';
+import { ColumnHeader, Table } from '../../components/table';
+
+export const columnTanaman: ColumnHeader<SelectTanaman>[] = [
+  { headerName: 'no', valueGetter: (_, index) => index + 1 },
+  { headerName: 'nama tanaman', field: 'nama_tanaman' },
+  {
+    headerName: 'aksi',
+    valueGetter: (row) => (
+      <div class="flex justify-center gap-1">
+        <button
+          hx-get={`/app/master/tanaman/edit/${row.id}`}
+          hx-target="body"
+          hx-swap="beforeend"
+          class="cursor-pointer"
+        >
+          <i class="fa-solid fa-pen-to-square text-blue-500"></i>
+        </button>
+        <button
+          hx-get={`/app/master/tanaman/delete/${row.id}`}
+          hx-target="body"
+          hx-swap="beforeend"
+          class="cursor-pointer"
+        >
+          <i class="fa-solid fa-trash-can text-red-500"></i>
+        </button>
+      </div>
+    ),
+  },
+];
 
 const DataTanaman = ({
   listTanaman,
@@ -10,39 +39,30 @@ const DataTanaman = ({
   user?: AuthenticatedUser;
 }) => {
   return (
-    <div class="grid p-5 shadow-inner">
-      <table id="tanamanTable" class="row-border" style="width:100%">
-        <thead>
-          <tr>
-            <th class="border-b border-gray-200 px-4 py-2" style="width: 5%">
-              No.
-            </th>
-            <th class="border-b border-gray-200 px-4 py-2">Nama Tanaman</th>
-          </tr>
-        </thead>
-        <tbody
-          hx-get="/app/master/tanaman/reload"
-          hx-trigger="newTanaman from:body"
-        >
-          {listTanaman.map((tanaman, index) => (
-            <tr key={tanaman.id}>
-              <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
-                {index + 1}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {tanaman.nama_tanaman}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {html`
-        <script>
-          $(document).ready(function () {
-            $('#tanamanTable').DataTable();
-          });
-        </script>
-      `}
+    <div class="p-5 shadow-inner">
+      <div
+        id="container-tanaman-table"
+        hx-get="/app/master/tanaman"
+        hx-target="this"
+        hx-swap="innerHTML"
+        hx-trigger="reloadTanaman from:body"
+      >
+        <Table
+          id="tanaman-table"
+          className="display hover nowrap max-w-full rounded bg-white"
+          columns={columnTanaman}
+          rowsData={listTanaman}
+        />
+        {html`
+          <script>
+            $(document).ready(function () {
+              $('#tanaman-table').DataTable({
+                scrollX: true,
+              });
+            });
+          </script>
+        `}
+      </div>
       {!!user ? (
         <div>
           <button

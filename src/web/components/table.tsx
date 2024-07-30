@@ -60,7 +60,7 @@ const Table = ({
               {columns.map((column) => {
                 return (
                   <td
-                    class={`border-b border-gray-200 px-4 py-2`}
+                    class={`border-b border-gray-200 px-4 py-2 capitalize`}
                     style={{ width: column.width }}
                   >
                     {column?.valueGetter?.(row, index) || row[column.field]}
