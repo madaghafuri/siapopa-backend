@@ -29,10 +29,30 @@ auth.post(
       with: {
         locations: {
           with: {
-            provinsi: true,
-            kabupaten_kota: true,
-            kecamatan: true,
-            desa: true,
+            provinsi: {
+              columns: {
+                area_provinsi: false,
+                point_provinsi: false,
+              },
+            },
+            kabupaten_kota: {
+              columns: {
+                area_kabkot: false,
+                point_kabkot: false,
+              },
+            },
+            kecamatan: {
+              columns: {
+                area_kecamatan: false,
+                point_kecamatan: false,
+              },
+            },
+            desa: {
+              columns: {
+                area_desa: false,
+                point_desa: false,
+              },
+            },
           },
         },
         userGroup: true,

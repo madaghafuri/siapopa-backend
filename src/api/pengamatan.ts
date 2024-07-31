@@ -11,13 +11,9 @@ import {
   PhotoPengamatan,
   photoPengamatan,
 } from '../db/schema/photo-pengamatan.js';
-import {
-  DetailRumpun,
-  Kerusakan,
-  detailRumpun,
-} from '../db/schema/detail-rumpun.js';
+import { DetailRumpun, detailRumpun } from '../db/schema/detail-rumpun.js';
 import { InsertRumpun, rumpun as rumpunSchema } from '../db/schema/rumpun.js';
-import { hasilPengamatan, validateFile, withPagination } from './helper.js';
+import { hasilPengamatan, withPagination } from './helper.js';
 import { authorizeApi } from '../middleware.js';
 import { opt } from '../db/schema/opt.js';
 import { SelectTanaman, tanaman } from '../db/schema/tanaman.js';
@@ -259,10 +255,30 @@ pengamatan.get('/pengamatan/:pengamatanId', async (c) => {
       tanaman: true,
       locations: {
         with: {
-          provinsi: true,
-          kabupaten_kota: true,
-          kecamatan: true,
-          desa: true,
+          provinsi: {
+            columns: {
+              area_provinsi: false,
+              point_provinsi: false,
+            },
+          },
+          kabupaten_kota: {
+            columns: {
+              area_kabkot: false,
+              point_kabkot: false,
+            },
+          },
+          kecamatan: {
+            columns: {
+              area_kecamatan: false,
+              point_kecamatan: false,
+            },
+          },
+          desa: {
+            columns: {
+              area_desa: false,
+              point_desa: false,
+            },
+          },
         },
       },
       pic: {
@@ -388,10 +404,28 @@ pengamatan.get('/pengamatan', async (c) => {
       tanaman: tanaman,
       lokasi: {
         ...lokasi,
-        provinsi: provinsi,
-        kabupaten_kota: kabupatenKota,
-        kecamatan: kecamatan,
-        desa: desa,
+        provinsi: {
+          id: provinsi.id,
+          nama_provinsi: provinsi.nama_provinsi,
+        },
+        kabupaten_kota: {
+          id: kabupatenKota.id,
+          nama_kabkot: kabupatenKota.nama_kabkot,
+          provinsi_id: kabupatenKota.provinsi_id,
+        },
+        kecamatan: {
+          id: kecamatan.id,
+          nama_kecamatan: kecamatan.nama_kecamatan,
+          provinsi_id: kecamatan.provinsi_id,
+          kabkot_id: kecamatan.kabkot_id,
+        },
+        desa: {
+          id: desa.id,
+          nama_desa: desa.nama_desa,
+          provinsi_id: desa.provinsi_id,
+          kabkot_id: desa.kabkot_id,
+          kecamatan_id: desa.kecamatan_id,
+        },
       },
       total_anakan: {
         pengamatan_id: totalAnakan.pengamatan_id,
