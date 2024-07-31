@@ -9,20 +9,43 @@ import { ColumnHeader, Table } from '../../components/table';
 import { SelectTanaman } from '../../../db/schema/tanaman';
 import { html } from 'hono/html';
 import { SelectUser } from '../../../db/schema/user';
+import { SelectOPT } from '../../../db/schema/opt';
 
 export const columnHeaders: ColumnHeader<
-  LaporanHarian & { pengamatan: Pengamatan; lokasi: Lokasi; pic: SelectUser }
+  LaporanHarian & {
+    pengamatan: Pengamatan;
+    lokasi: Lokasi & {
+      provinsi: Omit<Provinsi, 'area_provinsi' | 'point_provinsi'>;
+      kabupaten_kota: Omit<KabupatenKota, 'area_kabkot' | 'point_kabkot'>;
+      kecamatan: Omit<Kecamatan, 'area_kecamatan' | 'point_kecamatan'>;
+      desa: Omit<Desa, 'area_desa' | 'point_desa'>;
+    };
+    pic: SelectUser;
+    opt: SelectOPT;
+  }
 >[] = [
   { headerName: 'no', valueGetter: (_, index) => index + 1 },
   {
     field: 'sign_pic',
     headerName: 'signature',
     valueGetter: (row) => (
-      <a href={row.sign_pic}>
+      <a href={row.sign_pic} target="_blank">
         <img class="h-10 w-10" src={row.sign_pic} alt="" />
       </a>
     ),
   },
+  { headerName: 'Nama PIC', valueGetter: (row) => row.pic.name },
+  {
+    headerName: 'Kabupaten/Kota',
+    valueGetter: (row) => row.lokasi.kabupaten_kota.nama_kabkot,
+  },
+  {
+    headerName: 'Kecamatan',
+    valueGetter: (row) => row.lokasi.kecamatan.nama_kecamatan,
+  },
+  { headerName: 'Desa', valueGetter: (row) => row.lokasi.desa.nama_desa },
+  { headerName: 'blok', valueGetter: (row) => row.pengamatan.blok },
+  { headerName: 'OPT', valueGetter: (row) => row.opt.nama_opt },
   {
     field: 'status_laporan_sb',
     headerName: 'status laporan setengah bulan',
@@ -33,20 +56,35 @@ export const columnHeaders: ColumnHeader<
       return <i class="fa-solid fa-circle-check text-lg text-green-500"></i>;
     },
   },
+  { field: 'luas_waspada', headerName: 'luas waspada' },
+
   { field: 'rekomendasi_pengendalian', headerName: 'rekomendasi pengendalian' },
   { field: 'skala', headerName: 'skala' },
-  { field: 'luas_waspada', headerName: 'luas waspada' },
+  {
+    headerName: 'tgl pengamatan',
+    valueGetter: (row) => row.pengamatan.tanggal_pengamatan,
+  },
   { field: 'tanggal_laporan_harian', headerName: 'tgl laporan' },
+  {
+    headerName: 'Detail',
+    valueGetter: (row) => (
+      <a href={`/app/laporan/pengamatan/${row.pengamatan_id}`}>
+        <i class="fa-solid fa-circle-info"></i>
+      </a>
+    ),
+  },
 ];
 
 export type DataLaporanHarian = LaporanHarian & {
   pengamatan: Pengamatan;
   lokasi: Lokasi & {
-    provinsi: Provinsi;
-    kabupaten_kota: KabupatenKota;
-    kecamatan: Kecamatan;
-    desa: Desa;
+    provinsi: Omit<Provinsi, 'area_provinsi' | 'point_provinsi'>;
+    kabupaten_kota: Omit<KabupatenKota, 'area_kabkot' | 'point_kabkot'>;
+    kecamatan: Omit<Kecamatan, 'area_kecamatan' | 'point_kecamatan'>;
+    desa: Omit<Desa, 'area_desa' | 'point_desa'>;
   };
+  opt: SelectOPT;
+  pic: SelectUser;
 };
 
 const LaporanHarianPage = ({
@@ -114,7 +152,6 @@ const LaporanHarianPage = ({
           Filter
         </button>
       </div>
-      <canvas id="laporan-harian-chart" class="bg-white"></canvas>
       <Table
         id="laporan-harian-table"
         columns={columnHeaders}
@@ -127,27 +164,6 @@ const LaporanHarianPage = ({
             $('#laporan-harian-table').DataTable({
               scrollX: true,
             });
-          });
-          const ctx = document.getElementById('laporan-harian-chart');
-          new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: ['1', '2', '3', '4', '5', '6'],
-              datasets: [
-                {
-                  label: '# of Votes',
-                  data: [12, 19, 3, 5, 2, 3],
-                  borderWidth: 1,
-                },
-              ],
-            },
-            options: {
-              scales: {
-                y: {
-                  beginAtZero: true,
-                },
-              },
-            },
           });
         </script>
       `}

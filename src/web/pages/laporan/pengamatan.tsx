@@ -12,6 +12,7 @@ import { Desa } from '../../../db/schema/desa';
 import { Fragment } from 'hono/jsx/jsx-runtime';
 import { SelectRumpun } from '../../../db/schema/rumpun';
 import { PhotoPengamatan } from '../../../db/schema/photo-pengamatan';
+import { LaporanHarian } from '../../../db/schema/laporan-harian';
 
 export const pengamatanColumn: ColumnHeader<
   Pengamatan & {
@@ -135,6 +136,7 @@ export const PengamatanDetailPage = ({
 }: {
   pengamatan: {
     pengamatan: Pengamatan;
+    laporan_harian: LaporanHarian;
     lokasi: Lokasi & {
       provinsi: Provinsi;
       kabupaten_kota: KabupatenKota;
@@ -153,151 +155,132 @@ export const PengamatanDetailPage = ({
   };
   rumpunData: SelectRumpun[];
 }) => {
+  type HasilRumpun = (typeof pengamatan.hasil_pengamatan)[number];
+
+  const columnHasilRumpun: ColumnHeader<HasilRumpun>[] = [
+    { headerName: 'OPT/MA', field: 'kode_opt' },
+    { headerName: 'Hasil Perhitungan', field: 'hasil_perhitungan' },
+    { headerName: 'Satuan', field: 'skala' },
+  ];
+
   return (
     <div class="flex flex-col gap-5 bg-background p-5 shadow-inner">
       <h1 class="text-2xl font-medium">
         <i class="fa-solid fa-table mr-3"></i>
         Pengamatan Detail
       </h1>
-      <div class="grid grid-cols-4 rounded border border-gray-200 bg-white text-sm shadow-lg">
-        <div class="grid grid-cols-[60%,auto]">
-          <h4 class="px-4 py-2">Tgl Pengamatan:</h4>
-          <h4 class="px-4 py-2">{pengamatan.pengamatan.tanggal_pengamatan}</h4>
+      <section class="flex flex-col gap-1 rounded-md bg-white shadow-lg">
+        <h1 class="bg-soft py-5 text-center text-xl font-bold">
+          Data Laporan Harian
+        </h1>
+        <h2 class="py-1 text-center text-lg font-medium">
+          {new Date(
+            pengamatan.laporan_harian.tanggal_laporan_harian
+          ).toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </h2>
+        <div class="grid grid-cols-2 gap-2 p-3">
+          <div class="grid grid-cols-2">
+            <p>Luas Waspada</p>
+            <p>: {pengamatan.laporan_harian.luas_waspada}</p>
+          </div>
+          <div class="grid grid-cols-2">
+            <p>Rekomendasi Pengendalian</p>
+            <p>: {pengamatan.laporan_harian.rekomendasi_pengendalian}</p>
+          </div>
+          <div class="grid grid-cols-2">
+            <p>Status</p>
+            <p>
+              :{' '}
+              {pengamatan.laporan_harian.status_laporan_sb
+                ? 'Valid'
+                : 'Belum Valid'}
+            </p>
+          </div>
         </div>
-        <div class="grid grid-cols-[60%,auto]">
-          <h4 class="px-4 py-2">POPT:</h4>
-          <h4 class="px-4 py-2">{pengamatan.pic.name}</h4>
+      </section>
+      <section class="flex flex-col gap-1 rounded-md bg-white shadow-lg">
+        <h1 class="bg-soft py-5 text-center text-xl font-bold">
+          Data Pengamatan
+        </h1>
+        <h2 class="py-1 text-center text-lg font-medium">
+          {new Date(
+            pengamatan.pengamatan.tanggal_pengamatan
+          ).toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </h2>
+        <div class="grid grid-cols-2 gap-2 p-3">
+          {Object.entries(pengamatan.pengamatan).map(([key, value]) => {
+            return (
+              <div class="grid grid-cols-2">
+                <p class="capitalize">
+                  {key.includes('_') ? key.split('_').join(' ') : key}
+                </p>
+                <p>: {value}</p>
+              </div>
+            );
+          })}
         </div>
-        <div class="grid grid-cols-[60%,auto]">
-          <h4 class="px-4 py-2">Provinsi:</h4>
-          <h4 class="px-4 py-2">{pengamatan.lokasi.provinsi.nama_provinsi}</h4>
+      </section>
+      <section class="flex flex-col gap-1 rounded-md bg-white shadow-lg">
+        <h1 class="bg-soft py-5 text-center text-xl font-bold">
+          Luas Pengamatan (Ha)
+        </h1>
+        <div class="grid grid-cols-2 gap-2 p-3">
+          <div class="grid grid-cols-2">
+            <p>Hamparan (Ha)</p>
+            <p>: {pengamatan.pengamatan.luas_hamparan}</p>
+          </div>
+          <div class="grid grid-cols-2">
+            <p>Diamati (Ha)</p>
+            <p>: {pengamatan.pengamatan.luas_diamati}</p>
+          </div>
+          <div class="grid grid-cols-2">
+            <p>Panen (Ha)</p>
+            <p>: {pengamatan.pengamatan.luas_hasil_panen}</p>
+          </div>
+          <div class="grid grid-cols-2">
+            <p>Persemaian (Ha)</p>
+            <p>: {pengamatan.pengamatan.luas_persemaian}</p>
+          </div>
         </div>
-        <div class="grid grid-cols-[60%,auto]">
-          <h4 class="px-4 py-2">Kota/Kab:</h4>
-          <h4 class="px-4 py-2">
-            {pengamatan.lokasi.kabupaten_kota.nama_kabkot}
-          </h4>
-        </div>
-        <div class="grid grid-cols-[60%,auto]">
-          <h4 class="px-4 py-2">Kecamatan:</h4>
-          <h4 class="px-4 py-2">
-            {pengamatan.lokasi.kecamatan.nama_kecamatan}
-          </h4>
-        </div>
-        <div class="grid grid-cols-[60%,auto]">
-          <h4 class="px-4 py-2">Desa:</h4>
-          <h4 class="px-4 py-2">{pengamatan.lokasi.desa.nama_desa}</h4>
-        </div>
-        <div class="grid grid-cols-[60%,auto]">
-          <h4 class="px-4 py-2">Komoditas:</h4>
-          <h4 class="px-4 py-2">{pengamatan.pengamatan.komoditas}</h4>
-        </div>
-        <div class="grid grid-cols-[60%,auto]">
-          <h4 class="px-4 py-2">Varietas:</h4>
-          <h4 class="px-4 py-2">{pengamatan.pengamatan.varietas}</h4>
-        </div>
-        <div class="grid grid-cols-[60%,auto]">
-          <h4 class="px-4 py-2">Lat:</h4>
-          <h4 class="px-4 py-2">{pengamatan.pengamatan.point_pengamatan[1]}</h4>
-        </div>
-        <div class="grid grid-cols-[60%,auto]">
-          <h4 class="px-4 py-2">Long:</h4>
-          <h4 class="px-4 py-2">{pengamatan.pengamatan.point_pengamatan[0]}</h4>
-        </div>
-      </div>
-      <table
+      </section>
+      <Table
         id="hasil-pengamatan"
-        class="hover border-t-2 border-t-secondary bg-white"
-        style="width:100%"
-      >
-        <thead>
-          <tr>
-            <th class="border-b border-gray-200 px-4 py-2 text-sm font-medium capitalize text-blue-500">
-              no
-            </th>
-            {Object.entries(pengamatan.hasil_pengamatan[0]).map(([key]) => {
-              return (
-                <th class="border-b border-gray-200 px-4 py-2 text-sm font-medium capitalize text-blue-500">
-                  {key}
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody>
-          {pengamatan.hasil_pengamatan.map((val, index) => {
-            return (
-              <tr key={index}>
-                <td class="border-b border-gray-200 px-4 py-2">{index + 1}</td>
-                {Object.entries(val).map(([_, value]) => {
-                  return (
-                    <td class="border-b border-gray-200 px-4 py-2">{value}</td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <h2 class="text-lg font-medium">Rumpun</h2>
-      <Table id="rumpun-table" rowsData={rumpunData} columns={rumpunColumn} />
-      <div class="grid grid-cols-2 gap-5">
-        <div class="flex flex-col gap-3 rounded-md bg-white p-5 shadow-lg">
-          <div class="text-center text-lg font-medium text-blue-700">
-            Profil POPT
-          </div>
-          <div class="flex items-center justify-center">
-            {!!pengamatan.pic.photo ? (
-              <img
-                class="h-24 w-24 rounded-full"
-                src={pengamatan.pic.photo}
-                alt="profile photo"
-              />
-            ) : (
-              <img
-                class="h-24 w-24 rounded-full border border-gray-300"
-                src="/assets/avatar.jpg"
-              />
-            )}
-          </div>
-          <div class="grid grid-cols-[60%,auto]">
-            {Object.entries(pengamatan.pic).map(([key, value]) => {
-              if (
-                key === 'password' ||
-                key === 'photo' ||
-                key === 'validasi' ||
-                key === 'usergroup_id' ||
-                key === 'user_group'
-              )
-                return;
-
-              return (
-                <Fragment>
-                  <p class="border-b border-gray-200 px-4 py-2 capitalize">
-                    {key}:
-                  </p>
-                  <p class="border-b border-gray-200 px-4 py-2">{value}</p>
-                </Fragment>
-              );
-            })}
-          </div>
-        </div>
-        <div class="flex flex-row items-center gap-5">
-          {pengamatan.bukti_pengamatan.map((photo) => {
-            return (
-              <a href={photo.path}>
-                <img src={photo.path} class="aspect-[4/3] h-40 w-40" alt="" />
-              </a>
-            );
-          })}
+        className="display hover nowrap max-w-full rounded-md bg-white shadow-lg"
+        columns={columnHasilRumpun}
+        rowsData={pengamatan.hasil_pengamatan}
+      />
+      <div class="flex flex-col items-end">
+        <div class="flex flex-col gap-2 rounded-md bg-white p-3 shadow-lg">
+          <p>
+            {pengamatan.lokasi.kabupaten_kota.nama_kabkot},{' '}
+            {new Date(
+              pengamatan.pengamatan.tanggal_pengamatan
+            ).toLocaleDateString('id-ID')}
+          </p>
+          <img class="aspect-[4/3] w-40" src={pengamatan.pengamatan.sign_pic} />
+          <p>{pengamatan.pic.name}</p>
         </div>
       </div>
-
       {html`
         <script>
           $(document).ready(function () {
-            $('#hasil-pengamatan').DataTable();
-            $('#rumpun-table').DataTable();
+            $('#hasil-pengamatan').DataTable({
+              scrollX: true,
+              layout: {
+                topStart: null,
+                topEnd: null,
+              },
+            });
           });
         </script>
       `}

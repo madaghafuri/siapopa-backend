@@ -5,10 +5,6 @@ import { db } from '../../index.js';
 import { and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { SelectUser, user } from '../../db/schema/user.js';
 import Profile from '../components/profile.js';
-import LaporanHarianPage, {
-  columnHeaders,
-  DataLaporanHarian,
-} from '../pages/laporan/laporan-harian.js';
 import { Lokasi, lokasi } from '../../db/schema/lokasi.js';
 import {
   LaporanHarian,
@@ -22,7 +18,6 @@ import {
 } from '../../db/schema/kabupaten-kota.js';
 import { Kecamatan, kecamatan } from '../../db/schema/kecamatan.js';
 import { Desa, desa } from '../../db/schema/desa.js';
-import { validator } from 'hono/validator';
 import { SelectTanaman, tanaman } from '../../db/schema/tanaman.js';
 import { Fragment } from 'hono/jsx/jsx-runtime';
 import {
@@ -45,6 +40,7 @@ import { LaporanBulananPage } from '../pages/laporan/laporan-bulanan.js';
 import { LaporanMusimanPage } from '../pages/laporan/laporan-musiman.js';
 import { luasKerusakanSb } from '../../db/schema/luas-kerusakan-sb.js';
 import { PhotoPengamatan } from '../../db/schema/photo-pengamatan.js';
+import { laporanHarianRoute } from './laporan/laporan-harian.js';
 
 export const laporan = new Hono<{
   Variables: {
@@ -53,203 +49,7 @@ export const laporan = new Hono<{
   };
 }>();
 
-const laporanHarian = laporan.route('/harian');
-
-laporanHarian.get('/', async (c) => {
-  const session = c.get('session');
-  const userId = session.get('user_id') as string;
-  const startDate = c.req.query('start_date');
-  const endDate = c.req.query('end_date');
-  const tanamanId = c.req.query('tanaman_id');
-  const provinsiId = c.req.query('provinsi_id');
-
-  const selectedUser = await db.query.user
-    .findFirst({
-      where: eq(user.id, parseInt(userId)),
-      with: {
-        userGroup: true,
-      },
-    })
-    .catch((err) => {
-      console.error(err);
-    });
-
-  const listLaporan = await db
-    .select({
-      laporan_harian: laporanHarianSchema,
-      pengamatan,
-      lokasi: {
-        ...lokasi,
-        provinsi,
-        kabupaten_kota: kabupatenKota,
-        kecamatan,
-        desa,
-      },
-    })
-    .from(laporanHarianSchema)
-    .leftJoin(pengamatan, eq(pengamatan.id, laporanHarianSchema.pengamatan_id))
-    .leftJoin(tanaman, eq(tanaman.id, pengamatan.tanaman_id))
-    .leftJoin(user, eq(user.id, laporanHarianSchema.pic_id))
-    .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
-    .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
-    .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
-    .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
-    .leftJoin(desa, eq(desa.id, lokasi.desa_id))
-    .where(
-      and(
-        !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined,
-        !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
-        !!startDate
-          ? gte(laporanHarianSchema.tanggal_laporan_harian, startDate)
-          : undefined,
-        !!endDate
-          ? lte(laporanHarianSchema.tanggal_laporan_harian, endDate)
-          : undefined
-      )
-    )
-    .orderBy(desc(laporanHarianSchema.tanggal_laporan_harian))
-    .limit(50)
-    .offset(0);
-
-  const tanamanList = await db.query.tanaman.findMany({
-    orderBy: tanaman.id,
-  });
-
-  const provinsiList = await db.query.provinsi.findMany({
-    orderBy: provinsi.nama_provinsi,
-  });
-
-  const result: DataLaporanHarian[] = listLaporan.map((value) => {
-    const laporan = value.laporan_harian as LaporanHarian;
-    const pengamatan = value.pengamatan as Pengamatan;
-    const lokasi = value.lokasi as Lokasi & {
-      provinsi: Provinsi;
-      kabupaten_kota: KabupatenKota;
-      kecamatan: Kecamatan;
-      desa: Desa;
-    };
-
-    return {
-      ...laporan,
-      pengamatan,
-      lokasi,
-    };
-  });
-
-  return c.html(
-    <DefaultLayout
-      route="laporan-harian"
-      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
-    >
-      <LaporanHarianPage
-        listLaporan={result}
-        komoditasOption={tanamanList}
-        provinsiOption={provinsiList}
-      />
-    </DefaultLayout>
-  );
-});
-type FilterLaporanQuery = {
-  tanaman_id: string;
-  provinsi_id: string;
-  start_date: string;
-  end_date: string;
-};
-laporanHarian.get(
-  '/filter',
-  validator('query', (value) => {
-    return value;
-  }),
-  async (c) => {
-    const { tanaman_id, provinsi_id, start_date, end_date } =
-      c.req.query() as Record<keyof FilterLaporanQuery, string>;
-
-    const bar = await db
-      .select({
-        laporan_harian: laporanHarianSchema,
-        pengamatan,
-        lokasi: {
-          ...lokasi,
-          provinsi,
-          kabupaten_kota: kabupatenKota,
-          kecamatan,
-          desa,
-        },
-        tanaman: tanaman,
-        pic: user,
-      })
-      .from(laporanHarianSchema)
-      .leftJoin(
-        pengamatan,
-        eq(pengamatan.id, laporanHarianSchema.pengamatan_id)
-      )
-      .leftJoin(tanaman, eq(tanaman.id, pengamatan.tanaman_id))
-      .leftJoin(user, eq(user.id, laporanHarianSchema.pic_id))
-      .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
-      .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
-      .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
-      .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
-      .leftJoin(desa, eq(desa.id, lokasi.desa_id))
-      .where(
-        and(
-          !!tanaman_id ? eq(tanaman.id, parseInt(tanaman_id)) : undefined,
-          !!provinsi_id ? eq(provinsi.id, provinsi_id) : undefined,
-          !!start_date
-            ? gte(laporanHarianSchema.tanggal_laporan_harian, start_date)
-            : undefined,
-          !!end_date
-            ? lte(laporanHarianSchema.tanggal_laporan_harian, end_date)
-            : undefined
-        )
-      )
-      .orderBy(desc(laporanHarianSchema.tanggal_laporan_harian))
-      .limit(25)
-      .offset(0);
-
-    const result = bar.map((value) => {
-      const laporan = value.laporan_harian;
-      const pengamatan = value.pengamatan;
-      const lokasi = value.lokasi;
-      const pic = value.pic;
-      const tanaman = value.tanaman;
-
-      return {
-        ...laporan,
-        pengamatan,
-        lokasi,
-        pic,
-        tanaman,
-      };
-    });
-    const newUrl = new URLSearchParams();
-    !!start_date && newUrl.append('start_date', start_date);
-    !!end_date && newUrl.append('end_date', end_date);
-    !!tanaman_id && newUrl.append('tanaman_id', tanaman_id);
-    !!provinsi_id && newUrl.append('provinsi_id', provinsi_id);
-
-    return c.html(
-      <Fragment>
-        {result.map((row, index) => {
-          return (
-            <tr key={row.id}>
-              {columnHeaders.map((column) => {
-                return (
-                  <td class="bordery-gray-200 border-b px-4 py-2 text-right">
-                    {column?.valueGetter?.(row, index) || row[column.field]}
-                  </td>
-                );
-              })}
-            </tr>
-          );
-        }) || null}
-      </Fragment>,
-      200,
-      {
-        'HX-Replace-Url': `/app/laporan/harian?` + newUrl.toString(),
-      }
-    );
-  }
-);
+laporan.route('/', laporanHarianRoute);
 
 const pengamatanRoute = laporan.route('/pengamatan');
 
@@ -276,7 +76,12 @@ pengamatanRoute.get('/', async (c) => {
       tanaman: true,
       locations: {
         with: {
-          provinsi: true,
+          provinsi: {
+            columns: {
+              area_provinsi: false,
+              point_provinsi: false,
+            },
+          },
         },
       },
       pic: true,
@@ -448,6 +253,7 @@ pengamatanRoute.get('/:pengamatanId', async (c) => {
     .with(totalOpt, totalAnakan)
     .select({
       pengamatan,
+      laporan_harian: laporanHarianSchema,
       total_anakan: {
         pengamatan_id: totalAnakan.pengamatan_id,
         total_anakan: totalAnakan.total_anakan,
@@ -466,15 +272,31 @@ pengamatanRoute.get('/:pengamatanId', async (c) => {
       },
       lokasi: {
         ...lokasi,
-        provinsi,
-        kabupaten_kota: kabupatenKota,
-        kecamatan,
-        desa,
+        provinsi: {
+          id: provinsi.id,
+          nama_provinsi: provinsi.nama_provinsi,
+        },
+        kabupaten_kota: {
+          id: kabupatenKota.id,
+          nama_kabkot: kabupatenKota.nama_kabkot,
+        },
+        kecamatan: {
+          id: kecamatan.id,
+          nama_kecamatan: kecamatan.nama_kecamatan,
+        },
+        desa: {
+          id: desa.id,
+          nama_desa: desa.nama_desa,
+        },
       },
     })
     .from(pengamatan)
     .leftJoin(totalOpt, eq(totalOpt.pengamatan_id, pengamatan.id))
     .leftJoin(totalAnakan, eq(totalAnakan.pengamatan_id, pengamatan.id))
+    .leftJoin(
+      laporanHarianSchema,
+      eq(laporanHarianSchema.pengamatan_id, pengamatan.id)
+    )
     .leftJoin(tanaman, eq(tanaman.id, pengamatan.tanaman_id))
     .leftJoin(user, eq(user.id, pengamatan.pic_id))
     .leftJoin(userGroup, eq(userGroup.id, user.usergroup_id))
@@ -491,6 +313,7 @@ pengamatanRoute.get('/:pengamatanId', async (c) => {
       string,
       {
         pengamatan: Pengamatan;
+        laporan_harian: LaporanHarian;
         lokasi: Lokasi & {
           provinsi: Provinsi;
           kabupaten_kota: KabupatenKota;
@@ -513,6 +336,7 @@ pengamatanRoute.get('/:pengamatanId', async (c) => {
     const tanaman = row.tanaman;
     const lokasi = row.lokasi;
     const pic = row.pic;
+    const laporanHarian = row.laporan_harian;
 
     const hasilPerhitungan = hasilPengamatan(
       row.total_opt.skala_kerusakan,
@@ -530,6 +354,7 @@ pengamatanRoute.get('/:pengamatanId', async (c) => {
     if (!acc[pengamatan.id]) {
       acc[pengamatan.id] = {
         pengamatan,
+        laporan_harian: laporanHarian,
         lokasi: lokasi as Lokasi & {
           provinsi: Provinsi;
           kabupaten_kota: KabupatenKota;
