@@ -24,7 +24,7 @@ export const pengamatanColumn: ColumnHeader<
 >[] = [
   { headerName: 'no', valueGetter: (_, index) => index + 1 },
   {
-    headerName: 'Jawa Barat',
+    headerName: 'provinsi',
     valueGetter: (row) => row.locations.provinsi.nama_provinsi,
   },
   { headerName: 'blok', field: 'blok' },
@@ -39,6 +39,7 @@ export const pengamatanColumn: ColumnHeader<
   { headerName: 'luas diamati', field: 'luas_diamati' },
   { headerName: 'luas persemaian', field: 'luas_persemaian' },
   { headerName: 'luas hasil panen', field: 'luas_hasil_panen' },
+  { headerName: 'tgl pengamatan', field: 'tanggal_pengamatan' },
   {
     headerName: 'aksi',
     valueGetter: (row) => (
