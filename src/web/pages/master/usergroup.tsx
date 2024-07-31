@@ -18,6 +18,9 @@ const DataUserGroup = ({
               No.
             </th>
             <th class="border-b border-gray-200 px-4 py-2">User Group</th>
+            {user && user.usergroup_id === 4 && (
+            <th class="border-b border-gray-200 px-4 py-2" style="width: 10%">Actions</th>
+            )}
           </tr>
         </thead>
         <tbody hx-get="/app/master/usergroup/reload" hx-trigger="newUserGroup from:body">
@@ -29,6 +32,29 @@ const DataUserGroup = ({
               <td class="border-b border-gray-200 px-4 py-2">
                 {userGroup.group_name}
               </td>
+              {user && user.usergroup_id === 4 && (
+              <td class="border-b border-gray-200 px-4 py-2" style="width: 10%">
+                  <div class="flex items-center space-x-2">
+                    <button
+                      class="text-blue-500 hover:text-blue-700 px-4"
+                      hx-get={`/app/master/usergroup/edit/${userGroup.id}`}
+                      hx-target="body"
+                      hx-swap="beforeend"
+                    >
+                      <i class="fa fa-edit"></i>
+                    </button>
+                    <button
+                      class="ml-2 text-red-500 hover:text-red-700 px-4"
+                      hx-delete={`/app/master/usergroup/delete/${userGroup.id}`}
+                      hx-target="#usergroupTable"
+                      hx-swap="outerHTML"
+                      hx-confirm="Are you sure you want to delete this item?"
+                    >
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -42,6 +68,7 @@ const DataUserGroup = ({
       `}
       {!!user ? (
         <div>
+          {user.usergroup_id === 4 && (
           <button
             hx-get="/app/master/usergroup/create"
             hx-target="body"
@@ -50,6 +77,7 @@ const DataUserGroup = ({
           >
             Add User Group
           </button>
+          )}
         </div>
       ) : null}
     </div>

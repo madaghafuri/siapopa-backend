@@ -84,9 +84,7 @@ tanamanRoute.post(
 
     if (!nama_tanaman) {
       return c.html(
-        <span class="text-sm text-red-500">
-          nama tanaman belum ditanamanRoute
-        </span>
+        <span class="text-sm text-red-500">nama tanaman belum dimaster</span>
       );
     }
 
@@ -100,14 +98,12 @@ tanamanRoute.post(
     } catch (error) {
       console.error(error);
       return c.html(
-        <span>
-          Terjadi kesalahan dalam tanamanRoute data. Silahkan coba lagi
-        </span>,
+        <span>Terjadi kesalahan dalam master data. Silahkan coba lagi</span>,
         500
       );
     }
 
-    return c.html(<span>Berhasil tanamanRoute tanaman</span>, 200, {
+    return c.html(<span>Berhasil master tanaman</span>, 200, {
       'HX-Reswap': 'none',
       'HX-Trigger': 'newTanaman, closeModal',
     });

@@ -1,8 +1,6 @@
 import { html } from 'hono/html';
 import { AuthenticatedUser } from '../../components/profile.js';
 import { ColumnHeader, Table } from '../../components/table.js';
-import { SelectPestisida } from '../../../db/schema/pestisida.js';
-import { SelectBahanAktif } from '../../../db/schema/bahan-aktif.js';
 
 export type StockPestisida = {
   id: number;
@@ -45,6 +43,7 @@ const DataStockPestisida = ({
     <div class="isolate flex flex-col gap-5 p-5 shadow-inner">
       {!!user ? (
         <div>
+          {user && user.usergroup_id === 5 && (
           <button
             class="rounded bg-primary px-2 py-1 text-white"
             hx-get="/app/stock/stock-pestisida/create"
@@ -53,6 +52,7 @@ const DataStockPestisida = ({
           >
             Add Pestisida
           </button>
+          )}
         </div>
       ) : null}
       <table
@@ -80,9 +80,9 @@ const DataStockPestisida = ({
             <th class="border-b border-gray-200 px-4 py-2">Kecamatan</th>
             <th class="border-b border-gray-200 px-4 py-2">Desa</th>
             <th class="border-b border-gray-200 px-4 py-2"></th>
-            <th class="border-b border-gray-200 px-4 py-2" style="width: 10%">
-              Actions
-            </th>
+            {user && user.usergroup_id === 5 && (
+            <th class="border-b border-gray-200 px-4 py-2" style="width: 10%">Actions</th>
+            )}
           </tr>
         </thead>
         <tbody
@@ -136,6 +136,7 @@ const DataStockPestisida = ({
               <td class="border-b border-gray-200 px-4 py-2">
                 {pestisida.desa}
               </td>
+              {user && user.usergroup_id === 5 && (
               <td class="border-b border-gray-200 px-4 py-2" style="width: 10%">
                 <div class="flex items-center space-x-2">
                   <button
@@ -157,6 +158,7 @@ const DataStockPestisida = ({
                   </button>
                 </div>
               </td>
+              )}
             </tr>
           ))}
         </tbody>

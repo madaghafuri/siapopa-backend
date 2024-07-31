@@ -1,19 +1,5 @@
 import { Hono } from 'hono';
 import { Session } from 'hono-sessions';
-import { db } from '../../';
-import { eq } from 'drizzle-orm';
-import { user } from '../../db/schema/user';
-import { DefaultLayout } from '../layouts/default-layout';
-import Profile from '../components/profile';
-import { tanaman } from '../../db/schema/tanaman';
-import { opt } from '../../db/schema/opt';
-import { lokasi } from '../../db/schema/lokasi';
-import { provinsi } from '../../db/schema/provinsi';
-import { kabupatenKota } from '../../db/schema/kabupaten-kota';
-import { kecamatan } from '../../db/schema/kecamatan';
-import { desa } from '../../db/schema/desa';
-import { pestisida } from '../../db/schema/pestisida';
-import { golonganPestisida } from '../../db/schema/golongan-pestisida';
 import { peramalanRoute } from './master/peramalan';
 import { tanamanRoute } from './master/tanaman';
 import { optRoute } from './master/opt';
@@ -21,9 +7,6 @@ import { userRoute } from './master/user';
 import { userGroupRoute } from './master/user-group';
 import { lokasiRoute } from './master/lokasi';
 import { kabkotRoute } from './master/kabupaten-kota';
-import DataStockPestisida from '../pages/stock/stock-pestisida';
-import DataGolonganPestisida from '../pages/stock/golongan-pestisida';
-import { bahanAktif } from '../../db/schema/bahan-aktif';
 
 export const master = new Hono<{
   Variables: {

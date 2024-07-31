@@ -65,6 +65,7 @@ const DataTanaman = ({
       </div>
       {!!user ? (
         <div>
+          {user.usergroup_id === 4 && (
           <button
             class="rounded bg-primary px-2 py-1 text-white"
             hx-get="/app/master/tanaman/create"
@@ -73,6 +74,7 @@ const DataTanaman = ({
           >
             Add Tanaman
           </button>
+          )}
         </div>
       ) : null}
     </div>
