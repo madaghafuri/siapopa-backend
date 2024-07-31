@@ -5,7 +5,10 @@ import { relations } from 'drizzle-orm';
 export const photoPengamatan = pgTable('photo_pengamatan', {
   id: serial('id').primaryKey(),
   path: text('path'),
-  pengamatan_id: integer('pengamatan_id').references(() => pengamatan.id),
+  pengamatan_id: integer('pengamatan_id').references(() => pengamatan.id, {
+    onDelete: 'cascade',
+    onUpdate: 'cascade',
+  }),
 });
 
 export const photoPengamatanRelations = relations(

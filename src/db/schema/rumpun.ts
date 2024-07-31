@@ -5,7 +5,10 @@ import { detailRumpun } from './detail-rumpun';
 
 export const rumpun = pgTable('rumpun', {
   id: serial('id').primaryKey(),
-  pengamatan_id: integer('pengamatan_id').references(() => pengamatan.id),
+  pengamatan_id: integer('pengamatan_id').references(() => pengamatan.id, {
+    onDelete: 'cascade',
+    onUpdate: 'cascade',
+  }),
   rumpun_ke: integer('rumpun_ke'),
   jumlah_anakan: integer('jumlah_anakan'),
   luas_spot_hopperburn: integer('luas_spot_hopperburn'),
