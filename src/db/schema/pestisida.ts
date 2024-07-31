@@ -23,7 +23,7 @@ export const pestisida = pgTable('pestisida', {
   id: serial('id').primaryKey(),
   satuan: satuanPestisida('satuan'),
   bahan_aktif_id: integer('bahan_aktif_id').references(() => bahanAktif.id),
-  merk_dagang:  text('merk_dagang'),
+  merk_dagang: text('merk_dagang'),
   opt_id: integer('opt_id').references(() => opt.id),
   tanaman_id: integer('tanaman_id').references(() => tanaman.id),
   volume: integer('volume'),

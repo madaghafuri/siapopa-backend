@@ -1,6 +1,8 @@
 import { html } from 'hono/html';
+import { ColumnHeader, Table } from '../../components/table';
 
 export type UserData = {
+  id: number;
   user_name: string;
   email: string;
   phone: string;
@@ -9,50 +11,75 @@ export type UserData = {
   user_group: string;
 };
 
+export const userColumn: ColumnHeader<UserData>[] = [
+  { headerName: 'no', valueGetter: (_, index) => index + 1 },
+  { headerName: 'name', field: 'user_name' },
+  { headerName: 'email', field: 'email' },
+  { headerName: 'phone number', field: 'phone' },
+  { headerName: 'user group', field: 'user_group' },
+  {
+    headerName: 'aktifasi',
+    valueGetter: (row) => (
+      <div
+        class={`rounded-full px-2 py-1 text-center ${row.validasi ? 'bg-green-300 text-green-800' : 'bg-red-300 text-red-800'}`}
+      >
+        {row.validasi ? 'AKTIF' : 'INAKTIF'}
+      </div>
+    ),
+  },
+  {
+    headerName: 'aksi',
+    valueGetter: (row) => {
+      return (
+        <div class="flex justify-center gap-1">
+          <div
+            hx-get={`/app/master/user/edit/${row.id}`}
+            hx-target="body"
+            hx-swap="beforeend"
+            class="cursor-pointer"
+          >
+            <i class="fa-solid fa-pen-to-square text-blue-500"></i>
+          </div>
+          <div
+            hx-get={`/app/master/user/delete/${row.id}`}
+            hx-target="body"
+            hx-swap="beforeend"
+            class="cursor-pointer"
+          >
+            <i class="fa-solid fa-trash-can text-red-500"></i>
+          </div>
+        </div>
+      );
+    },
+  },
+];
+
 const DataUser = ({ listUser }: { listUser: UserData[] }) => {
   return (
-    <div class="grid p-5 shadow-inner">
-      <table id="userTable" class="row-border" style="width:100%">
-        <thead>
-          <tr>
-            <th class="border-b border-gray-200 px-4 py-2" style="width: 5%">
-              No.
-            </th>
-            <th class="border-b border-gray-200 px-4 py-2">Name</th>
-            <th class="border-b border-gray-200 px-4 py-2">Email</th>
-            <th class="border-b border-gray-200 px-4 py-2">Phone Number</th>
-            <th class="border-b border-gray-200 px-4 py-2">User Group</th>
-            <th class="border-b border-gray-200 px-4 py-2">Validation</th>
-          </tr>
-        </thead>
-        <tbody>
-          {listUser.map((user, index) => (
-            <tr key={user.email}>
-              <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
-                {index + 1}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {user.user_name}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">{user.email}</td>
-              <td class="border-b border-gray-200 px-4 py-2">{user.phone}</td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {user.user_group}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {user.validasi ? 'Sudah' : 'Belum'}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {html`
-        <script>
-          $(document).ready(function () {
-            $('#userTable').DataTable();
-          });
-        </script>
-      `}
+    <div class="p-5 shadow-inner">
+      <div
+        id="user-table-container"
+        hx-get="/app/master/user"
+        hx-trigger="reloadUser from:body"
+        hx-swap="innerHTML"
+        hx-target="this"
+      >
+        <Table
+          id="user-table"
+          columns={userColumn}
+          rowsData={listUser}
+          className="display hover nowrap max-w-full rounded bg-white"
+        />
+        {html`
+          <script>
+            $(document).ready(function () {
+              $('#user-table').DataTable({
+                scrollX: true,
+              });
+            });
+          </script>
+        `}
+      </div>
     </div>
   );
 };

@@ -26,6 +26,8 @@ import * as validasiLaporan from './db/schema/validasi-laporan';
 import * as session from './db/schema/session';
 import * as pestisida from './db/schema/pestisida';
 import * as peramalan from './db/schema/peramalan';
+import * as bahanAktif from './db/schema/bahan-aktif';
+import * as golonganPestisida from './db/schema/golongan-pestisida';
 import web from './web/route';
 import { serveStatic } from 'hono/bun';
 import { CookieStore, Session, sessionMiddleware } from 'hono-sessions';
@@ -70,6 +72,8 @@ export const db = drizzle(client, {
     ...user,
     ...validasiLaporan,
     ...session,
+    ...bahanAktif,
+    ...golonganPestisida,
     ...pestisida,
     ...peramalan,
   },

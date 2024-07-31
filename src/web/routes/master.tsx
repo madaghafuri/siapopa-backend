@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { Session } from 'hono-sessions'
+import { Session } from 'hono-sessions';
 import { peramalanRoute } from './master/peramalan';
 import { tanamanRoute } from './master/tanaman';
 import { optRoute } from './master/opt';

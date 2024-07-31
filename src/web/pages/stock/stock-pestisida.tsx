@@ -1,7 +1,6 @@
 import { html } from 'hono/html';
 import { AuthenticatedUser } from '../../components/profile.js';
 import { ColumnHeader, Table } from '../../components/table.js';
-import { SelectPestisida } from '../../../db/schema/pestisida.js';
 
 export type StockPestisida = {
   id: number;
@@ -9,11 +8,11 @@ export type StockPestisida = {
   nama_opt: string;
   nama_tanaman: string;
   volume: number;
-  merk_dagang: string,
-  periode_bulan: string,
-  tahun_pengadaan: string,
-  bahanAktif: string,
-  expired_date: string,
+  merk_dagang: string;
+  periode_bulan: string;
+  tahun_pengadaan: string;
+  bahanAktif: string;
+  expired_date: string;
   provinsi: string;
   kabupatenKota: string;
   kecamatan: string;
@@ -22,16 +21,16 @@ export type StockPestisida = {
 };
 
 export const stockPestisidaColumn: ColumnHeader<StockPestisida>[] = [
-  { headerName: "no", valueGetter: (_, index) => index + 1},
-  { headerName: 'satuan', field: 'satuan'},
-  { headerName: 'golongan', field: 'nama_golongan'},
-  { headerName: 'nama opt', field: 'nama_opt'},
-  { headerName: 'tanaman', field: 'nama_tanaman'},
-  { headerName: 'provinsi', field: 'provinsi'},
-  { headerName: 'kabupaten/kota', field: 'kabupatenKota'},
-  { headerName: 'kecamatan', field: 'kecamatan'},
-  { headerName: 'desa', field: 'desa'},
-]
+  { headerName: 'no', valueGetter: (_, index) => index + 1 },
+  { headerName: 'satuan', field: 'satuan' },
+  { headerName: 'golongan', field: 'nama_golongan' },
+  { headerName: 'nama opt', field: 'nama_opt' },
+  { headerName: 'tanaman', field: 'nama_tanaman' },
+  { headerName: 'provinsi', field: 'provinsi' },
+  { headerName: 'kabupaten/kota', field: 'kabupatenKota' },
+  { headerName: 'kecamatan', field: 'kecamatan' },
+  { headerName: 'desa', field: 'desa' },
+];
 
 const DataStockPestisida = ({
   listStockPestisida,
@@ -56,7 +55,11 @@ const DataStockPestisida = ({
           )}
         </div>
       ) : null}
-      <table id="stockPestisidaTable" class="hover display nowrap max-w-full rounded-md bg-white" style="width:100%">
+      <table
+        id="stockPestisidaTable"
+        class="hover display nowrap max-w-full rounded-md bg-white"
+        style="width:100%"
+      >
         <thead>
           <tr>
             <th class="border-b border-gray-200 px-4 py-2" style="width: 5%">
@@ -135,24 +138,24 @@ const DataStockPestisida = ({
               </td>
               {user && user.usergroup_id === 5 && (
               <td class="border-b border-gray-200 px-4 py-2" style="width: 10%">
-              <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2">
                   <button
-                    class="text-blue-500 hover:text-blue-700 px-4"
+                    class="px-4 text-blue-500 hover:text-blue-700"
                     hx-get={`/app/stock/stock-pestisida/edit/${pestisida.id}`}
                     hx-target="body"
                     hx-swap="beforeend"
-                    >
-                      <i class="fa fa-edit"></i>
-                    </button>
-                    <button
-                      class="ml-2 text-red-500 hover:text-red-700 px-4"
-                      hx-delete={`/app/stock/stock-pestisida/delete/${pestisida.id}`}
-                      hx-target="#stockPestisidaTable"
-                      hx-swap="outerHTML"
-                      hx-confirm="Are you sure you want to delete this item?"
-                      >
-                        <i class="fa fa-trash"></i>
-                    </button>
+                  >
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button
+                    class="ml-2 px-4 text-red-500 hover:text-red-700"
+                    hx-delete={`/app/stock/stock-pestisida/delete/${pestisida.id}`}
+                    hx-target="#stockPestisidaTable"
+                    hx-swap="outerHTML"
+                    hx-confirm="Are you sure you want to delete this item?"
+                  >
+                    <i class="fa fa-trash"></i>
+                  </button>
                 </div>
               </td>
               )}
@@ -163,7 +166,7 @@ const DataStockPestisida = ({
       {html`
         <script>
           $(document).ready(function () {
-            $('#stockPestisidaTable').DataTable({scrollX: true});
+            $('#stockPestisidaTable').DataTable({ scrollX: true });
           });
         </script>
       `}
