@@ -48,6 +48,7 @@ dashboard.get('/', async (c) => {
     .where(and(!!kabkot_id ? eq(kabupatenKota.id, kabkot_id) : undefined));
 
   const optOptions = await db.query.opt.findMany({
+    where: (opt, { eq }) => eq(opt.jenis, 'opt'),
     orderBy: (opt, { asc }) => asc(sql`cast(${opt.id} as int)`),
   });
 
@@ -65,7 +66,6 @@ dashboard.get('/', async (c) => {
   );
 });
 dashboard.get('/map', async (c) => {
-  const kabkotIds = c.req.queries('kabkot_id[]');
   const kodeOptList = c.req.queries('kode_opt[]');
 
   const peramalanData = await db
@@ -100,22 +100,6 @@ dashboard.get('/map', async (c) => {
       )
     )
     .orderBy(asc(sql`cast(${kabupatenKota.id} as int)`));
-
-  const kabKotData = await db
-    .select({
-      id: kabupatenKota.id,
-      nama_kabkot: kabupatenKota.nama_kabkot,
-      area_kabkot: sql`ST_AsGeoJSON(${kabupatenKota.area_kabkot})::jsonb`,
-      provinsi_id: kabupatenKota.provinsi_id,
-    })
-    .from(kabupatenKota)
-    .where(
-      and(
-        !!kabkotIds && kabkotIds.length > 0
-          ? inArray(kabupatenKota.id, kabkotIds)
-          : undefined
-      )
-    );
 
   if (peramalanData.length === 0) {
     return c.json(

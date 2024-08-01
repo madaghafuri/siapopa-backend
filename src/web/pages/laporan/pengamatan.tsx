@@ -4,7 +4,7 @@ import { ColumnHeader, Table } from '../../components/table';
 import { Lokasi } from '../../../db/schema/lokasi';
 import { SelectTanaman } from '../../../db/schema/tanaman';
 import { SelectUser } from '../../../db/schema/user';
-import { Kerusakan } from '../../../db/schema/detail-rumpun';
+import { DetailRumpun, Kerusakan } from '../../../db/schema/detail-rumpun';
 import { Provinsi } from '../../../db/schema/provinsi';
 import { KabupatenKota } from '../../../db/schema/kabupaten-kota';
 import { Kecamatan } from '../../../db/schema/kecamatan';
@@ -13,6 +13,7 @@ import { Fragment } from 'hono/jsx/jsx-runtime';
 import { SelectRumpun } from '../../../db/schema/rumpun';
 import { PhotoPengamatan } from '../../../db/schema/photo-pengamatan';
 import { LaporanHarian } from '../../../db/schema/laporan-harian';
+import { SelectOPT } from '../../../db/schema/opt';
 
 export const pengamatanColumn: ColumnHeader<
   Pengamatan & {
@@ -169,40 +170,42 @@ export const PengamatanDetailPage = ({
         <i class="fa-solid fa-table mr-3"></i>
         Pengamatan Detail
       </h1>
-      <section class="flex flex-col gap-1 rounded-md bg-white shadow-lg">
-        <h1 class="bg-soft py-5 text-center text-xl font-bold">
-          Data Laporan Harian
-        </h1>
-        <h2 class="py-1 text-center text-lg font-medium">
-          {new Date(
-            pengamatan.laporan_harian.tanggal_laporan_harian
-          ).toLocaleDateString('id-ID', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </h2>
-        <div class="grid grid-cols-2 gap-2 p-3">
-          <div class="grid grid-cols-2">
-            <p>Luas Waspada</p>
-            <p>: {pengamatan.laporan_harian.luas_waspada}</p>
+      {!!pengamatan.laporan_harian ? (
+        <section class="flex flex-col gap-1 rounded-md bg-white shadow-lg">
+          <h1 class="bg-soft py-5 text-center text-xl font-bold">
+            Data Laporan Harian
+          </h1>
+          <h2 class="py-1 text-center text-lg font-medium">
+            {new Date(
+              pengamatan.laporan_harian.tanggal_laporan_harian
+            ).toLocaleDateString('id-ID', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </h2>
+          <div class="grid grid-cols-2 gap-2 p-3">
+            <div class="grid grid-cols-2">
+              <p>Luas Waspada</p>
+              <p>: {pengamatan.laporan_harian.luas_waspada}</p>
+            </div>
+            <div class="grid grid-cols-2">
+              <p>Rekomendasi Pengendalian</p>
+              <p>: {pengamatan.laporan_harian.rekomendasi_pengendalian}</p>
+            </div>
+            <div class="grid grid-cols-2">
+              <p>Status</p>
+              <p>
+                :{' '}
+                {pengamatan.laporan_harian.status_laporan_sb
+                  ? 'Valid'
+                  : 'Belum Valid'}
+              </p>
+            </div>
           </div>
-          <div class="grid grid-cols-2">
-            <p>Rekomendasi Pengendalian</p>
-            <p>: {pengamatan.laporan_harian.rekomendasi_pengendalian}</p>
-          </div>
-          <div class="grid grid-cols-2">
-            <p>Status</p>
-            <p>
-              :{' '}
-              {pengamatan.laporan_harian.status_laporan_sb
-                ? 'Valid'
-                : 'Belum Valid'}
-            </p>
-          </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
       <section class="flex flex-col gap-1 rounded-md bg-white shadow-lg">
         <h1 class="bg-soft py-5 text-center text-xl font-bold">
           Data Pengamatan
@@ -219,6 +222,13 @@ export const PengamatanDetailPage = ({
         </h2>
         <div class="grid grid-cols-2 gap-2 p-3">
           {Object.entries(pengamatan.pengamatan).map(([key, value]) => {
+            if (
+              key.includes('id') ||
+              key.includes('sign') ||
+              key.includes('point')
+            )
+              return;
+
             return (
               <div class="grid grid-cols-2">
                 <p class="capitalize">
@@ -253,37 +263,104 @@ export const PengamatanDetailPage = ({
           </div>
         </div>
       </section>
-      <Table
-        id="hasil-pengamatan"
-        className="display hover nowrap max-w-full rounded-md bg-white shadow-lg"
-        columns={columnHasilRumpun}
-        rowsData={pengamatan.hasil_pengamatan}
-      />
+      <section class="flex flex-col gap-1 rounded-md bg-white shadow-lg">
+        <div class="grid grid-cols-3 bg-soft px-3 py-5 font-semibold">
+          <h3>OPT/MA</h3>
+          <h3>Hasil Perhitungan</h3>
+          <h3>Satuan</h3>
+        </div>
+        <div class="flex flex-col gap-1">
+          {pengamatan.hasil_pengamatan.map((value) => {
+            return (
+              <div class="grid grid-cols-3 px-3 py-1 hover:bg-soft">
+                <p>{value.kode_opt}</p>
+                <p>{value.hasil_perhitungan}</p>
+                <p class="capitalize">{value.skala}</p>
+              </div>
+            );
+          })}
+        </div>
+        <a
+          href={`/app/laporan/pengamatan/${pengamatan.pengamatan.id}/rumpun`}
+          class="px-3 py-1 text-right text-blue-500 underline"
+        >
+          Lihat Detail {'>'}
+        </a>
+      </section>
+
+      <section class="flex flex-col gap-1 rounded-md bg-white shadow-lg">
+        <h1 class="bg-soft py-5 text-center text-xl font-bold">
+          Bukti Pengamatan
+        </h1>
+        <div class="flex items-center gap-3 overflow-scroll p-3">
+          {pengamatan.bukti_pengamatan.map((value) => {
+            return (
+              <a href={value.path} target="_blank">
+                <img class="aspect-[4/3] w-96" src={value.path} alt="" />
+              </a>
+            );
+          })}
+        </div>
+      </section>
+
       <div class="flex flex-col items-end">
         <div class="flex flex-col gap-2 rounded-md bg-white p-3 shadow-lg">
           <p>
             {pengamatan.lokasi.kabupaten_kota.nama_kabkot},{' '}
             {new Date(
               pengamatan.pengamatan.tanggal_pengamatan
-            ).toLocaleDateString('id-ID')}
+            ).toLocaleDateString('id-ID', {
+              year: 'numeric',
+              month: 'long',
+              weekday: 'long',
+              day: 'numeric',
+            })}
           </p>
           <img class="aspect-[4/3] w-40" src={pengamatan.pengamatan.sign_pic} />
           <p>{pengamatan.pic.name}</p>
         </div>
       </div>
-      {html`
-        <script>
-          $(document).ready(function () {
-            $('#hasil-pengamatan').DataTable({
-              scrollX: true,
-              layout: {
-                topStart: null,
-                topEnd: null,
-              },
-            });
-          });
-        </script>
-      `}
+    </div>
+  );
+};
+
+export const PengamatanRumpunPage = ({
+  rumpunList,
+}: {
+  rumpunList: (SelectRumpun & {
+    detailRumpun: (DetailRumpun & { opt: SelectOPT })[];
+  })[];
+}) => {
+  return (
+    <div class="flex grid-cols-4 flex-col gap-3 p-5 shadow-inner md:grid">
+      {rumpunList.map((rumpun) => {
+        return (
+          <section class="flex flex-col gap-1 rounded-md bg-white shadow-lg">
+            <div class="bg-soft p-3">
+              <div class="flex justify-between">
+                <p>Rumpun Ke-{rumpun.rumpun_ke}</p>
+                <p>Jumlah Anakan: {rumpun.jumlah_anakan}</p>
+              </div>
+              <div class="grid grid-cols-[50%,25%,25%]">
+                <p>OPT/MA</p>
+                <p>Jumlah</p>
+                <p>Intensitas</p>
+              </div>
+            </div>
+            <div class="flex flex-col gap-2 p-3">
+              {rumpun.detailRumpun.map((detail) => {
+                return (
+                  <div class="grid grid-cols-[50%,25%,25%] rounded-md border border-gray-200 px-3 py-1 hover:bg-soft">
+                    <p>{detail.opt.nama_opt}</p>
+                    <p>{detail.jumlah_opt}</p>
+                    <p>{detail.skala_kerusakan}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
 };
