@@ -2,12 +2,13 @@ import { Hono } from 'hono';
 import { validator } from 'hono/validator';
 import {
   InsertLaporanHarian,
+  LaporanHarian,
   laporanHarian as laporanHarianSchema,
 } from '../db/schema/laporan-harian.js';
 import { db } from '../index.js';
 import { and, eq, gte, lte, sql } from 'drizzle-orm';
-import { lokasi } from '../db/schema/lokasi';
-import { pengamatan } from '../db/schema/pengamatan';
+import { Lokasi, lokasi } from '../db/schema/lokasi';
+import { Pengamatan, pengamatan } from '../db/schema/pengamatan';
 import { rumpun } from '../db/schema/rumpun';
 import { detailRumpun } from '../db/schema/detail-rumpun';
 import { hasilPengamatan, withPagination } from './helper';
@@ -18,7 +19,16 @@ import { provinsi } from '../db/schema/provinsi';
 import { kabupatenKota } from '../db/schema/kabupaten-kota';
 import { kecamatan } from '../db/schema/kecamatan';
 import { desa } from '../db/schema/desa';
-import { user } from '../db/schema/user';
+import { SelectUser, user } from '../db/schema/user';
+import {
+  SelectValidasiLaporan,
+  validasiLaporan,
+} from '../db/schema/validasi-laporan.js';
+import {
+  SelectValidator,
+  validator as validatorSchema,
+} from '../db/schema/validator.js';
+import { containsObject } from '../helper.js';
 
 export const laporanHarian = new Hono();
 
@@ -88,6 +98,10 @@ laporanHarian.post(
         .set({ status_laporan_harian: true })
         .where(eq(pengamatan.id, pengamatan_id))
         .returning();
+
+      await db.insert(validasiLaporan).values({
+        laporan_harian_id: insertedData[0].id,
+      });
     } catch (error) {
       return c.json({
         status: 500,
@@ -206,6 +220,29 @@ laporanHarian.get('/laporan_harian/:laporanHarianId', async (c) => {
       )
   );
 
+  const userValidator = db
+    .select({
+      id: user.id,
+      name: user.name,
+      phone: user.phone,
+      photo: user.photo,
+      email: user.email,
+      validasi: user.validasi,
+      usergroup_id: user.usergroup_id,
+    })
+    .from(user)
+    .leftJoin(validatorSchema, eq(validatorSchema.user_id, user.id))
+    .leftJoin(
+      validasiLaporan,
+      eq(validasiLaporan.id, validatorSchema.validasi_laporan_id)
+    )
+    .leftJoin(
+      laporanHarianSchema,
+      eq(laporanHarianSchema.id, validasiLaporan.laporan_harian_id)
+    )
+    .where(eq(laporanHarianSchema.id, parseInt(laporanHarianId)))
+    .as('user_validator');
+
   const laporanHarianQuery = await db
     .with(totalAnakan, totalOpt)
     .select({
@@ -224,10 +261,22 @@ laporanHarian.get('/laporan_harian/:laporanHarianId', async (c) => {
       },
       lokasi: {
         ...lokasi,
-        provinsi: provinsi,
-        kabupaten_kota: kabupatenKota,
-        kecamatan: kecamatan,
-        desa: desa,
+        provinsi: {
+          id: provinsi.id,
+          nama_provinsi: provinsi.nama_provinsi,
+        },
+        kabupaten_kota: {
+          id: kabupatenKota.id,
+          nama_kabkot: kabupatenKota.nama_kabkot,
+        },
+        kecamatan: {
+          id: kecamatan.id,
+          nama_kecamatan: kecamatan.nama_kecamatan,
+        },
+        desa: {
+          id: desa.id,
+          nama_desa: desa.nama_desa,
+        },
       },
       pic: {
         id: user.id,
@@ -236,6 +285,18 @@ laporanHarian.get('/laporan_harian/:laporanHarianId', async (c) => {
         name: user.name,
         photo: user.photo,
         validasi: user.validasi,
+        usergroup_id: user.usergroup_id,
+      },
+      validasi_laporan: validasiLaporan,
+      validator: validatorSchema,
+      user_validator: {
+        id: userValidator.id,
+        email: userValidator.email,
+        name: userValidator.name,
+        phone: userValidator.phone,
+        photo: userValidator.photo,
+        validasi: userValidator.validasi,
+        usergroup_id: userValidator.usergroup_id,
       },
     })
     .from(laporanHarianSchema)
@@ -248,6 +309,15 @@ laporanHarian.get('/laporan_harian/:laporanHarianId', async (c) => {
       eq(totalOpt.pengamatan_id, laporanHarianSchema.pengamatan_id)
     )
     .leftJoin(pengamatan, eq(pengamatan.id, laporanHarianSchema.pengamatan_id))
+    .leftJoin(
+      validasiLaporan,
+      eq(validasiLaporan.laporan_harian_id, laporanHarianSchema.id)
+    )
+    .leftJoin(
+      validatorSchema,
+      eq(validatorSchema.validasi_laporan_id, validasiLaporan.id)
+    )
+    .leftJoin(userValidator, eq(userValidator.id, validatorSchema.user_id))
     .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
     .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
     .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
@@ -266,13 +336,38 @@ laporanHarian.get('/laporan_harian/:laporanHarianId', async (c) => {
     );
   }
 
-  const res = laporanHarianQuery.reduce((acc, row) => {
+  const res = laporanHarianQuery.reduce<
+    Record<
+      number,
+      LaporanHarian & {
+        pengamatan: Pengamatan;
+        lokasi: Lokasi;
+        pic: Omit<SelectUser, 'password'>;
+        validasi_laporan?: SelectValidasiLaporan & {
+          validator: (SelectValidator & {
+            user: Omit<SelectUser, 'password'>;
+          })[];
+        };
+        hasil_pengamatan: {
+          id_opt: number;
+          kode_opt: string;
+          hasil_perhitungan: string;
+          skala: 'mutlak' | 'tidak mutlak' | 'ekor/rumpun' | 'ekor/m2' | 'ma';
+        }[];
+      }
+    >
+  >((acc, row) => {
     const totalAnakan = row.total_anakan;
     const totalOpt = row.total_opt;
     const laporanHarian = row.laporan_harian;
     const pengamatan = row.pengamatan;
     const lokasi = row.lokasi;
     const pic = row.pic;
+    const validasiLaporan = row.validasi_laporan;
+    const validator = {
+      ...row.validator,
+      user: row.user_validator,
+    };
     const perhitungan = hasilPengamatan(
       totalOpt.skala_kerusakan,
       totalOpt.total_opt as number,
@@ -291,10 +386,27 @@ laporanHarian.get('/laporan_harian/:laporanHarianId', async (c) => {
         pengamatan,
         lokasi,
         pic,
+        validasi_laporan: { ...validasiLaporan, validator: [validator] },
         hasil_pengamatan: [hasilPerhitungan],
       };
     } else if (acc[laporanHarian.id]) {
-      acc[laporanHarian.id].hasil_pengamatan.push(hasilPerhitungan);
+      if (
+        !containsObject(
+          validator,
+          acc[laporanHarian.id].validasi_laporan.validator
+        )
+      ) {
+        acc[laporanHarian.id].validasi_laporan.validator.push(validator);
+      }
+
+      if (
+        !containsObject(
+          hasilPerhitungan,
+          acc[laporanHarian.id].hasil_pengamatan
+        )
+      ) {
+        acc[laporanHarian.id].hasil_pengamatan.push(hasilPerhitungan);
+      }
     }
 
     return acc;
@@ -366,6 +478,28 @@ laporanHarian.get(
         )
     );
 
+    const userValidator = db
+      .select({
+        id: user.id,
+        name: user.name,
+        phone: user.phone,
+        photo: user.photo,
+        email: user.email,
+        validasi: user.validasi,
+        usergroup_id: user.usergroup_id,
+      })
+      .from(user)
+      .leftJoin(validatorSchema, eq(validatorSchema.user_id, user.id))
+      .leftJoin(
+        validasiLaporan,
+        eq(validasiLaporan.id, validatorSchema.validasi_laporan_id)
+      )
+      .leftJoin(
+        laporanHarianSchema,
+        eq(laporanHarianSchema.id, validasiLaporan.laporan_harian_id)
+      )
+      .as('user_validator');
+
     const query = db
       .with(totalAnakan, totalOpt)
       .select({
@@ -387,10 +521,33 @@ laporanHarian.get(
         },
         lokasi: {
           ...lokasi,
-          provinsi,
-          kabupaten_kota: kabupatenKota,
-          kecamatan,
-          desa,
+          provinsi: {
+            id: provinsi.id,
+            nama_provinsi: provinsi.nama_provinsi,
+          },
+          kabupaten_kota: {
+            id: kabupatenKota.id,
+            nama_kabkot: kabupatenKota.nama_kabkot,
+          },
+          kecamatan: {
+            id: kecamatan.id,
+            nama_kecamatan: kecamatan.id,
+          },
+          desa: {
+            id: desa.id,
+            nama_desa: desa.nama_desa,
+          },
+        },
+        validasi_laporan: validasiLaporan,
+        validator: validatorSchema,
+        user_validator: {
+          id: userValidator.id,
+          email: userValidator.email,
+          name: userValidator.name,
+          phone: userValidator.phone,
+          photo: userValidator.photo,
+          validasi: userValidator.validasi,
+          usergroup_id: userValidator.usergroup_id,
         },
       })
       .from(laporanHarianSchema)
@@ -406,6 +563,15 @@ laporanHarian.get(
         pengamatan,
         eq(pengamatan.id, laporanHarianSchema.pengamatan_id)
       )
+      .leftJoin(
+        validasiLaporan,
+        eq(validasiLaporan.laporan_harian_id, laporanHarianSchema.id)
+      )
+      .leftJoin(
+        validatorSchema,
+        eq(validatorSchema.validasi_laporan_id, validasiLaporan.id)
+      )
+      .leftJoin(userValidator, eq(userValidator.id, validatorSchema.user_id))
       .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
       .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
       .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
@@ -461,6 +627,11 @@ laporanHarian.get(
       const totalAnakan = row.total_anakan;
       const totalOpt = row.total_opt;
       const lokasi = row.lokasi;
+      const validasiLaporan = row.validasi_laporan;
+      const validator = {
+        ...row.validator,
+        user: row.user_validator,
+      };
 
       const hasilPerhitungan = hasilPengamatan(
         totalOpt.skala_kerusakan,
@@ -477,6 +648,10 @@ laporanHarian.get(
       const finalRow = {
         laporan_harian: laporanHarian,
         lokasi,
+        validasi_laporan: {
+          ...validasiLaporan,
+          validator: [validator],
+        },
         hasil_pengamatan: [hasil],
       };
 
@@ -487,7 +662,20 @@ laporanHarian.get(
       if (!laporan) {
         acc.push(finalRow);
       } else if (!!laporan) {
-        acc[acc.indexOf(laporan)].hasil_pengamatan.push(hasil);
+        if (
+          !containsObject(hasil, acc[acc.indexOf(laporan)].hasil_pengamatan)
+        ) {
+          acc[acc.indexOf(laporan)].hasil_pengamatan.push(hasil);
+        }
+
+        if (
+          !containsObject(
+            validator,
+            acc[acc.indexOf(laporan)].validasi_laporan.validator
+          )
+        ) {
+          acc[acc.indexOf(laporan)].validasi_laporan.validator.push(validator);
+        }
       }
 
       return acc;

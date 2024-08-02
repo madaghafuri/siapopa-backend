@@ -28,6 +28,7 @@ import * as pestisida from './db/schema/pestisida';
 import * as peramalan from './db/schema/peramalan';
 import * as bahanAktif from './db/schema/bahan-aktif';
 import * as golonganPestisida from './db/schema/golongan-pestisida';
+import * as validator from './db/schema/validator';
 import web from './web/route';
 import { serveStatic } from 'hono/bun';
 import { CookieStore, Session, sessionMiddleware } from 'hono-sessions';
@@ -76,6 +77,7 @@ export const db = drizzle(client, {
     ...golonganPestisida,
     ...pestisida,
     ...peramalan,
+    ...validator,
   },
 });
 const adapter = new DrizzlePostgreSQLAdapter(

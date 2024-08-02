@@ -14,6 +14,7 @@ import { laporanHarian } from '../db/schema/laporan-harian';
 import { pengamatan } from '../db/schema/pengamatan';
 import { Lokasi, lokasi } from '../db/schema/lokasi';
 import { authorizeApi } from '../middleware';
+import { validasiLaporan } from '../db/schema/validasi-laporan';
 
 export const laporanMusiman = new Hono();
 laporanMusiman.use('/laporan_musiman/*', authorizeApi);
@@ -57,6 +58,21 @@ laporanMusiman.post(
         {
           status: 500,
           message: 'internal server error',
+        },
+        500
+      );
+    }
+
+    try {
+      await db
+        .insert(validasiLaporan)
+        .values({ laporan_musiman_id: insertLaporan[0].id });
+    } catch (error) {
+      console.error(error);
+      return c.json(
+        {
+          status: 500,
+          message: 'error creating table validasi laporan',
         },
         500
       );
@@ -160,6 +176,10 @@ laporanMusiman.get('/laporan_musiman/:laporanMusimanId', async (c) => {
       .leftJoin(laporanHarian, eq(laporanHarian.id_laporan_sb, laporanSb.id))
       .leftJoin(pengamatan, eq(pengamatan.id, laporanHarian.pengamatan_id))
       .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
+      .leftJoin(
+        validasiLaporan,
+        eq(validasiLaporan.laporan_musiman_id, laporanMusimanSchema.id)
+      )
       .where(eq(laporanMusimanSchema.id, laporanMusimanId));
   } catch (error) {
     console.error(error);
@@ -237,21 +257,29 @@ laporanMusiman.get('/laporan_musiman', async (c) => {
   const offset = (parseInt(page || '1') - 1) * limit;
 
   try {
-    var selectLaporan = await db.query.laporanMusiman.findMany({
-      with: {
-        laporanBulanan: true,
-      },
-      where: and(
-        !!user_id ? eq(user.id, parseInt(user_id)) : undefined,
-        !!location_id ? eq(lokasi.id, location_id) : undefined,
-        !!start_date
-          ? gte(laporanMusimanSchema.start_date, start_date)
-          : undefined,
-        !!end_date ? lte(laporanMusimanSchema, end_date) : undefined
-      ),
-      limit,
-      offset,
-    });
+    var selectLaporan = await db
+      .select()
+      .from(laporanMusimanSchema)
+      .leftJoin(
+        laporanBulanan,
+        eq(laporanBulanan.laporan_musiman_id, laporanMusimanSchema.id)
+      )
+      .leftJoin(
+        validasiLaporan,
+        eq(validasiLaporan.laporan_musiman_id, laporanMusimanSchema.id)
+      )
+      .where(
+        and(
+          !!user_id ? eq(user.id, parseInt(user_id)) : undefined,
+          !!location_id ? eq(lokasi.id, location_id) : undefined,
+          !!start_date
+            ? gte(laporanMusimanSchema.start_date, start_date)
+            : undefined,
+          !!end_date ? lte(laporanMusimanSchema, end_date) : undefined
+        )
+      )
+      .limit(limit)
+      .offset(offset);
   } catch (error) {
     console.error(error);
     return c.json(

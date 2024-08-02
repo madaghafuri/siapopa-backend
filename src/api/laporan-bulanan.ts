@@ -10,6 +10,7 @@ import { laporanSb } from '../db/schema/laporan-sb.js';
 import { user } from '../db/schema/user';
 import { lokasi } from '../db/schema/lokasi';
 import { authorizeApi } from '../middleware';
+import { validasiLaporan } from '../db/schema/validasi-laporan.js';
 
 export const laporanBulanan = new Hono();
 
@@ -47,6 +48,10 @@ laporanBulanan.post(
         .insert(laporanBulananSchema)
         .values({ ...rest, point: [lat, long] })
         .returning();
+
+      await db
+        .insert(validasiLaporan)
+        .values({ laporan_bulanan_id: insertLaporan[0].id });
 
       await db
         .update(laporanSb)
@@ -149,6 +154,10 @@ laporanBulanan.get('/laporan_bulanan/:laporanBulananId', async (c) => {
         laporanSb,
         eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id)
       )
+      .leftJoin(
+        validasiLaporan,
+        eq(validasiLaporan.laporan_bulanan_id, laporanBulananSchema.id)
+      )
       .where(eq(laporanBulananSchema.id, parseInt(laporanBulananId)));
   } catch (error) {
     console.error(error);
@@ -192,6 +201,10 @@ laporanBulanan.get('/laporan_bulanan', async (c) => {
       .leftJoin(
         laporanSb,
         eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id)
+      )
+      .leftJoin(
+        validasiLaporan,
+        eq(validasiLaporan.laporan_bulanan_id, laporanBulananSchema.id)
       )
       .where(
         and(

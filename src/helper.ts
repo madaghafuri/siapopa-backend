@@ -7,3 +7,14 @@ export function getValidKeyValuePairs<T extends Record<string, string | File>>(
     )
   );
 }
+
+export function containsObject<T extends Object, K extends Array<T>>(
+  obj: T,
+  list: K
+) {
+  const found = list.find(
+    (value) => JSON.stringify(value) === JSON.stringify(obj)
+  );
+
+  return !!found;
+}

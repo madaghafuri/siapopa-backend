@@ -10,10 +10,11 @@ import {
   luasKerusakanSb,
 } from '../db/schema/luas-kerusakan-sb.js';
 import { db } from '../index.js';
-import { SQL, and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { SQL, and, asc, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { laporanHarian } from '../db/schema/laporan-harian.js';
 import { pengamatan } from '../db/schema/pengamatan.js';
 import { authorizeApi } from '../middleware.js';
+import { validasiLaporan } from '../db/schema/validasi-laporan.js';
 
 export const laporanSb = new Hono();
 laporanSb.use('/laporan_sb/*', authorizeApi);
@@ -66,6 +67,10 @@ laporanSb.post(
       });
 
       await db.insert(luasKerusakanSb).values(insertLuasKerusakan);
+
+      await db
+        .insert(validasiLaporan)
+        .values({ laporan_harian_id: insertedData[0].id });
 
       await db
         .update(laporanHarian)
@@ -212,6 +217,10 @@ laporanSb.get('/laporan_sb/:laporanSbId', async (c) => {
         luasKerusakanSb,
         eq(luasKerusakanSb.laporan_sb_id, laporanSbSchema.id)
       )
+      .leftJoin(
+        validasiLaporan,
+        eq(validasiLaporan.laporan_sb_id, laporanSbSchema.id)
+      )
       .where(eq(laporanSbSchema.id, parseInt(laporanSbId)));
   } catch (error) {
     console.error(error);
@@ -248,18 +257,28 @@ laporanSb.get('/laporan_sb', async (c) => {
     >;
 
   try {
-    var selectData = await db.query.laporanSb.findMany({
-      with: {
-        luas_kerusakan_sb: true,
-      },
-      where: and(
-        !!user_id ? eq(laporanSbSchema.pic_id, parseInt(user_id)) : undefined,
-        !!location_id ? eq(pengamatan.lokasi_id, location_id) : undefined,
-        !!start_date ? gte(laporanSbSchema.start_date, start_date) : undefined,
-        !!end_date ? lte(laporanSbSchema.end_date, end_date) : undefined
-      ),
-      orderBy: laporanSbSchema.id,
-    });
+    var selectData = await db
+      .select()
+      .from(laporanSbSchema)
+      .leftJoin(
+        validasiLaporan,
+        eq(validasiLaporan.laporan_sb_id, laporanSbSchema.id)
+      )
+      .leftJoin(
+        luasKerusakanSb,
+        eq(luasKerusakanSb.laporan_sb_id, laporanSbSchema.id)
+      )
+      .where(
+        and(
+          !!user_id ? eq(laporanSbSchema.pic_id, parseInt(user_id)) : undefined,
+          !!location_id ? eq(pengamatan.lokasi_id, location_id) : undefined,
+          !!start_date
+            ? gte(laporanSbSchema.start_date, start_date)
+            : undefined,
+          !!end_date ? lte(laporanSbSchema.end_date, end_date) : undefined
+        )
+      )
+      .orderBy(asc(laporanSbSchema.id));
   } catch (error) {
     console.error(error);
     return c.json(

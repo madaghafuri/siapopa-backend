@@ -4,24 +4,37 @@ import { laporanSb } from './laporan-sb';
 import { laporanBulanan } from './laporan-bulanan';
 import { laporanMusiman } from './laporan-musiman';
 import { kategoriLaporan } from './kategori-laporan';
+import { validator } from './validator';
+import { relations } from 'drizzle-orm';
 
 export const validasiLaporan = pgTable('validasi_laporan', {
   id: serial('id').primaryKey(),
-  laporan_id: integer('laporan_id')
-    .references(() => laporanHarian.id)
-    .references(() => laporanSb.id)
-    .references(() => laporanBulanan.id)
-    .references(() => laporanMusiman.id),
-  kategori_laporan_id: integer('kategori_laporan_id').references(
-    () => kategoriLaporan.id
+  laporan_harian_id: integer('laporan_harian_id').references(
+    () => laporanHarian.id,
+    { onDelete: 'cascade' }
   ),
-  validasi_satpel: boolean('validasi_satpel'),
-  validasi_kortikab: boolean('validasi_kortikab'),
-  validasi_bptph: boolean('validasi_bptph'),
-  sign_satpel: text('sign_satpel'),
-  sign_kortikab: text('sign_kortikab'),
-  sign_bptph: text('sign_bptph'),
-  note_satpel: text('note_satpel'),
-  note_kortikab: text('note_kortikab'),
-  note_bptph: text('note_bptph'),
+  laporan_sb_id: integer('laporan_sb_id').references(() => laporanSb.id, {
+    onDelete: 'cascade',
+  }),
+  laporan_bulanan_id: integer('laporan_bulanan_id').references(
+    () => laporanBulanan.id,
+    { onDelete: 'cascade' }
+  ),
+  laporan_musiman_id: integer('laporan_musiman_id').references(
+    () => laporanMusiman.id,
+    { onDelete: 'cascade' }
+  ),
+  kategori_laporan_id: integer('kategori_laporan_id').references(
+    () => kategoriLaporan.id,
+    { onDelete: 'cascade' }
+  ),
 });
+
+export const validasiLaporanRelations = relations(
+  validasiLaporan,
+  ({ many }) => ({
+    validator: many(validator),
+  })
+);
+
+export type SelectValidasiLaporan = typeof validasiLaporan.$inferSelect;
