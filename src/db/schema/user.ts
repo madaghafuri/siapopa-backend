@@ -29,7 +29,9 @@ export const user = pgTable(
 );
 
 export const usersRelations = relations(user, ({ many, one }) => ({
-  locations: many(lokasi),
+  locations: many(lokasi, {
+    relationName: 'locations',
+  }),
   userGroup: one(userGroup, {
     fields: [user.usergroup_id],
     references: [userGroup.id],

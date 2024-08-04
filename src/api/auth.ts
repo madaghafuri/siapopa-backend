@@ -4,6 +4,8 @@ import { db, lucia } from '../index';
 import { InsertUser, user } from '../db/schema/user';
 import { and, eq } from 'drizzle-orm';
 import { JwtVariables } from 'hono/jwt';
+import { lokasi } from '../db/schema/lokasi';
+import { userGroup } from '../db/schema/user-group';
 
 export const auth = new Hono<{ Variables: JwtVariables }>();
 
@@ -27,34 +29,6 @@ auth.post(
 
     const findUser = await db.query.user.findFirst({
       with: {
-        locations: {
-          with: {
-            provinsi: {
-              columns: {
-                area_provinsi: false,
-                point_provinsi: false,
-              },
-            },
-            kabupaten_kota: {
-              columns: {
-                area_kabkot: false,
-                point_kabkot: false,
-              },
-            },
-            kecamatan: {
-              columns: {
-                area_kecamatan: false,
-                point_kecamatan: false,
-              },
-            },
-            desa: {
-              columns: {
-                area_desa: false,
-                point_desa: false,
-              },
-            },
-          },
-        },
         userGroup: true,
       },
       where: and(eq(user.email, email)),
@@ -83,6 +57,127 @@ auth.post(
       );
     }
 
+    const locations =
+      findUser.userGroup.group_name === 'satpel'
+        ? await db.query.lokasi.findMany({
+            with: {
+              provinsi: {
+                columns: {
+                  point_provinsi: false,
+                  area_provinsi: false,
+                },
+              },
+              kabupaten_kota: {
+                columns: {
+                  point_kabkot: false,
+                  area_kabkot: false,
+                },
+              },
+              kecamatan: {
+                columns: {
+                  point_kecamatan: false,
+                  area_kecamatan: false,
+                },
+              },
+              desa: {
+                columns: {
+                  point_desa: false,
+                  area_desa: false,
+                },
+              },
+            },
+            where: (lokasi, { eq }) => eq(lokasi.satpel_id, findUser.id),
+          })
+        : findUser.userGroup.group_name === 'kortikab'
+          ? await db.query.lokasi.findMany({
+              with: {
+                provinsi: {
+                  columns: {
+                    point_provinsi: false,
+                    area_provinsi: false,
+                  },
+                },
+                kabupaten_kota: {
+                  columns: {
+                    point_kabkot: false,
+                    area_kabkot: false,
+                  },
+                },
+                kecamatan: {
+                  columns: {
+                    point_kecamatan: false,
+                    area_kecamatan: false,
+                  },
+                },
+                desa: {
+                  columns: {
+                    point_desa: false,
+                    area_desa: false,
+                  },
+                },
+              },
+              where: (lokasi, { eq }) => eq(lokasi.kortikab_id, findUser.id),
+            })
+          : findUser.userGroup.group_name === 'bptph'
+            ? await db.query.lokasi.findMany({
+                with: {
+                  provinsi: {
+                    columns: {
+                      point_provinsi: false,
+                      area_provinsi: false,
+                    },
+                  },
+                  kabupaten_kota: {
+                    columns: {
+                      point_kabkot: false,
+                      area_kabkot: false,
+                    },
+                  },
+                  kecamatan: {
+                    columns: {
+                      point_kecamatan: false,
+                      area_kecamatan: false,
+                    },
+                  },
+                  desa: {
+                    columns: {
+                      point_desa: false,
+                      area_desa: false,
+                    },
+                  },
+                },
+                where: (lokasi, { eq }) => eq(lokasi.bptph_id, findUser.id),
+              })
+            : await db.query.lokasi.findMany({
+                with: {
+                  provinsi: {
+                    columns: {
+                      point_provinsi: false,
+                      area_provinsi: false,
+                    },
+                  },
+                  kabupaten_kota: {
+                    columns: {
+                      point_kabkot: false,
+                      area_kabkot: false,
+                    },
+                  },
+                  kecamatan: {
+                    columns: {
+                      point_kecamatan: false,
+                      area_kecamatan: false,
+                    },
+                  },
+                  desa: {
+                    columns: {
+                      point_desa: false,
+                      area_desa: false,
+                    },
+                  },
+                },
+                where: (lokasi, { eq }) => eq(lokasi.pic_id, findUser.id),
+              });
+
     const session = await lucia.createSession(findUser.id, {});
     const tokenSession = {
       bearerToken: session.id,
@@ -104,7 +199,7 @@ auth.post(
         token: tokenSession,
         usergroup_id: findUser.usergroup_id,
         user_group: findUser.userGroup,
-        locations: findUser.locations,
+        locations: locations,
       },
     });
   }

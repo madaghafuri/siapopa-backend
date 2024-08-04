@@ -69,7 +69,7 @@ export const LokasiPage = ({
         <input
           type="text"
           name="alamat"
-          class="rounded-md border border-gray-200 bg-white px-2 py-1"
+          class="rounded-md border border-gray-200 bg-white px-2 py-1 shadow-lg"
           hx-get="/app/master/lokasi"
           hx-target="#table-body"
           hx-swap="innerHTML"
@@ -78,8 +78,8 @@ export const LokasiPage = ({
           hx-indicator="#loading"
         />
       </div>
-      <div class="rounded-md bg-white">
-        <div class="grid grid-cols-8 bg-slate-400">
+      <div class="rounded-md bg-white shadow-xl">
+        <div class="grid grid-cols-8 bg-soft">
           {lokasiColumn.map((val) => {
             return <p class="px-2 py-1 capitalize">{val.headerName}</p>;
           })}

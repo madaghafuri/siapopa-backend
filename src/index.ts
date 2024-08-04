@@ -41,11 +41,11 @@ import {
 import { Lucia, TimeSpan } from 'lucia';
 
 export const client = new Client({
-  user: 'postgres',
-  password: 'postgres',
-  host: 'db',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
+  host: process.env.DB_HOST || 'db',
   port: 5432,
-  database: 'siapopa-dev',
+  database: process.env.DB_NAME || 'siapopa-dev',
   ssl: false,
 });
 
