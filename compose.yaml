@@ -15,7 +15,12 @@ services:
     ports:
       - 3000:3000
     environment:
-      - API_TOKEN=siapopa-dev
+      - NODE_ENV=development
+      - API_TOKEN=
+      - DB_NAME=
+      - DB_HOST=
+      - DB_USER=
+      - DB_PASSWORD=
     depends_on:
       db:
         condition: service_healthy
@@ -51,8 +56,8 @@ services:
     user: postgres
     environment:
       - POSTGRES_DB=siapopa-dev
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=
+      - POSTGRES_USER=
       - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
       - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     ports:
