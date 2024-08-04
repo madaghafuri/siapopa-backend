@@ -15,6 +15,9 @@ export const lokasi = pgTable('lokasi', {
   kecamatan_id: text('kecamatan_id').references(() => kecamatan.id),
   desa_id: text('desa_id').references(() => desa.id),
   pic_id: integer('pic_id').references(() => user.id),
+  satpel_id: integer('satpel_id').references(() => user.id),
+  kortikab_id: integer('kortikab_id').references(() => user.id),
+  bptph_id: integer('bptph_id').references(() => user.id),
 });
 
 export const lokasiRelations = relations(lokasi, ({ one }) => ({
@@ -37,6 +40,18 @@ export const lokasiRelations = relations(lokasi, ({ one }) => ({
   desa: one(desa, {
     fields: [lokasi.desa_id],
     references: [desa.id],
+  }),
+  satpel: one(user, {
+    fields: [lokasi.satpel_id],
+    references: [user.id],
+  }),
+  kortikab: one(user, {
+    fields: [lokasi.kortikab_id],
+    references: [user.id],
+  }),
+  bptph: one(user, {
+    fields: [lokasi.bptph_id],
+    references: [user.id],
   }),
 }));
 
