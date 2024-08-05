@@ -105,32 +105,22 @@ export const LokasiPage = ({
       </div>
       <div class="flex items-center justify-between">
         <button
-          hx-get="/app/master/lokasi"
           hx-target="#table-body"
           hx-swap="innerHTML"
-          hx-include="[name='page']"
           hx-trigger="click"
           hx-indicator="#loading"
-          name="page"
-          value="1"
           class="rounded bg-white px-2 py-1"
-          _="on click decrement @value on me"
           id="prev-btn"
         >
           Prev
         </button>
-        <p x-text="page"></p>
+        <span id="page-num">1</span>
         <button
-          hx-get="/app/master/lokasi"
           hx-target="#table-body"
           hx-swap="innerHTML"
-          hx-include="[name='page']"
           hx-trigger="click"
           hx-indicator="#loading"
-          name="page"
           class="rounded bg-white px-2 py-1"
-          value="1"
-          _="on click increment @value on me"
           id="next-btn"
         >
           Next
@@ -138,7 +128,7 @@ export const LokasiPage = ({
       </div>
       {!!user ? (
         <button type="button" class="rounded bg-primary px-2 py-1 text-white">
-          Tambah Data
+          Tambah Lokasi
         </button>
       ) : null}
       {html`
@@ -148,6 +138,43 @@ export const LokasiPage = ({
               top: false,
               bottom: false,
             });
+            const url = new URL($(location).attr('href'));
+            let currentPage = parseInt(url.searchParams.get('page')) || 1;
+
+            function updatePagination() {
+              $('#page-num').text(currentPage.toString());
+            }
+
+            $('#next-btn').click(function () {
+              htmx.ajax(
+                'GET',
+                '/app/master/lokasi?page=' + (currentPage + 1).toString(),
+                '#table-body'
+              );
+            });
+
+            $('#prev-btn').click(function () {
+              if (currentPage === 1) return;
+              htmx.ajax(
+                'GET',
+                '/app/master/lokasi?page=' + (currentPage - 1).toString(),
+                '#table-body'
+              );
+            });
+
+            htmx.on('htmx:afterSettle', function (event) {
+              const url = new URL(
+                event.detail.pathInfo.requestPath,
+                window.location.origin
+              );
+              const pageParam = url.searchParams.get('page');
+              if (pageParam) {
+                currentPage = parseInt(pageParam);
+                $('#page-num').html(pageParam);
+                updatePagination();
+              }
+            });
+            updatePagination();
           });
         </script>
       `}

@@ -30,10 +30,6 @@ export const MainLayout = ({ children }: { children?: any }) => {
           src="https://kit.fontawesome.com/032f179500.js"
           crossorigin="anonymous"
         ></script>
-        <script
-          defer
-          src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"
-        ></script>
         <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
         <link
           rel="stylesheet"
@@ -56,7 +52,10 @@ export const MainLayout = ({ children }: { children?: any }) => {
           href="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.min.css"
           rel="stylesheet"
         />
-        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <link
+          href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+          rel="stylesheet"
+        />
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
       </head>
       <body>{children}</body>

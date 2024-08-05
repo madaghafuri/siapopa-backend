@@ -55,10 +55,8 @@ lokasiRoute.get('/', async (c) => {
     },
     where: (lokasi, { ilike, and }) =>
       and(!!alamat ? ilike(lokasi.alamat, `%${alamat}%`) : undefined),
-    limit: parseInt(page || '10'),
-    offset:
-      parseInt(page || '10') * parseInt(per_page || '1') -
-      parseInt(page || '10'),
+    limit: parseInt(per_page || '10'),
+    offset: (parseInt(page || '1') - 1) * parseInt(per_page || '10'),
   });
 
   const newUrl = new URLSearchParams(c.req.query());
