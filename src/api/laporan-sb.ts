@@ -70,7 +70,7 @@ laporanSb.post(
 
       await db
         .insert(validasiLaporan)
-        .values({ laporan_harian_id: insertedData[0].id });
+        .values({ laporan_sb_id: insertedData[0].id });
 
       await db
         .update(laporanHarian)
