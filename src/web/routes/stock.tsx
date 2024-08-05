@@ -12,7 +12,9 @@ import { provinsi } from '../../db/schema/provinsi.js';
 import { kabupatenKota } from '../../db/schema/kabupaten-kota.js';
 import { kecamatan } from '../../db/schema/kecamatan.js';
 import { desa } from '../../db/schema/desa.js';
-import DataStockPestisida from '../pages/stock/stock-pestisida.js';
+import DataStockPestisida, {
+  stockPestisidaColumn,
+} from '../pages/stock/stock-pestisida.js';
 import { InsertPestisida, pestisida } from '../../db/schema/pestisida.js';
 import {
   golonganPestisida,
@@ -27,6 +29,8 @@ import { validator } from 'hono/validator';
 import { Fragment } from 'hono/jsx/jsx-runtime';
 import { ModalGolonganPestisida } from '../components/stock/modal-golongan-pestisida.js';
 import { ModalStockPestisida } from '../components/stock/modal-stock-pestisida.js';
+import { Table } from '../components/table.js';
+import { html } from 'hono/html';
 
 export const stock = new Hono<{
   Variables: {
@@ -80,6 +84,26 @@ stock.get('/stock-pestisida', async (c) => {
       golonganPestisida,
       eq(golonganPestisida.id, pestisida.golongan_pestisida_id)
     );
+
+  if (c.req.header('hx-request')) {
+    return c.html(
+      <Fragment>
+        <Table
+          columns={stockPestisidaColumn}
+          rowsData={selectStockPestisida}
+          className="hover display nowrap max-w-full rounded-md bg-white"
+          id="stockPestisidaTable"
+        />
+        {html`
+          <script>
+            $(document).ready(function () {
+              $('#stockPestisidaTable').DataTable({ scrollX: true });
+            });
+          </script>
+        `}
+      </Fragment>
+    );
+  }
 
   return c.html(
     <DefaultLayout
@@ -169,7 +193,6 @@ stock.post(
       !golongan_pestisida_id ||
       !expired_date
     ) {
-      console.log('Validation failed: nama_bahan is missing');
       return c.html(
         <span class="text-sm text-red-500">
           Data yang dibutuhkan tidak sesuai
@@ -177,18 +200,6 @@ stock.post(
       );
     }
 
-    console.log('Validation successful:', {
-      tanaman_id,
-      lokasi_id,
-      satuan,
-      opt_id,
-      bahan_aktif_id,
-      merk_dagang,
-      volume,
-      periode_bulan,
-      tahun_pengadaan,
-      golongan_pestisida_id,
-    });
     return {
       tanaman_id,
       lokasi_id,
@@ -205,11 +216,8 @@ stock.post(
   async (c) => {
     const pestisidaData = c.req.valid('form');
 
-    console.log('Received data for insertion:', pestisidaData);
-
     try {
       await db.insert(pestisida).values({ ...pestisidaData });
-      console.log('Data inserted successfully');
     } catch (error) {
       console.error('Error during insertion:', error);
       return c.html(
@@ -398,7 +406,6 @@ stock.post(
     const { nama_golongan } = value as unknown as InsertGolonganPestisida;
 
     if (!nama_golongan) {
-      console.log('Validation failed: nama_bahan is missing');
       return c.html(
         <span class="text-sm text-red-500">
           Data yang dibutuhkan tidak sesuai
@@ -406,17 +413,13 @@ stock.post(
       );
     }
 
-    console.log('Validation successful:', { nama_golongan });
     return { nama_golongan };
   }),
   async (c) => {
     const golonganPestisidaData = c.req.valid('form');
 
-    console.log('Received data for insertion:', golonganPestisidaData);
-
     try {
       await db.insert(golonganPestisida).values({ ...golonganPestisidaData });
-      console.log('Data inserted successfully');
     } catch (error) {
       console.error('Error during insertion:', error);
       return c.html(
@@ -591,7 +594,6 @@ stock.post(
     const { nama_bahan } = value as unknown as InsertBahanAktif;
 
     if (!nama_bahan) {
-      console.log('Validation failed: nama_bahan is missing');
       return c.html(
         <span class="text-sm text-red-500">
           Data yang dibutuhkan tidak sesuai
@@ -599,17 +601,13 @@ stock.post(
       );
     }
 
-    console.log('Validation successful:', { nama_bahan });
     return { nama_bahan };
   }),
   async (c) => {
     const bahanAktifData = c.req.valid('form');
 
-    console.log('Received data for insertion:', bahanAktifData);
-
     try {
       await db.insert(bahanAktif).values({ ...bahanAktifData });
-      console.log('Data inserted successfully');
     } catch (error) {
       console.error('Error during insertion:', error);
       return c.html(

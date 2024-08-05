@@ -193,6 +193,11 @@ export const ModalStockPestisida = ({
                 name="provinsi"
                 required
                 class="w-full rounded border px-2 py-1"
+                hx-get="/app/master/kabkot"
+                hx-include="[name='provinsi']"
+                hx-trigger="change"
+                hx-target="#kabkot-option"
+                hx-swap="innerHTML"
               >
                 <option value="">Select Provinsi</option>;
                 {listProvinsi.map((value) => {
@@ -205,9 +210,15 @@ export const ModalStockPestisida = ({
             <div>
               <label>Kabupaten/Kota*</label>
               <select
-                name="kabupaten_kota"
+                id="kabkot-option"
+                name="kabkot_id"
                 required
                 class="w-full rounded border px-2 py-1"
+                hx-get="/app/master/kecamatan"
+                hx-include="[name='kabkot_id']"
+                hx-trigger="change"
+                hx-target="#kecamatan-option"
+                hx-swap="innerHTML"
               >
                 <option value="">Select Kabupaten/Kota</option>;
                 {listKabKot.map((value) => {
@@ -220,9 +231,14 @@ export const ModalStockPestisida = ({
             <div>
               <label>Kecamatan*</label>
               <select
-                name="kecamatan"
+                name="kecamatan_id"
                 required
                 class="w-full rounded border px-2 py-1"
+                id="kecamatan-option"
+                hx-get="/app/master/desa"
+                hx-include="[name='kecamatan_id']"
+                hx-swap="innerHTML"
+                hx-target="#desa-option"
               >
                 <option value="">Select Kecamatan</option>;
                 {listKecamatan.map((value) => {
@@ -238,6 +254,7 @@ export const ModalStockPestisida = ({
                 name="lokasi_id"
                 required
                 class="w-full rounded border px-2 py-1"
+                id="desa-option"
               >
                 <option value="">Select Desa</option>;
                 {listDesa.map((value) => {

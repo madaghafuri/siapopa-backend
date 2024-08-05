@@ -7,6 +7,8 @@ import { userRoute } from './master/user';
 import { userGroupRoute } from './master/user-group';
 import { lokasiRoute } from './master/lokasi';
 import { kabkotRoute } from './master/kabupaten-kota';
+import { kecamatanRoute } from './master/kecamatan';
+import { desaRoute } from './master/desa';
 
 export const master = new Hono<{
   Variables: {
@@ -21,3 +23,5 @@ master.route('/', userRoute);
 master.route('/', userGroupRoute);
 master.route('/', lokasiRoute);
 master.route('/', kabkotRoute);
+master.route('/', kecamatanRoute);
+master.route('/', desaRoute);

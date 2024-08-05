@@ -44,132 +44,37 @@ const DataStockPestisida = ({
       {!!user ? (
         <div>
           {user && user.usergroup_id === 5 && (
-          <button
-            class="rounded bg-primary px-2 py-1 text-white"
-            hx-get="/app/stock/stock-pestisida/create"
-            hx-target="body"
-            hx-swap="beforeend"
-          >
-            Add Pestisida
-          </button>
+            <button
+              class="rounded bg-primary px-2 py-1 text-white"
+              hx-get="/app/stock/stock-pestisida/create"
+              hx-target="body"
+              hx-swap="beforeend"
+            >
+              Add Pestisida
+            </button>
           )}
         </div>
       ) : null}
-      <table
-        id="stockPestisidaTable"
-        class="hover display nowrap max-w-full rounded-md bg-white"
-        style="width:100%"
+      <div
+        hx-get="/app/stock/stock-pestisida"
+        hx-trigger="newPestisida from:body"
+        hx-swap="innerHTML"
+        hx-target="this"
       >
-        <thead>
-          <tr>
-            <th class="border-b border-gray-200 px-4 py-2" style="width: 5%">
-              No.
-            </th>
-            <th class="border-b border-gray-200 px-4 py-2">Golongan</th>
-            <th class="border-b border-gray-200 px-4 py-2">Merk Dagang</th>
-            <th class="border-b border-gray-200 px-4 py-2">Bahan Aktif</th>
-            <th class="border-b border-gray-200 px-4 py-2">Komoditas</th>
-            <th class="border-b border-gray-200 px-4 py-2">OPT Sasaran</th>
-            <th class="border-b border-gray-200 px-4 py-2">Volume</th>
-            <th class="border-b border-gray-200 px-4 py-2">Satuan</th>
-            <th class="border-b border-gray-200 px-4 py-2">Expired Date</th>
-            <th class="border-b border-gray-200 px-4 py-2">Periode Bulan</th>
-            <th class="border-b border-gray-200 px-4 py-2">Tahun Pengadaan</th>
-            <th class="border-b border-gray-200 px-4 py-2">Provinsi</th>
-            <th class="border-b border-gray-200 px-4 py-2">Kabupaten/Kota</th>
-            <th class="border-b border-gray-200 px-4 py-2">Kecamatan</th>
-            <th class="border-b border-gray-200 px-4 py-2">Desa</th>
-            <th class="border-b border-gray-200 px-4 py-2"></th>
-            {user && user.usergroup_id === 5 && (
-            <th class="border-b border-gray-200 px-4 py-2" style="width: 10%">Actions</th>
-            )}
-          </tr>
-        </thead>
-        <tbody
-          hx-get="/app/stock/stock-pestisida/reload"
-          hx-trigger="newPestisida from:body"
-        >
-          {listStockPestisida.map((pestisida, index) => (
-            <tr key={pestisida.id}>
-              <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
-                {index + 1}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.nama_golongan}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.merk_dagang}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.bahanAktif}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.nama_tanaman}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.nama_opt}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.volume}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.satuan}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.expired_date}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.periode_bulan}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.tahun_pengadaan}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.provinsi}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.kabupatenKota}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.kecamatan}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {pestisida.desa}
-              </td>
-              {user && user.usergroup_id === 5 && (
-              <td class="border-b border-gray-200 px-4 py-2" style="width: 10%">
-                <div class="flex items-center space-x-2">
-                  <button
-                    class="px-4 text-blue-500 hover:text-blue-700"
-                    hx-get={`/app/stock/stock-pestisida/edit/${pestisida.id}`}
-                    hx-target="body"
-                    hx-swap="beforeend"
-                  >
-                    <i class="fa fa-edit"></i>
-                  </button>
-                  <button
-                    class="ml-2 px-4 text-red-500 hover:text-red-700"
-                    hx-delete={`/app/stock/stock-pestisida/delete/${pestisida.id}`}
-                    hx-target="#stockPestisidaTable"
-                    hx-swap="outerHTML"
-                    hx-confirm="Are you sure you want to delete this item?"
-                  >
-                    <i class="fa fa-trash"></i>
-                  </button>
-                </div>
-              </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {html`
-        <script>
-          $(document).ready(function () {
-            $('#stockPestisidaTable').DataTable({ scrollX: true });
-          });
-        </script>
-      `}
+        <Table
+          columns={stockPestisidaColumn}
+          rowsData={listStockPestisida}
+          className="hover display nowrap max-w-full rounded-md bg-white"
+          id="stockPestisidaTable"
+        />
+        {html`
+          <script>
+            $(document).ready(function () {
+              $('#stockPestisidaTable').DataTable({ scrollX: true });
+            });
+          </script>
+        `}
+      </div>
     </div>
   );
 };

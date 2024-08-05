@@ -8,6 +8,7 @@ import { authorizeWebInput } from '../../../middleware';
 import { validator } from 'hono/validator';
 import { kabupatenKota } from '../../../db/schema/kabupaten-kota';
 import { sql } from 'drizzle-orm';
+import { Fragment } from 'hono/jsx/jsx-runtime';
 
 export const kabkotRoute = new Hono<{
   Variables: {
@@ -17,6 +18,7 @@ export const kabkotRoute = new Hono<{
 kabkotRoute.get('/', async (c) => {
   const session = c.get('session');
   const userId = session.get('user_id') as string;
+  const { provinsi } = c.req.query();
 
   const selectUser = await db.query.user
     .findFirst({
@@ -40,8 +42,21 @@ kabkotRoute.get('/', async (c) => {
     with: {
       provinsi: true,
     },
+    where: (kabkot, { eq, and }) =>
+      and(!!provinsi ? eq(kabkot.provinsi_id, provinsi) : undefined),
     orderBy: (kabkot, { asc }) => asc(kabkot.id),
   });
+
+  if (c.req.header('hx-request')) {
+    return c.html(
+      <Fragment>
+        <option value="">Select Kabupaten/Kota</option>;
+        {dataKabKot.map((kabkot) => {
+          return <option value={kabkot.id}>{kabkot.nama_kabkot}</option>;
+        })}
+      </Fragment>
+    );
+  }
 
   return c.html(
     <DefaultLayout
