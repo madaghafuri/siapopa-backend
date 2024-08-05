@@ -261,52 +261,59 @@ laporanSb.get('/laporan_sb', async (c) => {
       | 'per_page',
       string
     >;
+  const foo = await db
+    .select({
+      id: laporanSbSchema.id,
+    })
+    .from(laporanSbSchema)
+    .where(
+      and(
+        !!user_id ? eq(laporanSbSchema.pic_id, parseInt(user_id)) : undefined,
+        !!start_date ? gte(laporanSbSchema.start_date, start_date) : undefined,
+        !!end_date
+          ? lte(laporanSbSchema.tanggal_laporan_sb, end_date)
+          : undefined
+      )
+    )
+    .orderBy(asc(laporanSbSchema.id))
+    .limit(parseInt(per_page || '10'))
+    .offset((parseInt(page || '1') - 1) * parseInt(per_page || '10'));
 
-  try {
-    var selectData = await db
-      .select({
-        laporan_sb: laporanSbSchema,
-        validasi_laporan: validasiLaporan,
-        luas_kerusakan_sb: luasKerusakanSb,
-        laporan_harian: laporanHarian,
-      })
-      .from(laporanSbSchema)
-      .leftJoin(
-        validasiLaporan,
-        eq(validasiLaporan.laporan_sb_id, laporanSbSchema.id)
-      )
-      .leftJoin(
-        luasKerusakanSb,
-        eq(luasKerusakanSb.laporan_sb_id, laporanSbSchema.id)
-      )
-      .leftJoin(
-        laporanHarian,
-        eq(laporanHarian.id_laporan_sb, laporanSbSchema.id)
-      )
-      .leftJoin(pengamatan, eq(pengamatan.id, laporanHarian.pengamatan_id))
-      .where(
-        and(
-          !!user_id ? eq(laporanSbSchema.pic_id, parseInt(user_id)) : undefined,
-          !!location_id ? eq(pengamatan.lokasi_id, location_id) : undefined,
-          !!start_date
-            ? gte(laporanSbSchema.start_date, start_date)
-            : undefined,
-          !!end_date ? lte(laporanSbSchema.end_date, end_date) : undefined
-        )
-      )
-      .orderBy(asc(laporanSbSchema.id))
-      .limit(parseInt(per_page || '10'))
-      .offset((parseInt(page || '1') - 1) * parseInt(per_page || '10'));
-  } catch (error) {
-    console.error(error);
+  if (foo.length === 0) {
     return c.json(
       {
-        status: 500,
-        message: 'internal server error',
+        status: 404,
+        message: 'data tidak ditemukan',
       },
-      500
+      404
     );
   }
+
+  const selectData = await db
+    .select()
+    .from(laporanSbSchema)
+    .leftJoin(
+      validasiLaporan,
+      eq(validasiLaporan.laporan_sb_id, laporanSbSchema.id)
+    )
+    .leftJoin(
+      laporanHarian,
+      eq(laporanHarian.id_laporan_sb, laporanSbSchema.id)
+    )
+    .leftJoin(pengamatan, eq(pengamatan.id, laporanHarian.pengamatan_id))
+    .leftJoin(
+      luasKerusakanSb,
+      eq(luasKerusakanSb.laporan_sb_id, laporanSbSchema.id)
+    )
+    .where(
+      and(
+        inArray(
+          laporanSbSchema.id,
+          foo.map((val) => val.id)
+        ),
+        !!location_id ? eq(pengamatan.lokasi_id, location_id) : undefined
+      )
+    );
 
   if (selectData.length === 0) {
     return c.json(
@@ -360,30 +367,5 @@ laporanSb.get('/laporan_sb', async (c) => {
     status: 200,
     message: 'success',
     data: result,
-  });
-});
-laporanSb.get('/prev/laporan_sb', async (c) => {
-  const foo = await db
-    .select()
-    .from(laporanSbSchema)
-    .orderBy(
-      desc(laporanSbSchema.tanggal_laporan_sb),
-      desc(laporanSbSchema.periode_laporan_sb)
-    )
-    .catch((err) => {
-      console.error(err);
-      return c.json(
-        {
-          status: 500,
-          message: 'internal server error',
-        },
-        500
-      );
-    });
-
-  return c.json({
-    status: 200,
-    message: 'success',
-    data: foo,
   });
 });

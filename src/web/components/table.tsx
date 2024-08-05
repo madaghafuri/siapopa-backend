@@ -39,7 +39,7 @@ const Table = ({
       {...props}
     >
       <thead>
-        <tr class="">
+        <tr class="bg-soft">
           {columns.map((col) => {
             return (
               <th

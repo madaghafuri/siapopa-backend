@@ -6,6 +6,7 @@ import { Provinsi } from '../../../db/schema/provinsi.js';
 import { LaporanHarian } from '../../../db/schema/laporan-harian.js';
 import { columnHeaders } from './laporan-harian.js';
 import { LuasKerusakanSb } from '../../../db/schema/luas-kerusakan-sb.js';
+import { SelectUser } from '../../../db/schema/user.js';
 
 export const columnLaporanSb: ColumnHeader<LaporanSb>[] = [
   { headerName: 'no', valueGetter: (_, index) => index + 1 },
@@ -130,9 +131,23 @@ export const LaporanSbPage = ({
 };
 
 const luasKerusakanColumn: ColumnHeader<LuasKerusakanSb>[] = [
+  { headerName: 'no', valueGetter: (_, index) => index + 1 },
   { field: 'kategori_kerusakan', headerName: 'kategori kerusakan' },
   { field: 'kategori_serangan', headerName: 'kategori serangan' },
   { field: 'luas_kerusakan', headerName: 'luas kerusakan' },
+];
+
+const laporanHarianColumn: ColumnHeader<LaporanSb & { pic: SelectUser }>[] = [
+  { headerName: 'no', valueGetter: (_, index) => index + 1 },
+  {
+    headerName: 'signature',
+    valueGetter: (row) => (
+      <a href={row.sign_pic} target="_blank">
+        <img src={row.sign_pic}></img>
+      </a>
+    ),
+  },
+  { headerName: 'Nama PIC', valueGetter: (row) => row.pic.name },
 ];
 
 export const LaporanSbDetailPage = ({
@@ -145,19 +160,30 @@ export const LaporanSbDetailPage = ({
 }) => {
   return (
     <div class="flex flex-col gap-5 p-5 shadow-inner">
+      <section class="flex flex-col gap-1 rounded-md bg-white shadow-lg">
+        <h1 class="bg-soft py-5 text-center text-xl font-bold">Data Laporan</h1>
+        <h2 class="py-1 text-center text-lg font-medium">
+          {new Date(laporanSb.tanggal_laporan_sb).toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </h2>
+      </section>
       <h1 class="text-xl">Laporan Harian</h1>
       <Table
         id="laporan-harian-table"
         columns={columnHeaders}
         rowsData={laporanSb.laporan_harian}
-        className="max-w-full rounded-md bg-white shadow-lg"
+        className="hover display nowrap max-w-full rounded-md bg-white"
       />
       <h1 class="text-xl">Luas Kerusakan</h1>
       <Table
         id="luas-kerusakan-table"
         columns={luasKerusakanColumn}
         rowsData={laporanSb.luas_kerusakan}
-        className="max-w-full rounded-md bg-white shadow-lg"
+        className="hover display nowrap max-w-full rounded-md bg-white"
       />
       {html`
         <script>
