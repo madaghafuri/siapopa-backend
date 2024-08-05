@@ -688,3 +688,47 @@ laporanHarian.get(
     });
   }
 );
+laporanHarian.get('list/laporan_harian', async (c) => {
+  const { pic_id, lokasi_id, start_date, end_date, page, per_page } =
+    c.req.query();
+
+  const selectData = await db
+    .select({
+      blok: pengamatan.blok,
+      laporan_harian_id:
+        sql`string_agg(${laporanHarianSchema.id}::text, ', ')`.as('list_id'),
+    })
+    .from(laporanHarianSchema)
+    .leftJoin(pengamatan, eq(pengamatan.id, laporanHarianSchema.pengamatan_id))
+    .where(
+      and(
+        !!pic_id ? eq(laporanHarianSchema.pic_id, parseInt(pic_id)) : undefined,
+        !!lokasi_id ? eq(pengamatan.lokasi_id, lokasi_id) : undefined,
+        !!start_date
+          ? gte(laporanHarianSchema.tanggal_laporan_harian, start_date)
+          : undefined,
+        !!end_date
+          ? lte(laporanHarianSchema.tanggal_laporan_harian, end_date)
+          : undefined
+      )
+    )
+    .groupBy(pengamatan.blok)
+    .limit(parseInt(per_page || '10'))
+    .offset((parseInt(page || '1') - 1) * parseInt(per_page || '10'));
+
+  if (selectData.length === 0) {
+    return c.json(
+      {
+        status: 404,
+        message: 'data tidak ditemukan',
+      },
+      404
+    );
+  }
+
+  return c.json({
+    status: 200,
+    message: 'success',
+    data: selectData[0],
+  });
+});
