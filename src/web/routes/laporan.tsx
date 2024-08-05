@@ -157,7 +157,7 @@ laporanSbRoute.get('/filter', async (c) => {
 
   const laporanSbData = await db.query.laporanSb.findMany({
     with: {
-      laporanHarian: {
+      laporan_harian: {
         with: {
           pengamatan: {
             with: {
@@ -227,43 +227,43 @@ laporanSbRoute.get('/:laporanSbId', async (c) => {
       console.error(err);
     });
 
-  const laporanSbData = await db
-    .select()
-    .from(laporanSb)
-    .leftJoin(
-      laporanHarianSchema,
-      eq(laporanHarianSchema.id_laporan_sb, laporanSb.id)
-    )
-    .where(eq(laporanSb.id, parseInt(laporanSbId)));
+  // const laporanSbData = await db
+  //   .select()
+  //   .from(laporanSb)
+  //   .where(eq(laporanSb.id, parseInt(laporanSbId)));
+
+  const laporanSbData = await db.query.laporanSb.findFirst({
+    with: {
+      pic: true,
+    },
+    where: (laporan, { eq }) => eq(laporan.id, parseInt(laporanSbId)),
+  });
+
+  const laporanHarianData = await db.query.laporanHarian.findMany({
+    with: {
+      pic: true,
+    },
+    where: (laporan, { eq }) =>
+      eq(laporan.id_laporan_sb, parseInt(laporanSbId)),
+  });
 
   const luasKerusakanQuery = await db
     .select()
     .from(luasKerusakanSb)
     .where(eq(luasKerusakanSb.laporan_sb_id, parseInt(laporanSbId)));
 
-  const result = laporanSbData.reduce((acc, row) => {
-    const laporanSb = row.laporan_sb;
-    const laporanHarian = row.laporan_harian;
-
-    if (!acc[laporanSb.id]) {
-      acc[laporanSb.id] = {
-        ...laporanSb,
-        laporan_harian: [laporanHarian],
-      };
-    } else if (acc[laporanSb.id]) {
-      acc[laporanSb.id].laporan_harian.push(laporanHarian);
-    }
-    return acc;
-  }, {});
-
-  result[laporanSbId].luas_kerusakan = luasKerusakanQuery;
+  const result = {
+    ...laporanSbData,
+    laporan_harian: laporanHarianData,
+    luas_kerusakan: luasKerusakanQuery,
+  };
 
   return c.html(
     <DefaultLayout
       route="laporan-sb"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
     >
-      <LaporanSbDetailPage laporanSb={result[laporanSbId]} />
+      <LaporanSbDetailPage laporanSb={result} />
     </DefaultLayout>
   );
 });

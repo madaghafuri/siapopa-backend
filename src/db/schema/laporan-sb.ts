@@ -13,6 +13,7 @@ import { laporanBulanan } from './laporan-bulanan';
 import { relations } from 'drizzle-orm';
 import { laporanHarian } from './laporan-harian';
 import { luasKerusakanSb } from './luas-kerusakan-sb';
+import { validasiLaporan } from './validasi-laporan';
 
 export const laporanSb = pgTable('laporan_sb', {
   id: serial('id').primaryKey(),
@@ -36,12 +37,16 @@ export const laporanSb = pgTable('laporan_sb', {
 });
 
 export const laporanSbRelations = relations(laporanSb, ({ many, one }) => ({
-  laporanHarian: many(laporanHarian),
+  laporan_harian: many(laporanHarian),
   laporanBulanan: one(laporanBulanan, {
     fields: [laporanSb.laporan_bulanan_id],
     references: [laporanBulanan.id],
   }),
   luas_kerusakan_sb: many(luasKerusakanSb),
+  pic: one(user, {
+    fields: [laporanSb.pic_id],
+    references: [user.id],
+  }),
 }));
 
 export type LaporanSb = typeof laporanSb.$inferSelect;

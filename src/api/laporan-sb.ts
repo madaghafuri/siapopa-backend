@@ -15,6 +15,7 @@ import { laporanHarian } from '../db/schema/laporan-harian.js';
 import { pengamatan } from '../db/schema/pengamatan.js';
 import { authorizeApi } from '../middleware.js';
 import { validasiLaporan } from '../db/schema/validasi-laporan.js';
+import { containsObject } from '../helper.js';
 
 export const laporanSb = new Hono();
 laporanSb.use('/laporan_sb/*', authorizeApi);
@@ -250,15 +251,25 @@ laporanSb.get('/laporan_sb/:laporanSbId', async (c) => {
   });
 });
 laporanSb.get('/laporan_sb', async (c) => {
-  const { user_id, location_id, start_date, end_date } =
+  const { user_id, location_id, start_date, end_date, page, per_page } =
     c.req.query() as Record<
-      'user_id' | 'location_id' | 'start_date' | 'end_date',
+      | 'user_id'
+      | 'location_id'
+      | 'start_date'
+      | 'end_date'
+      | 'page'
+      | 'per_page',
       string
     >;
 
   try {
     var selectData = await db
-      .select()
+      .select({
+        laporan_sb: laporanSbSchema,
+        validasi_laporan: validasiLaporan,
+        luas_kerusakan_sb: luasKerusakanSb,
+        laporan_harian: laporanHarian,
+      })
       .from(laporanSbSchema)
       .leftJoin(
         validasiLaporan,
@@ -268,6 +279,11 @@ laporanSb.get('/laporan_sb', async (c) => {
         luasKerusakanSb,
         eq(luasKerusakanSb.laporan_sb_id, laporanSbSchema.id)
       )
+      .leftJoin(
+        laporanHarian,
+        eq(laporanHarian.id_laporan_sb, laporanSbSchema.id)
+      )
+      .leftJoin(pengamatan, eq(pengamatan.id, laporanHarian.pengamatan_id))
       .where(
         and(
           !!user_id ? eq(laporanSbSchema.pic_id, parseInt(user_id)) : undefined,
@@ -278,7 +294,9 @@ laporanSb.get('/laporan_sb', async (c) => {
           !!end_date ? lte(laporanSbSchema.end_date, end_date) : undefined
         )
       )
-      .orderBy(asc(laporanSbSchema.id));
+      .orderBy(asc(laporanSbSchema.id))
+      .limit(parseInt(per_page || '10'))
+      .offset((parseInt(page || '1') - 1) * parseInt(per_page || '10'));
   } catch (error) {
     console.error(error);
     return c.json(
@@ -300,10 +318,48 @@ laporanSb.get('/laporan_sb', async (c) => {
     );
   }
 
+  const result = selectData.reduce((acc, row) => {
+    const laporanSb = row.laporan_sb;
+    const validasiLaporan = row.validasi_laporan;
+    const laporanHarian = row.laporan_harian;
+    const luasKerusakanSb = row.luas_kerusakan_sb;
+
+    const laporan = acc.find((value) => {
+      return value.id === laporanSb.id;
+    });
+    const finalRow = {
+      ...laporanSb,
+      validasi_laporan: validasiLaporan,
+      laporan_harian: [laporanHarian],
+      luas_kerusakan: [luasKerusakanSb],
+    };
+
+    if (!laporan) {
+      acc.push(finalRow);
+    } else {
+      if (
+        !containsObject(laporanHarian, acc[acc.indexOf(laporan)].laporan_harian)
+      ) {
+        acc[acc.indexOf(laporan)].laporan_harian.push(laporanHarian);
+      }
+
+      if (
+        !containsObject(
+          luasKerusakanSb,
+          acc[acc.indexOf(laporan)].luas_kerusakan
+        )
+      ) {
+        acc[acc.indexOf(laporan)].luas_kerusakan.push(luasKerusakanSb);
+      }
+    }
+
+    return acc;
+  }, []);
+
   return c.json({
     status: 200,
     message: 'success',
-    data: selectData,
+    data: result,
   });
 });
 laporanSb.get('/prev/laporan_sb', async (c) => {
