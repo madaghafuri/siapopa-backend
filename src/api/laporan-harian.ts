@@ -6,7 +6,7 @@ import {
   laporanHarian as laporanHarianSchema,
 } from '../db/schema/laporan-harian.js';
 import { db } from '../index.js';
-import { and, eq, gte, lte, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { Lokasi, lokasi } from '../db/schema/lokasi';
 import { Pengamatan, pengamatan } from '../db/schema/pengamatan';
 import { rumpun } from '../db/schema/rumpun';
@@ -444,6 +444,35 @@ laporanHarian.get(
       per_page,
     } = c.req.valid('query');
 
+    const validLaporanHarian = await db
+      .select()
+      .from(laporanHarianSchema)
+      .where(
+        and(
+          !!user_id
+            ? eq(laporanHarianSchema.pic_id, parseInt(user_id))
+            : undefined,
+          !!start_date
+            ? gte(laporanHarianSchema.tanggal_laporan_harian, start_date)
+            : undefined,
+          !!end_date
+            ? lte(laporanHarianSchema.tanggal_laporan_harian, end_date)
+            : undefined
+        )
+      )
+      .limit(parseInt(per_page || '10'))
+      .offset((parseInt(page || '1') - 1) * parseInt(per_page || '10'));
+
+    if (validLaporanHarian.length === 0) {
+      return c.json(
+        {
+          status: 404,
+          message: 'laporan harian tidak ditemukan',
+        },
+        404
+      );
+    }
+
     const totalAnakan = db.$with('total_anakan').as(
       db
         .select({
@@ -579,31 +608,17 @@ laporanHarian.get(
       .leftJoin(desa, eq(desa.id, lokasi.desa_id))
       .where(
         and(
-          !!user_id
-            ? eq(laporanHarianSchema.pic_id, parseInt(user_id))
-            : undefined,
           !!location_id ? eq(lokasi.id, location_id) : undefined,
-          !!tanggal
-            ? eq(laporanHarianSchema.tanggal_laporan_harian, tanggal)
-            : undefined,
-          !!start_date
-            ? gte(laporanHarianSchema.tanggal_laporan_harian, start_date)
-            : undefined,
-          !!end_date
-            ? lte(laporanHarianSchema.tanggal_laporan_harian, end_date)
-            : undefined
+          inArray(
+            laporanHarianSchema.id,
+            validLaporanHarian.map((val) => val.id)
+          )
         )
       )
-      .$dynamic();
-
-    const paginatedQuery = withPagination(
-      query,
-      parseInt(page),
-      parseInt(per_page)
-    );
+      .orderBy(asc(laporanHarianSchema.id));
 
     try {
-      var selectData = await paginatedQuery;
+      var selectData = await query;
     } catch (error) {
       console.error(error);
       return c.json({
@@ -628,10 +643,12 @@ laporanHarian.get(
       const totalOpt = row.total_opt;
       const lokasi = row.lokasi;
       const validasiLaporan = row.validasi_laporan;
-      const validator = {
-        ...row.validator,
-        user: row.user_validator,
-      };
+      const validator = !!row.validator
+        ? {
+            ...row.validator,
+            user: row.user_validator,
+          }
+        : null;
 
       const hasilPerhitungan = hasilPengamatan(
         totalOpt.skala_kerusakan,
@@ -650,7 +667,7 @@ laporanHarian.get(
         lokasi,
         validasi_laporan: {
           ...validasiLaporan,
-          validator: [validator],
+          validator: !!validator ? [validator] : null,
         },
         hasil_pengamatan: [hasil],
       };
@@ -669,6 +686,7 @@ laporanHarian.get(
         }
 
         if (
+          !!validator &&
           !containsObject(
             validator,
             acc[acc.indexOf(laporan)].validasi_laporan.validator

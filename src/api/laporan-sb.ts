@@ -10,7 +10,7 @@ import {
   luasKerusakanSb,
 } from '../db/schema/luas-kerusakan-sb.js';
 import { db } from '../index.js';
-import { SQL, and, asc, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { SQL, and, asc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { laporanHarian } from '../db/schema/laporan-harian.js';
 import { pengamatan } from '../db/schema/pengamatan.js';
 import { authorizeApi } from '../middleware.js';
@@ -482,7 +482,8 @@ laporanSb.get('/laporan_sb', async (c) => {
         ),
         !!location_id ? eq(pengamatan.lokasi_id, location_id) : undefined
       )
-    );
+    )
+    .orderBy(asc(laporanSbSchema.id));
 
   if (selectData.length === 0) {
     return c.json(
