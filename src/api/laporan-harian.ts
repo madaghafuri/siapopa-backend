@@ -423,7 +423,7 @@ laporanHarian.get(
   validator('query', (value) => {
     const query = value as Record<
       | 'user_id'
-      | 'location_id'
+      | 'lokasi_id'
       | 'tanggal'
       | 'start_date'
       | 'end_date'
@@ -437,7 +437,7 @@ laporanHarian.get(
     const {
       start_date,
       end_date,
-      location_id,
+      lokasi_id,
       tanggal,
       user_id,
       page,
@@ -608,7 +608,7 @@ laporanHarian.get(
       .leftJoin(desa, eq(desa.id, lokasi.desa_id))
       .where(
         and(
-          !!location_id ? eq(lokasi.id, location_id) : undefined,
+          !!lokasi_id ? eq(lokasi.id, lokasi_id) : undefined,
           inArray(
             laporanHarianSchema.id,
             validLaporanHarian.map((val) => val.id)

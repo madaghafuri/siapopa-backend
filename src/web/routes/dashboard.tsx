@@ -60,6 +60,7 @@ dashboard.get('/', async (c) => {
           <Profile user={selectedUser as AuthenticatedUser} />
         ) : null
       }
+      user={selectedUser || null}
     >
       <DashboardPage kabkotData={kabkotData[0]} optOptions={optOptions} />
     </DefaultLayout>

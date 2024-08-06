@@ -6,11 +6,12 @@ export const DefaultLayout = ({
   children,
   route,
   authNavigation,
+  user,
 }: {
   children?: any;
   route: string;
   authNavigation?: any;
-  user?: SelectUser & { userGroup: SelectUserGroup };
+  user?: Omit<SelectUser, 'password'> & { userGroup: SelectUserGroup };
 }) => (
   <MainLayout>
     <div class="grid min-h-[10vh] grid-cols-12 items-center gap-5 border-b-2">
@@ -40,135 +41,142 @@ export const DefaultLayout = ({
             Dashboard
           </button>
         </a>
-        <div class="max-w-full rounded-md border">
-          <button
-            class={`flex w-full items-center justify-between gap-5 border-b-2 px-4 py-2 text-left ${route === 'input-data' ? 'bg-primary text-white' : ''}`}
-            type="button"
-            _="on click toggle between .hidden and .flex on #input-dropdown then toggle .rotate-90 on #dropdown-icon"
-          >
-            Master Data
-            <i id="dropdown-icon" class="fa-solid fa-caret-right"></i>
-          </button>
-          <div id="input-dropdown" class="opening hidden flex-col gap-3 p-5">
-            <a
-              href="/app/master/user"
-              class={`rounded-md px-4 py-2 text-left ${route === 'user' ? 'bg-primary text-white' : ''}`}
+        {!!user && user.userGroup.group_name === 'bptph' ? (
+          <div class="max-w-full rounded-md border">
+            <button
+              class={`flex w-full items-center justify-between gap-5 border-b-2 px-4 py-2 text-left ${route === 'input-data' ? 'bg-primary text-white' : ''}`}
+              type="button"
+              _="on click toggle between .hidden and .flex on #input-dropdown then toggle .rotate-90 on #dropdown-icon"
             >
-              User
-            </a>
-            <a
-              href="/app/master/usergroup"
-              class={`rounded-md px-4 py-2 text-left ${route === 'usergroup' ? 'bg-primary text-white' : ''}`}
-            >
-              User Group
-            </a>
-            <a
-              href="/app/master/tanaman"
-              class={`rounded-md px-4 py-2 text-left ${route === 'tanaman' ? 'bg-primary text-white' : ''}`}
-            >
-              Tanaman
-            </a>
-            <a
-              href="/app/master/opt"
-              class={`rounded-md px-4 py-2 text-left ${route === 'opt' ? 'bg-primary text-white' : ''}`}
-            >
-              OPT
-            </a>
-            <a
-              href="/app/master/lokasi"
-              class={`rounded-md px-4 py-2 text-left ${route === 'lokasi' ? 'bg-primary text-white' : ''}`}
-            >
-              Lokasi
-            </a>
-            <a
-              href="/app/master/kabkot"
-              class={`rounded-md px-4 py-2 text-left ${route === 'kabupaten-kota' ? 'bg-primary text-white' : ''}`}
-            >
-              Kabupaten Kota
-            </a>
-            <a
-              href="/app/master/peramalan"
-              class={`rounded-md px-4 py-2 text-left ${route === 'peramalan' ? 'bg-primary text-white' : ''}`}
-            >
-              Peramalan
-            </a>
+              Master Data
+              <i id="dropdown-icon" class="fa-solid fa-caret-right"></i>
+            </button>
+            <div id="input-dropdown" class="opening hidden flex-col gap-3 p-5">
+              <a
+                href="/app/master/user"
+                class={`rounded-md px-4 py-2 text-left ${route === 'user' ? 'bg-primary text-white' : ''}`}
+              >
+                User
+              </a>
+              <a
+                href="/app/master/usergroup"
+                class={`rounded-md px-4 py-2 text-left ${route === 'usergroup' ? 'bg-primary text-white' : ''}`}
+              >
+                User Group
+              </a>
+              <a
+                href="/app/master/tanaman"
+                class={`rounded-md px-4 py-2 text-left ${route === 'tanaman' ? 'bg-primary text-white' : ''}`}
+              >
+                Tanaman
+              </a>
+              <a
+                href="/app/master/opt"
+                class={`rounded-md px-4 py-2 text-left ${route === 'opt' ? 'bg-primary text-white' : ''}`}
+              >
+                OPT
+              </a>
+              <a
+                href="/app/master/lokasi"
+                class={`rounded-md px-4 py-2 text-left ${route === 'lokasi' ? 'bg-primary text-white' : ''}`}
+              >
+                Lokasi
+              </a>
+              <a
+                href="/app/master/peramalan"
+                class={`rounded-md px-4 py-2 text-left ${route === 'peramalan' ? 'bg-primary text-white' : ''}`}
+              >
+                Peramalan
+              </a>
+            </div>
           </div>
-        </div>
-        <div class="max-w-full rounded-md border">
-          <button
-            class="flex w-full items-center justify-between gap-5 truncate border-b-2 px-4 py-2 text-left"
-            type="button"
-            _="on click toggle between .hidden and .flex on #laporan-stock-dropdown then toggle .rotate-90 on #laporan-stock-icon"
-          >
-            Laporan Stock
-            <i id="laporan-stock-icon" class="fa-solid fa-caret-right"></i>
-          </button>
-          <div
-            id="laporan-stock-dropdown"
-            class="opening hidden flex-col gap-3 p-5"
-          >
-            <a
-              href="/app/stock/golongan-pestisida"
-              class={`rounded-md px-4 py-2 text-left ${route === 'golongan-pestisida' ? 'bg-primary text-white' : ''}`}
+        ) : null}
+
+        {!!user &&
+        (user.userGroup.group_name === 'bptph' ||
+          user.userGroup.group_name === 'brigade') ? (
+          <div class="max-w-full rounded-md border">
+            <button
+              class="flex w-full items-center justify-between gap-5 truncate border-b-2 px-4 py-2 text-left"
+              type="button"
+              _="on click toggle between .hidden and .flex on #laporan-stock-dropdown then toggle .rotate-90 on #laporan-stock-icon"
             >
-              Golongan Pestisida
-            </a>
-            <a
-              href="/app/stock/bahan-aktif"
-              class={`rounded-md px-4 py-2 text-left ${route === 'bahan-aktif' ? 'bg-primary text-white' : ''}`}
+              Laporan Stock
+              <i id="laporan-stock-icon" class="fa-solid fa-caret-right"></i>
+            </button>
+            <div
+              id="laporan-stock-dropdown"
+              class="opening hidden flex-col gap-3 p-5"
             >
-              Bahan Aktif
-            </a>
-            <a
-              href="/app/stock/stock-pestisida"
-              class={`rounded-md px-4 py-2 text-left ${route === 'stock-pestisida' ? 'bg-primary text-white' : ''}`}
-            >
-              Stock Pestisida
-            </a>
+              <a
+                href="/app/stock/golongan-pestisida"
+                class={`rounded-md px-4 py-2 text-left ${route === 'golongan-pestisida' ? 'bg-primary text-white' : ''}`}
+              >
+                Golongan Pestisida
+              </a>
+              <a
+                href="/app/stock/bahan-aktif"
+                class={`rounded-md px-4 py-2 text-left ${route === 'bahan-aktif' ? 'bg-primary text-white' : ''}`}
+              >
+                Bahan Aktif
+              </a>
+              <a
+                href="/app/stock/stock-pestisida"
+                class={`rounded-md px-4 py-2 text-left ${route === 'stock-pestisida' ? 'bg-primary text-white' : ''}`}
+              >
+                Stock Pestisida
+              </a>
+            </div>
           </div>
-        </div>
-        <div class="max-w-full rounded-md border">
-          <button
-            class="flex w-full items-center justify-between gap-5 truncate border-b-2 px-4 py-2 text-left"
-            type="button"
-            _="on click toggle between .hidden and .flex on #laporan-dropdown then toggle .rotate-90 on #laporan-icon"
-          >
-            Laporan
-            <i id="laporan-icon" class="fa-solid fa-caret-right"></i>
-          </button>
-          <div id="laporan-dropdown" class="opening hidden flex-col gap-3 p-5">
-            <a
-              href="/app/laporan/pengamatan"
-              class={`truncate rounded-md px-4 py-2 text-left ${route === 'pengamatan' ? 'bg-primary text-white' : ''}`}
+        ) : null}
+
+        {!!user && user.userGroup.group_name !== 'brigade' ? (
+          <div class="max-w-full rounded-md border">
+            <button
+              class="flex w-full items-center justify-between gap-5 truncate border-b-2 px-4 py-2 text-left"
+              type="button"
+              _="on click toggle between .hidden and .flex on #laporan-dropdown then toggle .rotate-90 on #laporan-icon"
             >
-              Pengamatan
-            </a>
-            <a
-              href="/app/laporan/harian"
-              class={`truncate rounded-md px-4 py-2 text-left ${route === 'laporan-harian' ? 'bg-primary text-white' : ''}`}
+              Laporan
+              <i id="laporan-icon" class="fa-solid fa-caret-right"></i>
+            </button>
+            <div
+              id="laporan-dropdown"
+              class="opening hidden flex-col gap-3 p-5"
             >
-              Laporan Harian
-            </a>
-            <a
-              href="/app/laporan/sb"
-              class={`truncate rounded-md px-4 py-2 text-left ${route === 'laporan-sb' ? 'bg-primary text-white' : ''}`}
-            >
-              Laporan Setengah Bulan
-            </a>
-            <a
-              href="/app/laporan/bulanan"
-              class={`truncate rounded-md px-4 py-2 text-left ${route === 'laporan-bulanan' ? 'bg-primary text-white' : ''}`}
-            >
-              Laporan Bulanan
-            </a>
-            <a
-              href="/app/laporan/musiman"
-              class={`truncate rounded-md px-4 py-2 text-left ${route === 'laporan-musiman' ? 'bg-primary text-white' : ''}`}
-            >
-              Laporan Musiman
-            </a>
+              <a
+                href="/app/laporan/pengamatan"
+                class={`truncate rounded-md px-4 py-2 text-left ${route === 'pengamatan' ? 'bg-primary text-white' : ''}`}
+              >
+                Pengamatan
+              </a>
+              <a
+                href="/app/laporan/harian"
+                class={`truncate rounded-md px-4 py-2 text-left ${route === 'laporan-harian' ? 'bg-primary text-white' : ''}`}
+              >
+                Laporan Harian
+              </a>
+              <a
+                href="/app/laporan/sb"
+                class={`truncate rounded-md px-4 py-2 text-left ${route === 'laporan-sb' ? 'bg-primary text-white' : ''}`}
+              >
+                Laporan Setengah Bulan
+              </a>
+              <a
+                href="/app/laporan/bulanan"
+                class={`truncate rounded-md px-4 py-2 text-left ${route === 'laporan-bulanan' ? 'bg-primary text-white' : ''}`}
+              >
+                Laporan Bulanan
+              </a>
+              <a
+                href="/app/laporan/musiman"
+                class={`truncate rounded-md px-4 py-2 text-left ${route === 'laporan-musiman' ? 'bg-primary text-white' : ''}`}
+              >
+                Laporan Musiman
+              </a>
+            </div>
           </div>
-        </div>
+        ) : null}
       </section>
       <div id="main-content" class="w-10/12 bg-background">
         {children}

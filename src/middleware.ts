@@ -4,6 +4,18 @@ import { db, lucia } from './index';
 import { eq } from 'drizzle-orm';
 import { user } from './db/schema/user';
 
+type Path = 'dashboard' | 'laporan' | 'master' | 'aph' | 'pestisida' | 'stock';
+type Role = 'popt' | 'kortikab' | 'satpel' | 'bptph' | 'brigade';
+
+export const acl: Record<Path, Array<Role>> = {
+  dashboard: ['popt', 'kortikab', 'satpel', 'bptph', 'satpel', 'brigade'],
+  laporan: ['popt', 'kortikab', 'satpel', 'bptph'],
+  aph: ['satpel', 'bptph'],
+  pestisida: ['brigade', 'bptph'],
+  stock: ['satpel', 'brigade', 'bptph'],
+  master: ['bptph'],
+};
+
 export const authorize = createMiddleware<{
   Variables: { session: Session; session_rotation_key: boolean };
 }>(async (c, next) => {
@@ -41,6 +53,68 @@ export const authorizeApi = createMiddleware(async (c, next) => {
   }
 
   await next();
+});
+
+export const checkACL = createMiddleware<{ Variables: { session: Session } }>(
+  async (c, next) => {
+    const session = c.get('session');
+    const userId = session.get('user_id') as string;
+
+    const selectUser = await db.query.user.findFirst({
+      with: {
+        userGroup: true,
+      },
+      where: (user, { eq }) => eq(user.id, parseInt(userId)),
+    });
+
+    const [_, app, path] = c.req.path.split('/');
+    const access = acl[path as Path];
+
+    if (access.includes(selectUser.userGroup.group_name as unknown as Role)) {
+      return next();
+    }
+
+    return c.redirect('/login');
+  }
+);
+
+export const authorizePopt = createMiddleware<{
+  Variables: { session: Session };
+}>(async (c, next) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  if (!userId && c.req.header('HX-Request')) {
+    return c.text('Unauthorized', 302, {
+      'HX-Redirect': '/login',
+    });
+  } else if (!userId) {
+    return c.redirect('/login', 302);
+  }
+
+  const selectUser = await db.query.user.findFirst({
+    with: {
+      userGroup: true,
+    },
+    where: (user, { eq }) => eq(user.id, parseInt(userId)),
+  });
+
+  if (
+    selectUser.userGroup.group_name !== 'popt' &&
+    c.req.header('hx-request')
+  ) {
+    return c.text('Unauthorized', 302, {
+      'HX-Redirect': '/login',
+      'HX-Reswap': 'none',
+    });
+  } else if (selectUser.userGroup.group_name !== 'popt') {
+    return c.text('Unauthorized', 302, {
+      'HX-Redirect': '/login',
+      'HX-Reswap': 'none',
+    });
+  }
+
+  return next();
 });
 
 export const authorizeStockInput = createMiddleware<{
@@ -99,7 +173,6 @@ export const authorizeStockInput = createMiddleware<{
 
   await next();
 });
-
 
 export const authorizeWebInput = createMiddleware<{
   Variables: { session: Session; session_rotation_key: boolean };

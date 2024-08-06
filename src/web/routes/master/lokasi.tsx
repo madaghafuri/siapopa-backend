@@ -21,6 +21,7 @@ lokasiRoute.get('/', async (c) => {
   const selectedUser = await db.query.user
     .findFirst({
       where: (user, { eq }) => eq(user.id, parseInt(userId)),
+      with: { userGroup: true },
     })
     .catch((err) => {
       console.error(err);
@@ -89,6 +90,7 @@ lokasiRoute.get('/', async (c) => {
     <DefaultLayout
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
       route="lokasi"
+      user={selectedUser || null}
     >
       <LokasiPage
         user={!!selectedUser ? selectedUser : null}
@@ -104,6 +106,9 @@ lokasiRoute.get('/create', async (c) => {
   const selectedUser = await db.query.user
     .findFirst({
       where: (user, { eq }) => eq(user.id, parseInt(userId)),
+      with: {
+        userGroup: true,
+      },
     })
     .catch((err) => {
       console.error(err);
@@ -112,6 +117,7 @@ lokasiRoute.get('/create', async (c) => {
     <DefaultLayout
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
       route="lokasi"
+      user={selectedUser || null}
     >
       <ModalLokasi />
     </DefaultLayout>

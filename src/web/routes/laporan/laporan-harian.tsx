@@ -142,6 +142,7 @@ laporanHarianRoute.get('/', async (c) => {
     <DefaultLayout
       route="laporan-harian"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <LaporanHarianPage
         listLaporan={result}

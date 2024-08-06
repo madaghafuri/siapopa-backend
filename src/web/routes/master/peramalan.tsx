@@ -31,6 +31,7 @@ peramalanRoute.get('/', async (c) => {
   const selectUser = await db.query.user
     .findFirst({
       where: (user, { eq }) => eq(user.id, parseInt(userId)),
+      with: { userGroup: true },
     })
     .catch((err) => {
       console.error(err);
@@ -102,6 +103,7 @@ peramalanRoute.get('/', async (c) => {
     <DefaultLayout
       route="peramalan"
       authNavigation={!!selectUser ? <Profile user={selectUser} /> : null}
+      user={selectUser || null}
     >
       <PeramalanPage
         kabupatenData={kabkotOption}
@@ -121,6 +123,9 @@ peramalanRoute.get('/:kodeOpt', async (c) => {
   const selectUser = await db.query.user
     .findFirst({
       where: (user, { eq }) => eq(user.id, parseInt(userId)),
+      with: {
+        userGroup: true,
+      },
     })
     .catch((err) => {
       console.error(err);
@@ -152,6 +157,7 @@ peramalanRoute.get('/:kodeOpt', async (c) => {
     <DefaultLayout
       route="peramalan"
       authNavigation={!!selectUser ? <Profile user={selectUser} /> : null}
+      user={selectUser || null}
     >
       <PeramalanByKabKotPage peramalanData={peramalanByKabKotData} />
     </DefaultLayout>

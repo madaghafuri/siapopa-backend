@@ -379,14 +379,9 @@ laporanSb.get('/laporan_sb/:laporanSbId', async (c) => {
   });
 });
 laporanSb.get('/laporan_sb', async (c) => {
-  const { user_id, location_id, start_date, end_date, page, per_page } =
+  const { user_id, lokasi_id, start_date, end_date, page, per_page } =
     c.req.query() as Record<
-      | 'user_id'
-      | 'location_id'
-      | 'start_date'
-      | 'end_date'
-      | 'page'
-      | 'per_page',
+      'user_id' | 'lokasi_id' | 'start_date' | 'end_date' | 'page' | 'per_page',
       string
     >;
   const foo = await db
@@ -510,7 +505,7 @@ laporanSb.get('/laporan_sb', async (c) => {
           laporanSbSchema.id,
           foo.map((val) => val.id)
         ),
-        !!location_id ? eq(pengamatan.lokasi_id, location_id) : undefined
+        !!lokasi_id ? eq(pengamatan.lokasi_id, lokasi_id) : undefined
       )
     )
     .orderBy(asc(laporanSbSchema.id));

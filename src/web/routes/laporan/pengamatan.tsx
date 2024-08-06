@@ -85,6 +85,7 @@ pengamatanRoute.get('/', async (c) => {
     <DefaultLayout
       route="pengamatan"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <PengamatanPage
         pengamatanList={pengamatanList}
@@ -368,6 +369,7 @@ pengamatanRoute.get('/:pengamatanId', async (c) => {
     <DefaultLayout
       route="pengamatan-detail"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <PengamatanDetailPage
         pengamatan={result[pengamatanId]}
@@ -382,7 +384,10 @@ pengamatanRoute.get('/:pengamatanId/rumpun', async (c) => {
   const pengamatanId = c.req.param('pengamatanId');
 
   const selectedUser = await db.query.user
-    .findFirst({ where: (user, { eq }) => eq(user.id, parseInt(userId)) })
+    .findFirst({
+      where: (user, { eq }) => eq(user.id, parseInt(userId)),
+      with: { userGroup: true },
+    })
     .catch((err) => {
       console.error(err);
     });
@@ -403,6 +408,7 @@ pengamatanRoute.get('/:pengamatanId/rumpun', async (c) => {
     <DefaultLayout
       route="rumpun"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <PengamatanRumpunPage rumpunList={rumpun} />
     </DefaultLayout>

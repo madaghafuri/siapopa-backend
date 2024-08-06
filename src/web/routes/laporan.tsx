@@ -29,6 +29,7 @@ laporanBulananRoute.get('/', async (c) => {
 
   const selectedUser = await db.query.user
     .findFirst({
+      with: { userGroup: true },
       where: eq(user.id, parseInt(userId)),
     })
     .catch((err) => {
@@ -43,6 +44,7 @@ laporanBulananRoute.get('/', async (c) => {
     <DefaultLayout
       route="laporan-bulanan"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <LaporanBulananPage laporanBulananData={dataLaporanBulanan} />
     </DefaultLayout>
@@ -56,6 +58,9 @@ laporanMusimanRoute.get('/', async (c) => {
 
   const selectedUser = await db.query.user
     .findFirst({
+      with: {
+        userGroup: true,
+      },
       where: eq(user.id, parseInt(userId)),
     })
     .catch((err) => {
@@ -70,6 +75,7 @@ laporanMusimanRoute.get('/', async (c) => {
     <DefaultLayout
       route="laporan-musiman"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <LaporanMusimanPage dataLaporanMusiman={dataLaporanMusiman} />
     </DefaultLayout>

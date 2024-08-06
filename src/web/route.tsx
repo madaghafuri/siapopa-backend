@@ -9,6 +9,7 @@ import { dashboard } from './routes/dashboard.js';
 import { master } from './routes/master.js';
 import { laporan } from './routes/laporan.js';
 import { stock } from './routes/stock.js';
+import { authorize, checkACL } from '../middleware.js';
 
 const web = new Hono<{
   Variables: {
@@ -44,11 +45,14 @@ web.notFound(async (c) => {
 web.route('/dashboard', dashboard);
 
 // Master Data Input
+web.use('/master/*', authorize, checkACL);
 web.route('/master', master);
 
 // laporan
+web.use('/laporan/*', authorize, checkACL);
 web.route('/laporan', laporan);
 
+web.use('/stock/*', authorize, checkACL);
 web.route('/stock', stock);
 
 web.get('/lokasi', async (c) => {

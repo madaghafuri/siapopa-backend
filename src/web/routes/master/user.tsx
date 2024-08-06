@@ -73,6 +73,7 @@ userRoute.get('/', async (c) => {
     <DefaultLayout
       route="user"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <DataUser listUser={selectUser} />
     </DefaultLayout>

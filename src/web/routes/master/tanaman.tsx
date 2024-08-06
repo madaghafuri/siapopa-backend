@@ -68,6 +68,7 @@ tanamanRoute.get('/', async (c) => {
     <DefaultLayout
       route="tanaman"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <DataTanaman
         listTanaman={selectTanaman}

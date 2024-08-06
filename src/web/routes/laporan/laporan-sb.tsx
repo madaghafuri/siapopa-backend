@@ -116,6 +116,7 @@ laporanSbRoute.get('/', async (c) => {
     <DefaultLayout
       route="laporan-sb"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <LaporanSbPage
         komoditasOption={komoditasOption}
@@ -204,11 +205,6 @@ laporanSbRoute.get('/:laporanSbId', async (c) => {
       console.error(err);
     });
 
-  // const laporanSbData = await db
-  //   .select()
-  //   .from(laporanSb)
-  //   .where(eq(laporanSb.id, parseInt(laporanSbId)));
-
   const laporanSbData = await db.query.laporanSb.findFirst({
     with: {
       pic: true,
@@ -287,6 +283,7 @@ laporanSbRoute.get('/:laporanSbId', async (c) => {
     <DefaultLayout
       route="laporan-sb"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <LaporanSbDetailPage laporanSb={result} />
     </DefaultLayout>

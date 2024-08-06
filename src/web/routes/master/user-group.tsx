@@ -42,6 +42,7 @@ userGroupRoute.get('/', async (c) => {
           <Profile user={selectedUser as AuthenticatedUser} />
         ) : null
       }
+      user={selectedUser || null}
     >
       <DataUserGroup
         user={selectedUser || null}
@@ -93,7 +94,7 @@ userGroupRoute.get('/reload', async (c) => {
             <td class="border-b border-gray-200 px-4 py-2" style="width: 10%">
               <div class="flex items-center space-x-2">
                 <button
-                  class="text-blue-500 hover:text-blue-700 px-4"
+                  class="px-4 text-blue-500 hover:text-blue-700"
                   hx-get={`/app/master/usergroup/edit/${userGroup.id}`}
                   hx-target="body"
                   hx-swap="beforeend"
@@ -101,7 +102,7 @@ userGroupRoute.get('/reload', async (c) => {
                   <i class="fa fa-edit"></i>
                 </button>
                 <button
-                  class="ml-2 text-red-500 hover:text-red-700 px-4"
+                  class="ml-2 px-4 text-red-500 hover:text-red-700"
                   hx-delete={`/app/master/usergroup/delete/${userGroup.id}`}
                   hx-target="#tanamanTable"
                   hx-swap="outerHTML"
@@ -123,7 +124,12 @@ userGroupRoute.delete('/delete/:id', async (c) => {
   try {
     await db.delete(userGroup).where(eq(userGroup.id, parseInt(id)));
   } catch (error) {
-    return c.html(<span>Terjadi kesalahan dalam proses penghapusan data. Silahkan coba lagi</span>, 500);
+    return c.html(
+      <span>
+        Terjadi kesalahan dalam proses penghapusan data. Silahkan coba lagi
+      </span>,
+      500
+    );
   }
 
   return c.html(<span>Berhasil menghapus data</span>, 200, {
@@ -134,31 +140,51 @@ userGroupRoute.delete('/delete/:id', async (c) => {
 
 userGroupRoute.get('/edit/:id', async (c) => {
   const id = c.req.param('id');
-  const usergroupItem = await db.select().from(userGroup).where(eq(userGroup.id, parseInt(id)));
+  const usergroupItem = await db
+    .select()
+    .from(userGroup)
+    .where(eq(userGroup.id, parseInt(id)));
 
   return c.html(<ModalUserGroup usergroup={usergroupItem[0]} />);
 });
 
-userGroupRoute.post('/edit/:id', authorizeWebInput, validator('form', (value, c) => {
-  const { group_name } = value as unknown as InsertUserGroup;
+userGroupRoute.post(
+  '/edit/:id',
+  authorizeWebInput,
+  validator('form', (value, c) => {
+    const { group_name } = value as unknown as InsertUserGroup;
 
-  if (!group_name) {
-    return c.html(<span class="text-sm text-red-500">Data yang dibutuhkan tidak sesuai</span>);
+    if (!group_name) {
+      return c.html(
+        <span class="text-sm text-red-500">
+          Data yang dibutuhkan tidak sesuai
+        </span>
+      );
+    }
+
+    return { group_name };
+  }),
+  async (c) => {
+    const id = c.req.param('id');
+    const userGroupData = c.req.valid('form');
+
+    try {
+      await db
+        .update(userGroup)
+        .set(userGroupData)
+        .where(eq(userGroup.id, parseInt(id)));
+    } catch (error) {
+      return c.html(
+        <span>
+          Terjadi kesalahan dalam proses pengeditan data. Silahkan coba lagi
+        </span>,
+        500
+      );
+    }
+
+    return c.html(<span>Berhasil mengedit data</span>, 200, {
+      'HX-Reswap': 'none',
+      'HX-Trigger': 'newUserGroup, closeModal',
+    });
   }
-
-  return { group_name };
-}), async (c) => {
-  const id = c.req.param('id');
-  const userGroupData = c.req.valid('form');
-
-  try {
-    await db.update(userGroup).set(userGroupData).where(eq(userGroup.id, parseInt(id)));
-  } catch (error) {
-    return c.html(<span>Terjadi kesalahan dalam proses pengeditan data. Silahkan coba lagi</span>, 500);
-  }
-
-  return c.html(<span>Berhasil mengedit data</span>, 200, {
-    'HX-Reswap': 'none',
-    'HX-Trigger': 'newUserGroup, closeModal',
-  });
-});
+);

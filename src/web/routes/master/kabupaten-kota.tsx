@@ -62,6 +62,7 @@ kabkotRoute.get('/', async (c) => {
     <DefaultLayout
       route="kabupaten-kota"
       authNavigation={!!selectUser ? <Profile user={selectUser} /> : null}
+      user={selectUser || null}
     >
       <KabupatenKotaPage kabkotList={dataKabKot} />
     </DefaultLayout>

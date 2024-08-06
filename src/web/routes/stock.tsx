@@ -109,6 +109,7 @@ stock.get('/stock-pestisida', async (c) => {
     <DefaultLayout
       route="stock-pestisida"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <DataStockPestisida
         listStockPestisida={selectStockPestisida}
@@ -387,6 +388,7 @@ stock.get('/golongan-pestisida', async (c) => {
     <DefaultLayout
       route="golongan-pestisida"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <DataGolonganPestisida
         listGolonganPestisida={selectGolonganPestisida}
@@ -574,6 +576,7 @@ stock.get('/bahan-aktif', async (c) => {
     <DefaultLayout
       route="bahan-aktif"
       authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
+      user={selectedUser || null}
     >
       <DataBahanAktif
         listBahanAktif={selectBahanAktif}
