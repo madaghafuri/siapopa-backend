@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { db } from '../../..';
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 import { user } from '../../../db/schema/user';
 import {
   LaporanHarian,
@@ -40,16 +40,13 @@ laporanHarianRoute.get('/', async (c) => {
   const tanamanId = c.req.query('tanaman_id');
   const provinsiId = c.req.query('provinsi_id');
 
-  const selectedUser = await db.query.user
-    .findFirst({
-      where: eq(user.id, parseInt(userId)),
-      with: {
-        userGroup: true,
-      },
-    })
-    .catch((err) => {
-      console.error(err);
-    });
+  const selectedUser = await db.query.user.findFirst({
+    where: eq(user.id, parseInt(userId)),
+    with: {
+      userGroup: true,
+      locations: true,
+    },
+  });
 
   const listLaporan = await db
     .select({
@@ -102,6 +99,13 @@ laporanHarianRoute.get('/', async (c) => {
           : undefined,
         !!endDate
           ? lte(laporanHarian.tanggal_laporan_harian, endDate)
+          : undefined,
+
+        selectedUser.userGroup.group_name !== 'bptph'
+          ? inArray(
+              pengamatan.lokasi_id,
+              selectedUser.locations.map((val) => val.id)
+            )
           : undefined
       )
     )
@@ -167,6 +171,17 @@ laporanHarianRoute.get(
     const { tanaman_id, provinsi_id, start_date, end_date } =
       c.req.query() as Record<keyof FilterLaporanQuery, string>;
 
+    const session = c.get('session');
+    const userId = session.get('user_id') as string;
+
+    const selectedUser = await db.query.user.findFirst({
+      with: {
+        userGroup: true,
+        locations: true,
+      },
+      where: (user, { eq }) => eq(user.id, parseInt(userId)),
+    });
+
     const bar = await db
       .select({
         laporan_harian: laporanHarian,
@@ -219,6 +234,12 @@ laporanHarianRoute.get(
             : undefined,
           !!end_date
             ? lte(laporanHarian.tanggal_laporan_harian, end_date)
+            : undefined,
+          selectedUser.userGroup.group_name !== 'bptph'
+            ? inArray(
+                pengamatan.lokasi_id,
+                selectedUser.locations.map((val) => val.id)
+              )
             : undefined
         )
       )

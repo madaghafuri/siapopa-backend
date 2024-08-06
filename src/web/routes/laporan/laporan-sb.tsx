@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { Session } from 'hono-sessions';
 import { db } from '../../..';
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 import { user } from '../../../db/schema/user';
 import { LaporanSb, laporanSb } from '../../../db/schema/laporan-sb';
 import {
@@ -39,16 +39,13 @@ laporanSbRoute.get('/', async (c) => {
   const tanamanId = c.req.query('tanaman_id');
   const provinsiId = c.req.query('provinsi_id');
 
-  const selectedUser = await db.query.user
-    .findFirst({
-      where: eq(user.id, parseInt(userId)),
-      with: {
-        userGroup: true,
-      },
-    })
-    .catch((err) => {
-      console.error(err);
-    });
+  const selectedUser = await db.query.user.findFirst({
+    where: eq(user.id, parseInt(userId)),
+    with: {
+      userGroup: true,
+      locations: true,
+    },
+  });
 
   const laporanSbData = await db
     .select()
@@ -65,7 +62,13 @@ laporanSbRoute.get('/', async (c) => {
         !!startDate ? gte(laporanSb.tanggal_laporan_sb, startDate) : undefined,
         !!endDate ? lte(laporanSb.tanggal_laporan_sb, endDate) : undefined,
         !!provinsiId ? eq(provinsi.id, provinsiId) : undefined,
-        !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined
+        !!tanamanId ? eq(tanaman.id, parseInt(tanamanId)) : undefined,
+        selectedUser.userGroup.group_name !== 'bptph'
+          ? inArray(
+              pengamatan.lokasi_id,
+              selectedUser.locations.map((val) => val.id)
+            )
+          : undefined
       )
     )
     .orderBy(desc(laporanSb.tanggal_laporan_sb));

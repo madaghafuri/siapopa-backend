@@ -24,7 +24,6 @@ export const lokasiRelations = relations(lokasi, ({ one }) => ({
   user: one(user, {
     fields: [lokasi.pic_id],
     references: [user.id],
-    relationName: 'user',
   }),
   provinsi: one(provinsi, {
     fields: [lokasi.provinsi_id],

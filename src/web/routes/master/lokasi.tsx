@@ -6,6 +6,7 @@ import { lokasiColumn, LokasiPage } from '../../pages/master/lokasi';
 import { DefaultLayout } from '../../layouts/default-layout';
 import Profile from '../../components/profile';
 import { ModalLokasi } from '../../components/master/modal-lokasi';
+import { inArray } from 'drizzle-orm';
 
 export const lokasiRoute = new Hono<{
   Variables: {
@@ -18,14 +19,10 @@ lokasiRoute.get('/', async (c) => {
   const userId = session.get('user_id') as string;
   const { page, per_page, alamat } = c.req.query();
 
-  const selectedUser = await db.query.user
-    .findFirst({
-      where: (user, { eq }) => eq(user.id, parseInt(userId)),
-      with: { userGroup: true },
-    })
-    .catch((err) => {
-      console.error(err);
-    });
+  const selectedUser = await db.query.user.findFirst({
+    where: (user, { eq }) => eq(user.id, parseInt(userId)),
+    with: { userGroup: true, locations: true },
+  });
 
   const lokasiData = await db.query.lokasi.findMany({
     with: {
@@ -55,7 +52,15 @@ lokasiRoute.get('/', async (c) => {
       },
     },
     where: (lokasi, { ilike, and }) =>
-      and(!!alamat ? ilike(lokasi.alamat, `%${alamat}%`) : undefined),
+      and(
+        !!alamat ? ilike(lokasi.alamat, `%${alamat}%`) : undefined,
+        selectedUser.userGroup.group_name !== 'bptph'
+          ? inArray(
+              lokasi.id,
+              selectedUser.locations.map((val) => val.id)
+            )
+          : undefined
+      ),
     limit: parseInt(per_page || '10'),
     offset: (parseInt(page || '1') - 1) * parseInt(per_page || '10'),
   });

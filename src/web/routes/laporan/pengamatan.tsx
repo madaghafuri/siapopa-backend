@@ -42,19 +42,16 @@ pengamatanRoute.get('/', async (c) => {
   const session = c.get('session');
   const userId = session.get('user_id') as string;
 
-  const selectedUser = await db.query.user
-    .findFirst({
-      with: {
-        userGroup: true,
-      },
-      columns: {
-        password: false,
-      },
-      where: eq(user.id, parseInt(userId)),
-    })
-    .catch((err) => {
-      console.error(err);
-    });
+  const selectedUser = await db.query.user.findFirst({
+    with: {
+      userGroup: true,
+      locations: true,
+    },
+    columns: {
+      password: false,
+    },
+    where: eq(user.id, parseInt(userId)),
+  });
 
   const pengamatanList = await db.query.pengamatan.findMany({
     with: {
@@ -71,6 +68,15 @@ pengamatanRoute.get('/', async (c) => {
       },
       pic: true,
     },
+    where: (pengamatan, { and, inArray }) =>
+      and(
+        selectedUser.userGroup.group_name !== 'bptph'
+          ? inArray(
+              pengamatan.lokasi_id,
+              selectedUser.locations.map((val) => val.id)
+            )
+          : undefined
+      ),
     orderBy: (pengamatan, { desc }) => desc(pengamatan.tanggal_pengamatan),
   });
 
