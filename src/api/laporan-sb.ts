@@ -243,7 +243,10 @@ laporanSb.get('/laporan_sb/:laporanSbId', async (c) => {
   try {
     var selectData = await db
       .select({
-        laporan_sb: laporanSbSchema,
+        laporan_sb: {
+          ...laporanSbSchema,
+          blok: pengamatan.blok,
+        },
         laporan_harian: laporanHarian,
         validasi_laporan: validasiLaporan,
         luas_kerusakan_sb: luasKerusakanSb,
@@ -440,7 +443,10 @@ laporanSb.get('/laporan_sb', async (c) => {
 
   const selectData = await db
     .select({
-      laporan_sb: laporanSbSchema,
+      laporan_sb: {
+        ...laporanSbSchema,
+        blok: pengamatan.blok,
+      },
       validasi_laporan: validasiLaporan,
       validator: validatorSchema,
       user_validator: {
