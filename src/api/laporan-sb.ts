@@ -454,6 +454,25 @@ laporanSb.get('/laporan_sb', async (c) => {
       },
       laporan_harian: laporanHarian,
       luas_kerusakan_sb: luasKerusakanSb,
+      lokasi: {
+        ...lokasi,
+        provinsi: {
+          id: provinsi.id,
+          nama_provinsi: provinsi.nama_provinsi,
+        },
+        kabupaten_kota: {
+          id: kabupatenKota.id,
+          nama_kabkot: kabupatenKota.nama_kabkot,
+        },
+        kecamatan: {
+          id: kecamatan.id,
+          nama_kecamatan: kecamatan.nama_kecamatan,
+        },
+        desa: {
+          id: desa.id,
+          nama_desa: desa.nama_desa,
+        },
+      },
     })
     .from(laporanSbSchema)
     .leftJoin(
@@ -470,6 +489,11 @@ laporanSb.get('/laporan_sb', async (c) => {
       eq(laporanHarian.id_laporan_sb, laporanSbSchema.id)
     )
     .leftJoin(pengamatan, eq(pengamatan.id, laporanHarian.pengamatan_id))
+    .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
+    .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
+    .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
+    .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
+    .leftJoin(desa, eq(desa.id, lokasi.desa_id))
     .leftJoin(
       luasKerusakanSb,
       eq(luasKerusakanSb.laporan_sb_id, laporanSbSchema.id)
@@ -495,13 +519,12 @@ laporanSb.get('/laporan_sb', async (c) => {
     );
   }
 
-  console.log(selectData.length);
-
   const result = selectData.reduce((acc, row) => {
     const laporanSb = row.laporan_sb;
     const laporanHarian = row.laporan_harian;
     const luasKerusakanSb = row.luas_kerusakan_sb;
     const validasiLaporan = row.validasi_laporan;
+    const lokasi = row.lokasi;
     const validator = !!row.validator
       ? {
           ...row.validator,
@@ -518,6 +541,7 @@ laporanSb.get('/laporan_sb', async (c) => {
         ...validasiLaporan,
         validator: [validator],
       },
+      lokasi,
       laporan_harian: [laporanHarian],
       luas_kerusakan: [luasKerusakanSb],
     };
