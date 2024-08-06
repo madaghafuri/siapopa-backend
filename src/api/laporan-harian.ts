@@ -747,6 +747,6 @@ laporanHarian.get('list/laporan_harian', async (c) => {
   return c.json({
     status: 200,
     message: 'success',
-    data: selectData[0],
+    data: selectData,
   });
 });
