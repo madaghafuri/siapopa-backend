@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { Session } from 'hono-sessions';
 import { db } from '../../..';
-import { asc, eq, sql } from 'drizzle-orm';
+import { asc, eq, inArray, sql } from 'drizzle-orm';
 import { InsertUser, SelectUser, user } from '../../../db/schema/user';
 import { userGroup } from '../../../db/schema/user-group';
 import { DefaultLayout } from '../../layouts/default-layout';
@@ -14,6 +14,8 @@ import { validator } from 'hono/validator';
 import { getValidKeyValuePairs } from '../../../helper';
 import { Table } from '../../components/table';
 import { Fragment } from 'hono/jsx/jsx-runtime';
+import { ModalUserCreate } from '../../components/master/modal-user';
+import { lokasi } from '../../../db/schema/lokasi';
 
 export const userRoute = new Hono<{
   Variables: {
@@ -80,18 +82,14 @@ userRoute.get('/', async (c) => {
   );
 });
 userRoute.get('/create', async (c) => {
+  const lokasiOptions = await db.query.lokasi.findMany({ limit: 100 });
+  const userGroupOptions = await db.query.userGroup.findMany({ limit: 100 });
+
   return c.html(
-    <Modal>
-      <ModalHeader>Create User</ModalHeader>
-      <ModalContent>
-        <form>
-          <div>
-            <label>Email</label>
-            <input type="text" />
-          </div>
-        </form>
-      </ModalContent>
-    </Modal>
+    <ModalUserCreate
+      lokasiOptions={lokasiOptions}
+      userGroupOptions={userGroupOptions}
+    ></ModalUserCreate>
   );
 });
 userRoute.get('/edit/:userId', authorizeWebInput, async (c) => {
@@ -301,3 +299,80 @@ userRoute.delete('/:userId', authorizeWebInput, async (c) => {
     'HX-Trigger': 'reloadUser, closeModal',
   });
 });
+userRoute.post(
+  '/',
+  authorizeWebInput,
+  validator('form', (value, c) => {
+    const { email, password } = value;
+
+    if (!email || !password) {
+      return c.html(
+        <span class="text-red-500">email atau password diperlukan</span>
+      );
+    }
+
+    return value;
+  }),
+  async (c) => {
+    const {
+      email,
+      password,
+      name,
+      phone,
+      photo,
+      validasi,
+      usergroup_id,
+      ...rest
+    } = c.req.valid('form') as unknown as InsertUser;
+    const lokasiIds = rest['lokasi_id[]'] as string[];
+    console.log(lokasiIds);
+
+    try {
+      var insertUser = await db
+        .insert(user)
+        .values({ email, password, name, phone, photo, usergroup_id })
+        .returning();
+    } catch (error) {
+      console.error(error);
+      return c.html(
+        <span class="text-sm text-red-500">
+          Terjadi kesalahan. Silahkan coba lagi
+        </span>
+      );
+    }
+
+    try {
+      if (!!lokasiIds && lokasiIds.length > 0) {
+        const user = await db.query.user.findFirst({
+          where: (user, { eq }) => eq(user.id, insertUser[0].id),
+          with: { userGroup: true },
+        });
+
+        await db
+          .update(lokasi)
+          .set(
+            user.userGroup.group_name === 'bptph'
+              ? { bptph_id: user.id }
+              : user.userGroup.group_name === 'satpel'
+                ? { satpel_id: user.id }
+                : user.userGroup.group_name === 'kortikab'
+                  ? { kortikab_id: user.id }
+                  : { pic_id: user.id }
+          )
+          .where(inArray(lokasi.id, lokasiIds));
+      }
+    } catch (error) {
+      console.error(error);
+      return c.html(
+        <span class="text-sm text-red-500">
+          Terjadi kesalahan. Silahkan coba lagi
+        </span>
+      );
+    }
+
+    return c.text('Success', 200, {
+      'HX-Reswap': 'none',
+      'HX-Trigger': 'reloadUser, closeModal',
+    });
+  }
+);

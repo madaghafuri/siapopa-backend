@@ -57,6 +57,18 @@ export const userColumn: ColumnHeader<UserData>[] = [
 const DataUser = ({ listUser }: { listUser: UserData[] }) => {
   return (
     <div class="p-5 shadow-inner">
+      <button
+        class="rounded-md bg-primary px-4 py-2 text-white"
+        hx-get="/app/master/user/create"
+        hx-target="body"
+        hx-swap="beforeend"
+        hx-indicator="#loading"
+      >
+        <div id="loading">
+          <p>Tambah User</p>
+          <i class="fa-solid fa-spinner animate-spin"></i>
+        </div>
+      </button>
       <div
         id="user-table-container"
         hx-get="/app/master/user"

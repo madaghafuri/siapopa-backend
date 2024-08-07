@@ -169,14 +169,13 @@ body {
   display: none;
 }
 
-.htmx-request #loading i {
+.htmx-request#loading i {
   @apply animate-spin;
   display: block;
   @apply text-base;
 }
 
-.htmx-request #loading p {
-  @apply animate-spin;
+.htmx-request#loading p {
   display: none;
 }
 
