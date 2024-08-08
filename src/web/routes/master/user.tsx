@@ -95,6 +95,7 @@ userRoute.get('/create', async (c) => {
 userRoute.get('/edit/:userId', authorizeWebInput, async (c) => {
   const userId = c.req.param('userId');
   const selectedUser = await db.query.user.findFirst({
+    with: { locations: true },
     where: (user, { eq }) => eq(user.id, parseInt(userId)),
   });
   const userGroupOptions = await db.query.userGroup.findMany({
@@ -166,10 +167,21 @@ userRoute.get('/edit/:userId', authorizeWebInput, async (c) => {
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-sm font-bold text-blue-500">Lokasi</label>
-            <select name="lokasi_id" id="lokasi-options" class="px-2 py-1">
+            <select
+              name="lokasi_id[]"
+              id="lokasi-options"
+              multiple
+              class="px-2 py-1"
+            >
               {lokasiOptions.map((lokasi) => {
                 return (
-                  <option value={lokasi.id} class="uppercase">
+                  <option
+                    value={lokasi.id}
+                    class="uppercase"
+                    selected={selectedUser.locations
+                      .map((val) => val.id)
+                      .includes(lokasi.id)}
+                  >
                     {lokasi.alamat}
                   </option>
                 );

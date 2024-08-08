@@ -44,3 +44,4 @@ export const lokasiRelations = relations(lokasi, ({ one }) => ({
 }));
 
 export type Lokasi = typeof lokasi.$inferSelect;
+export type InsertLokasi = typeof lokasi.$inferInsert;

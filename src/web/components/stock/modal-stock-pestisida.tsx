@@ -194,7 +194,7 @@ export const ModalStockPestisida = ({
                 required
                 class="w-full rounded border px-2 py-1"
                 hx-get="/app/master/kabkot"
-                hx-include="[name='provinsi']"
+                hx-include="[name='provinsi_id']"
                 hx-trigger="change"
                 hx-target="#kabkot-option"
                 hx-swap="innerHTML"

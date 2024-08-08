@@ -18,7 +18,7 @@ export const kabkotRoute = new Hono<{
 kabkotRoute.get('/', async (c) => {
   const session = c.get('session');
   const userId = session.get('user_id') as string;
-  const { provinsi } = c.req.query();
+  const { provinsi_id } = c.req.query();
 
   const selectUser = await db.query.user
     .findFirst({
@@ -43,7 +43,7 @@ kabkotRoute.get('/', async (c) => {
       provinsi: true,
     },
     where: (kabkot, { eq, and }) =>
-      and(!!provinsi ? eq(kabkot.provinsi_id, provinsi) : undefined),
+      and(!!provinsi_id ? eq(kabkot.provinsi_id, provinsi_id) : undefined),
     orderBy: (kabkot, { asc }) => asc(kabkot.id),
   });
 

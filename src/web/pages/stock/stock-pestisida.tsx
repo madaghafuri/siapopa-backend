@@ -43,7 +43,7 @@ const DataStockPestisida = ({
     <div class="isolate flex flex-col gap-5 p-5 shadow-inner">
       {!!user ? (
         <div>
-          {user && user.usergroup_id === 5 && (
+          {user && (
             <button
               class="rounded bg-primary px-2 py-1 text-white"
               hx-get="/app/stock/stock-pestisida/create"
