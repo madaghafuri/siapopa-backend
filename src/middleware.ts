@@ -22,7 +22,11 @@ export const authorize = createMiddleware<{
   const session = c.get('session');
   const userId = session.get('user_id') as string;
 
-  if (!userId) {
+  if (!userId && c.req.header('hx-request')) {
+    return c.text('Unauthorized', 302, {
+      'HX-Recirect': '/login',
+    });
+  } else if (!userId) {
     return c.redirect('/login');
   }
   await next();

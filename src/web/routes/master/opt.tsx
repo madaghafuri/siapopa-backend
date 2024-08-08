@@ -5,13 +5,16 @@ import { tanaman } from '../../../db/schema/tanaman';
 import { eq } from 'drizzle-orm';
 import { DefaultLayout } from '../../layouts/default-layout';
 import Profile from '../../components/profile';
-import DataOPT from '../../pages/master/opt';
+import DataOPT, { optColumn } from '../../pages/master/opt';
 import { db } from '../../..';
 import { user } from '../../../db/schema/user';
 import { authorizeWebInput } from '../../../middleware';
 import { validator } from 'hono/validator';
 import { ModalOpt } from '../../components/master/modal-opt';
 import { Fragment } from 'hono/jsx/jsx-runtime';
+import Modal, { ModalContent, ModalHeader } from '../../components/modal';
+import { Table } from '../../components/table';
+import { html } from 'hono/html';
 
 export const optRoute = new Hono<{
   Variables: {
@@ -41,10 +44,33 @@ optRoute.get('/', async (c) => {
       status: opt.status,
       tanaman_id: opt.tanaman_id,
       nama_tanaman: tanaman.nama_tanaman,
+      jenis: opt.jenis,
     })
     .from(opt)
     .leftJoin(tanaman, eq(tanaman.id, opt.tanaman_id))
     .where(eq(opt.jenis, 'opt'));
+
+  if (c.req.header('hx-request')) {
+    return c.html(
+      <Fragment>
+        <Table
+          id="opt-table"
+          columns={optColumn}
+          rowsData={selectOpt}
+          className="display hover nowrap max-w-full rounded-md bg-white"
+        />
+        {html`
+          <script>
+            $(document).ready(function () {
+              $('#opt-table').DataTable({
+                scrollX: true,
+              });
+            });
+          </script>
+        `}
+      </Fragment>
+    );
+  }
 
   return c.html(
     <DefaultLayout
@@ -155,6 +181,45 @@ optRoute.get('/reload', async (c) => {
     </Fragment>
   );
 });
+optRoute.get('/delete/:id', async (c) => {
+  const id = c.req.param('id');
+
+  const opt = await db.query.opt.findFirst({
+    where: (opt, { eq }) => eq(opt.id, parseInt(id)),
+  });
+
+  return c.html(
+    <Modal>
+      <ModalHeader>Delete User</ModalHeader>
+      <ModalContent>
+        <div class="text-center">
+          <i class="fa-solid fa-triangle-exclamation text-7xl text-red-500"></i>
+        </div>
+        <h1 class="py-3 text-center text-xl font-bold">Are you sure?</h1>
+        <p class="py-3 text-center">Deleting OPT {opt.nama_opt}</p>
+        <div class="flex flex-col gap-5">
+          <button
+            hx-delete={`/app/master/opt/delete/${id}`}
+            hx-trigger="click"
+            hx-indicator="#loading"
+            class="rounded bg-red-600 px-4 py-2 text-white"
+          >
+            <div id="loading">
+              <p>Delete</p>
+              <i class="fa-solid fa-spinner"></i>
+            </div>
+          </button>
+          <button
+            class="rounded border border-slate-200 px-4 py-2 hover:bg-slate-200"
+            _="on click trigger closeModal"
+          >
+            Cancel
+          </button>
+        </div>
+      </ModalContent>
+    </Modal>
+  );
+});
 optRoute.delete('/delete/:id', async (c) => {
   const id = c.req.param('id');
 
@@ -171,7 +236,7 @@ optRoute.delete('/delete/:id', async (c) => {
 
   return c.html(<span>Berhasil menghapus data</span>, 200, {
     'HX-Reswap': 'none',
-    'HX-Trigger': 'newOpt',
+    'HX-Trigger': 'newOpt, closeModal',
   });
 });
 

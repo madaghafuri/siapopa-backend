@@ -138,7 +138,7 @@ app.use(
   sessionMiddleware({
     store,
     encryptionKey: 'password_at_least_32_characters_long',
-    expireAfterSeconds: 900,
+    expireAfterSeconds: 3600,
     cookieOptions: {
       sameSite: 'Lax',
       path: '/',
