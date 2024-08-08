@@ -45,7 +45,7 @@ const DataTanaman = ({
         hx-get="/app/master/tanaman"
         hx-target="this"
         hx-swap="innerHTML"
-        hx-trigger="reloadTanaman from:body"
+        hx-trigger="newTanaman from:body"
       >
         <Table
           id="tanaman-table"
@@ -66,14 +66,14 @@ const DataTanaman = ({
       {!!user ? (
         <div>
           {user.usergroup_id === 4 && (
-          <button
-            class="rounded bg-primary px-2 py-1 text-white"
-            hx-get="/app/master/tanaman/create"
-            hx-swap="beforeend"
-            hx-target="body"
-          >
-            Add Tanaman
-          </button>
+            <button
+              class="rounded bg-primary px-2 py-1 text-white"
+              hx-get="/app/master/tanaman/create"
+              hx-swap="beforeend"
+              hx-target="body"
+            >
+              Add Tanaman
+            </button>
           )}
         </div>
       ) : null}
