@@ -325,7 +325,6 @@ userRoute.post(
       ...rest
     } = c.req.valid('form') as unknown as InsertUser;
     const lokasiIds = rest['lokasi_id[]'] as string[];
-    console.log(lokasiIds);
 
     try {
       var insertUser = await db

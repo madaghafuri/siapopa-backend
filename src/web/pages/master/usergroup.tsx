@@ -1,6 +1,35 @@
 import { html } from 'hono/html';
 import { SelectUserGroup } from '../../../db/schema/user-group.js';
 import { AuthenticatedUser } from '../../components/profile.js';
+import { ColumnHeader, Table } from '../../components/table.js';
+
+export const userGroupColumn: ColumnHeader<SelectUserGroup>[] = [
+  { headerName: 'no', valueGetter: (_, index) => index + 1 },
+  { field: 'group_name', headerName: 'User Group' },
+  {
+    headerName: 'Aksi',
+    valueGetter: (row) => (
+      <div class="flex items-center justify-center">
+        <button
+          class="px-4 text-blue-500 hover:text-blue-700"
+          hx-get={`/app/master/usergroup/edit/${row.id}`}
+          hx-target="body"
+          hx-swap="beforeend"
+        >
+          <i class="fa fa-edit"></i>
+        </button>
+        <button
+          class="ml-2 px-4 text-red-500 hover:text-red-700"
+          hx-get={`/app/master/usergroup/delete/${row.id}`}
+          hx-target="body"
+          hx-swap="beforeend"
+        >
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
+    ),
+  },
+];
 
 const DataUserGroup = ({
   listUserGroup,
@@ -11,72 +40,39 @@ const DataUserGroup = ({
 }) => {
   return (
     <div class="grid p-5 shadow-inner">
-      <table id="usergroupTable" class="row-border" style="width:100%">
-        <thead>
-          <tr>
-            <th class="border-b border-gray-200 px-4 py-2" style="width: 5%">
-              No.
-            </th>
-            <th class="border-b border-gray-200 px-4 py-2">User Group</th>
-            {user && user.usergroup_id === 4 && (
-            <th class="border-b border-gray-200 px-4 py-2" style="width: 10%">Actions</th>
-            )}
-          </tr>
-        </thead>
-        <tbody hx-get="/app/master/usergroup/reload" hx-trigger="newUserGroup from:body">
-          {listUserGroup.map((userGroup, index) => (
-            <tr key={userGroup.id}>
-              <td class="border-b border-gray-200 px-4 py-2" style="width: 5%">
-                {index + 1}
-              </td>
-              <td class="border-b border-gray-200 px-4 py-2">
-                {userGroup.group_name}
-              </td>
-              {user && user.usergroup_id === 4 && (
-              <td class="border-b border-gray-200 px-4 py-2" style="width: 10%">
-                  <div class="flex items-center space-x-2">
-                    <button
-                      class="text-blue-500 hover:text-blue-700 px-4"
-                      hx-get={`/app/master/usergroup/edit/${userGroup.id}`}
-                      hx-target="body"
-                      hx-swap="beforeend"
-                    >
-                      <i class="fa fa-edit"></i>
-                    </button>
-                    <button
-                      class="ml-2 text-red-500 hover:text-red-700 px-4"
-                      hx-delete={`/app/master/usergroup/delete/${userGroup.id}`}
-                      hx-target="#usergroupTable"
-                      hx-swap="outerHTML"
-                      hx-confirm="Are you sure you want to delete this item?"
-                    >
-                      <i class="fa fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {html`
-        <script>
-          $(document).ready(function () {
-            $('#usergroupTable').DataTable();
-          });
-        </script>
-      `}
+      <div
+        id="container-user-group"
+        hx-get="/app/master/usergroup"
+        hx-trigger="newUserGroup from:body"
+        hx-swap="innerHTML"
+        hx-target="this"
+      >
+        <Table
+          id="user-group-table"
+          columns={userGroupColumn}
+          rowsData={listUserGroup}
+          className="hover display nowrap max-w-full rounded bg-white"
+        />
+        {html`
+          <script>
+            $(document).ready(function () {
+              $('#user-group-table').DataTable();
+            });
+          </script>
+        `}
+      </div>
+
       {!!user ? (
         <div>
           {user.usergroup_id === 4 && (
-          <button
-            hx-get="/app/master/usergroup/create"
-            hx-target="body"
-            hx-swap="beforeend"
-            class="rounded px-2 py-1 bg-primary text-white"
-          >
-            Add User Group
-          </button>
+            <button
+              hx-get="/app/master/usergroup/create"
+              hx-target="body"
+              hx-swap="beforeend"
+              class="rounded bg-primary px-2 py-1 text-white"
+            >
+              Add User Group
+            </button>
           )}
         </div>
       ) : null}

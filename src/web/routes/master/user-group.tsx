@@ -6,11 +6,14 @@ import { user } from '../../../db/schema/user';
 import { InsertUserGroup, userGroup } from '../../../db/schema/user-group';
 import { DefaultLayout } from '../../layouts/default-layout';
 import Profile, { AuthenticatedUser } from '../../components/profile';
-import DataUserGroup from '../../pages/master/usergroup';
+import DataUserGroup, { userGroupColumn } from '../../pages/master/usergroup';
 import { ModalUserGroup } from '../../components/master/modal-usergroup';
 import { authorizeWebInput } from '../../../middleware';
 import { validator } from 'hono/validator';
 import { Fragment } from 'hono/jsx/jsx-runtime';
+import Modal, { ModalContent, ModalHeader } from '../../components/modal';
+import { Table } from '../../components/table';
+import { html } from 'hono/html';
 
 export const userGroupRoute = new Hono<{
   Variables: {
@@ -33,6 +36,26 @@ userGroupRoute.get('/', async (c) => {
     });
 
   const selectUserGroup = await db.select().from(userGroup);
+
+  if (c.req.header('hx-request')) {
+    return c.html(
+      <Fragment>
+        <Table
+          id="user-group-table"
+          columns={userGroupColumn}
+          rowsData={selectUserGroup}
+          className="hover display nowrap max-w-full rounded bg-white"
+        />
+        {html`
+          <script>
+            $(document).ready(function () {
+              $('#user-group-table').DataTable();
+            });
+          </script>
+        `}
+      </Fragment>
+    );
+  }
 
   return c.html(
     <DefaultLayout
@@ -106,7 +129,6 @@ userGroupRoute.get('/reload', async (c) => {
                   hx-delete={`/app/master/usergroup/delete/${userGroup.id}`}
                   hx-target="#tanamanTable"
                   hx-swap="outerHTML"
-                  hx-confirm="Are you sure you want to delete this item?"
                 >
                   <i class="fa fa-trash"></i>
                 </button>
@@ -118,7 +140,47 @@ userGroupRoute.get('/reload', async (c) => {
     </Fragment>
   );
 });
-userGroupRoute.delete('/delete/:id', async (c) => {
+userGroupRoute.get('/delete/:id', async (c) => {
+  const id = c.req.param('id');
+  const userGroup = await db.query.userGroup.findFirst({
+    where: (group, { eq }) => eq(group.id, parseInt(id)),
+  });
+
+  return c.html(
+    <Modal>
+      <ModalHeader>Delete User</ModalHeader>
+      <ModalContent>
+        <div class="text-center">
+          <i class="fa-solid fa-triangle-exclamation text-7xl text-red-500"></i>
+        </div>
+        <h1 class="py-3 text-center text-xl font-bold">Are you sure?</h1>
+        <p class="py-3 text-center">
+          Deleting user group {userGroup.group_name}
+        </p>
+        <div class="flex flex-col gap-5">
+          <button
+            hx-delete={`/app/master/usergroup/delete/${id}`}
+            hx-trigger="click"
+            hx-indicator="#loading"
+            class="rounded bg-red-600 px-4 py-2 text-white"
+          >
+            <div id="loading">
+              <p>Delete</p>
+              <i class="fa-solid fa-spinner"></i>
+            </div>
+          </button>
+          <button
+            class="rounded border border-slate-200 px-4 py-2 hover:bg-slate-200"
+            _="on click trigger closeModal"
+          >
+            Cancel
+          </button>
+        </div>
+      </ModalContent>
+    </Modal>
+  );
+});
+userGroupRoute.delete('/delete/:id', authorizeWebInput, async (c) => {
   const id = c.req.param('id');
 
   try {
@@ -134,7 +196,7 @@ userGroupRoute.delete('/delete/:id', async (c) => {
 
   return c.html(<span>Berhasil menghapus data</span>, 200, {
     'HX-Reswap': 'none',
-    'HX-Trigger': 'newUserGroup',
+    'HX-Trigger': 'newUserGroup, closeModal',
   });
 });
 
