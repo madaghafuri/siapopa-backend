@@ -163,14 +163,18 @@ export const authorizeStockInput = createMiddleware<{
 
   if (
     c.req.header('hx-request') &&
-    selectUser.userGroup.group_name !== 'brigade'
+    selectUser.userGroup.group_name !== 'brigade' &&
+    selectUser.userGroup.group_name !== 'bptph'
   ) {
     console.log('User group not authorized via HX-Request');
     return c.text('Unauthorized', 302, {
       'HX-Reswap': 'none',
       'HX-Redirect': '/login',
     });
-  } else if (selectUser.userGroup.group_name !== 'brigade') {
+  } else if (
+    selectUser.userGroup.group_name !== 'brigade' &&
+    selectUser.userGroup.group_name !== 'bptph'
+  ) {
     console.log('User group not authorized');
     return c.redirect('/app/dashboard');
   }

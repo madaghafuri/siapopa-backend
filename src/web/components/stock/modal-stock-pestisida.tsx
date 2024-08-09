@@ -190,7 +190,7 @@ export const ModalStockPestisida = ({
             <div>
               <label>Provinsi*</label>
               <select
-                name="provinsi"
+                name="provinsi_id"
                 required
                 class="w-full rounded border px-2 py-1"
                 hx-get="/app/master/kabkot"

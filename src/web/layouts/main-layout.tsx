@@ -57,6 +57,7 @@ export const MainLayout = ({ children }: { children?: any }) => {
           rel="stylesheet"
         />
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
       </head>
       <body>{children}</body>
     </html>

@@ -118,11 +118,19 @@ export const PengamatanPage = ({
         rowsData={pengamatanList}
         className="hover display nowrap max-w-full rounded-md bg-white"
       />
+      <button id="export-excel">Export to Excel</button>
       {html`
         <script>
           $(document).ready(function () {
             $('#pengamatan-table').DataTable({
               scrollX: true,
+            });
+
+            $('#export-excel').on('click', function () {
+              const wb = XLSX.utils.table_to_book(
+                document.getElementById('pengamatan-table')
+              );
+              XLSX.writeFile(wb, 'pengamatan.xlsx');
             });
           });
         </script>

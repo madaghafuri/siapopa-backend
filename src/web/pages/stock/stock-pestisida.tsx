@@ -30,6 +30,25 @@ export const stockPestisidaColumn: ColumnHeader<StockPestisida>[] = [
   { headerName: 'kabupaten/kota', field: 'kabupatenKota' },
   { headerName: 'kecamatan', field: 'kecamatan' },
   { headerName: 'desa', field: 'desa' },
+  { headerName: 'volume', field: 'volume' },
+  {
+    headerName: 'expired date',
+    valueGetter: (row) =>
+      new Date(row.expired_date).toLocaleDateString('id-ID', {
+        year: 'numeric',
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+      }),
+  },
+  {
+    headerName: 'periode bulan',
+    valueGetter: (row) => row.periode_bulan.split('-')[1],
+  },
+  {
+    headerName: 'tahun pengadaan',
+    valueGetter: (row) => row.tahun_pengadaan.split('-')[0],
+  },
 ];
 
 const DataStockPestisida = ({
