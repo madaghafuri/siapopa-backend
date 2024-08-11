@@ -8,6 +8,8 @@ declare module 'hono/jsx' {
 
 declare global {
   namespace Hono {
-    interface HTMLAttributes extends HtmxAttributes {}
+    interface HTMLAttributes extends HtmxAttributes {
+      id?: string;
+    }
   }
 }
