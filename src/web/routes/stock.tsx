@@ -177,10 +177,7 @@ stock.get('/stock-pestisida/create', async (c) => {
       listBahanAktif={selectBahanAktif}
       listOpt={selectOPT}
       listTanaman={selectTanaman}
-      listProvinsi={selectProvinsi}
-      listKabKot={selectKabKot}
-      listKecamatan={selectKecamatan}
-      listDesa={selectDesa}
+      lokasiOptions={lokasiOptions}
     />
   );
 });
@@ -328,10 +325,6 @@ stock.get('/stock-pestisida/edit/:id', async (c) => {
   const selectBahanAktif = await db.select().from(bahanAktif);
   const selectOPT = await db.select().from(opt);
   const selectTanaman = await db.select().from(tanaman);
-  const selectProvinsi = await db.select().from(provinsi);
-  const selectKabKot = await db.select().from(kabupatenKota);
-  const selectKecamatan = await db.select().from(kecamatan);
-  const selectDesa = await db.select().from(desa);
 
   return c.html(
     <ModalStockPestisida
@@ -339,10 +332,6 @@ stock.get('/stock-pestisida/edit/:id', async (c) => {
       listBahanAktif={selectBahanAktif}
       listOpt={selectOPT}
       listTanaman={selectTanaman}
-      listProvinsi={selectProvinsi}
-      listKabKot={selectKabKot}
-      listKecamatan={selectKecamatan}
-      listDesa={selectDesa}
       pestisida={pestisidaItem[0]}
     />
   );

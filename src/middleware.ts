@@ -2,7 +2,7 @@ import { Session } from 'hono-sessions';
 import { createMiddleware } from 'hono/factory';
 import { db, lucia } from './index';
 import { eq } from 'drizzle-orm';
-import { user } from './db/schema/user';
+import { SelectUser, user } from './db/schema/user';
 
 type Path = 'dashboard' | 'laporan' | 'master' | 'aph' | 'pestisida' | 'stock';
 type Role = 'popt' | 'kortikab' | 'satpel' | 'bptph' | 'brigade';
@@ -17,7 +17,11 @@ export const acl: Record<Path, Array<Role>> = {
 };
 
 export const authorize = createMiddleware<{
-  Variables: { session: Session; session_rotation_key: boolean };
+  Variables: {
+    session: Session;
+    session_rotation_key: boolean;
+    user: SelectUser;
+  };
 }>(async (c, next) => {
   const session = c.get('session');
   const userId = session.get('user_id') as string;
@@ -29,6 +33,11 @@ export const authorize = createMiddleware<{
   } else if (!userId) {
     return c.redirect('/login');
   }
+  const selectUser = await db.query.user.findFirst({
+    with: { userGroup: true, locations: true },
+    where: (user, { eq }) => eq(user.id, parseInt(userId)),
+  });
+  c.set('user', selectUser);
   await next();
 });
 
@@ -59,28 +68,29 @@ export const authorizeApi = createMiddleware(async (c, next) => {
   await next();
 });
 
-export const checkACL = createMiddleware<{ Variables: { session: Session } }>(
-  async (c, next) => {
-    const session = c.get('session');
-    const userId = session.get('user_id') as string;
+export const checkACL = createMiddleware<{
+  Variables: { session: Session };
+}>(async (c, next) => {
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
 
-    const selectUser = await db.query.user.findFirst({
-      with: {
-        userGroup: true,
-      },
-      where: (user, { eq }) => eq(user.id, parseInt(userId)),
-    });
+  const selectUser = await db.query.user.findFirst({
+    with: {
+      userGroup: true,
+      locations: true,
+    },
+    where: (user, { eq }) => eq(user.id, parseInt(userId)),
+  });
 
-    const [_, app, path] = c.req.path.split('/');
-    const access = acl[path as Path];
+  const [_, app, path] = c.req.path.split('/');
+  const access = acl[path as Path];
 
-    if (access.includes(selectUser.userGroup.group_name as unknown as Role)) {
-      await next();
-    }
-
-    return c.redirect('/login');
+  if (access.includes(selectUser.userGroup.group_name as unknown as Role)) {
+    await next();
   }
-);
+
+  return c.redirect('/login');
+});
 
 export const authorizePopt = createMiddleware<{
   Variables: { session: Session; foo: string };

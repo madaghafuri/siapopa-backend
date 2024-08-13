@@ -9,7 +9,7 @@ import { stockAphColumn, StockAphPage } from '../../pages/stock/stock-aph';
 import { Fragment } from 'hono/jsx/jsx-runtime';
 import { InsertStockAph, stockAph } from '../../../db/schema/stock-aph';
 import { kabupatenKota } from '../../../db/schema/kabupaten-kota';
-import { user } from '../../../db/schema/user';
+import { SelectUser, user } from '../../../db/schema/user';
 import { golonganAph } from '../../../db/schema/golongan-aph';
 import { bentukStockAph } from '../../../db/schema/bentuk-stok-aph';
 import { provinsi } from '../../../db/schema/provinsi';
@@ -22,7 +22,7 @@ import { userGroup } from '../../../db/schema/user-group';
 import { getRelatedLocationsByUser } from '../../../helper';
 
 export const stockAphRoute = new Hono<{
-  Variables: { session: Session };
+  Variables: { session: Session; user: SelectUser };
 }>().basePath('/aph');
 
 stockAphRoute.get('/', async (c) => {
@@ -38,8 +38,9 @@ stockAphRoute.get('/', async (c) => {
     where: (user, { eq }) => eq(user.id, parseInt(userId)),
   });
 
+  console.log(c.get('user'));
+
   const assignedLocations = await getRelatedLocationsByUser(selectUser);
-  console.log(assignedLocations);
 
   const kabkotOptions = await db.query.kabupatenKota.findMany({
     columns: {

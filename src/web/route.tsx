@@ -55,27 +55,4 @@ web.route('/laporan', laporan);
 web.use('/stock/*', authorize, checkACL);
 web.route('/stock', stock);
 
-web.get('/lokasi', async (c) => {
-  const session = c.get('session');
-  const userId = session.get('user_id') as string;
-
-  const selectedUser = await db.query.user
-    .findFirst({
-      where: eq(user.id, parseInt(userId)),
-      with: {
-        userGroup: true,
-      },
-    })
-    .catch((err) => {
-      console.error(err);
-    });
-
-  return c.html(
-    <DefaultLayout
-      route="lokasi"
-      authNavigation={<Profile user={selectedUser as AuthenticatedUser} />}
-    ></DefaultLayout>
-  );
-});
-
 export default web;

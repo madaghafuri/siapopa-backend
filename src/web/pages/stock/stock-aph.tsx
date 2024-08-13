@@ -18,12 +18,14 @@ import { Desa } from '../../../db/schema/desa';
 
 export const stockAphColumn: ColumnHeader<
   SelectStockAph & {
-    lokasi: Lokasi & {
-      provinsi: Pick<Provinsi, 'id' | 'nama_provinsi'>;
-      kabupaten_kota: Pick<KabupatenKota, 'id' | 'nama_kabkot'>;
-      kecamatan: Pick<Kecamatan, 'id' | 'nama_kecamatan'>;
-      desa: Pick<Desa, 'id' | 'nama_desa'>;
-    };
+    lokasi:
+      | (Lokasi & {
+          provinsi: Provinsi;
+          kabupaten_kota: KabupatenKota;
+          kecamatan: Kecamatan;
+          desa: Desa;
+        })
+      | any;
     satpel: SelectUser;
     golongan_aph: SelectGolonganAph;
     bentuk_aph: SelectBentukAph;

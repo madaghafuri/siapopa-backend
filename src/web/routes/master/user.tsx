@@ -267,7 +267,10 @@ userRoute.put(
 
     if (!!lokasiIds && lokasiIds.length > 0) {
       try {
-        await db.update(lokasi).set(transformUserId);
+        await db
+          .update(lokasi)
+          .set(transformUserId)
+          .where(inArray(lokasi.id, lokasiIds));
       } catch (error) {
         console.error(error);
         return c.html(

@@ -4,32 +4,23 @@ import { SelectGolonganPestisida } from '../../../db/schema/golongan-pestisida.j
 import { html } from 'hono/html';
 import { SelectOPT } from '../../../db/schema/opt.js';
 import { SelectTanaman } from '../../../db/schema/tanaman.js';
-import { Provinsi } from '../../../db/schema/provinsi.js';
-import { KabupatenKota } from '../../../db/schema/kabupaten-kota.js';
-import { Kecamatan } from '../../../db/schema/kecamatan.js';
-import { Desa } from '../../../db/schema/desa.js';
 import { SelectPestisida } from '../../../db/schema/pestisida.js';
+import { Lokasi } from '../../../db/schema/lokasi.js';
 
 export const ModalStockPestisida = ({
   listGolongan,
   listBahanAktif,
   listOpt,
   listTanaman,
-  listProvinsi,
-  listKabKot,
-  listKecamatan,
-  listDesa,
   pestisida,
+  lokasiOptions,
 }: {
   listTanaman?: SelectTanaman[];
   listOpt?: SelectOPT[];
   listGolongan?: SelectGolonganPestisida[];
   listBahanAktif?: SelectBahanAktif[];
-  listProvinsi?: Partial<Provinsi>[];
-  listKabKot?: Partial<KabupatenKota>[];
-  listKecamatan?: Partial<Kecamatan>[];
-  listDesa?: Partial<Desa>[];
   pestisida?: SelectPestisida;
+  lokasiOptions?: Lokasi[];
 }) => {
   const isEditing = !!pestisida;
 
@@ -188,77 +179,18 @@ export const ModalStockPestisida = ({
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label>Provinsi*</label>
-              <select
-                name="provinsi_id"
-                required
-                class="w-full rounded border px-2 py-1"
-                hx-get="/app/master/kabkot"
-                hx-include="[name='provinsi_id']"
-                hx-trigger="change"
-                hx-target="#kabkot-option"
-                hx-swap="innerHTML"
-              >
-                <option value="">Select Provinsi</option>;
-                {listProvinsi.map((value) => {
-                  return (
-                    <option value={value.id}>{value.nama_provinsi}</option>
-                  );
-                })}
-              </select>
-            </div>
-            <div>
-              <label>Kabupaten/Kota*</label>
-              <select
-                id="kabkot-option"
-                name="kabkot_id"
-                required
-                class="w-full rounded border px-2 py-1"
-                hx-get="/app/master/kecamatan"
-                hx-include="[name='kabkot_id']"
-                hx-trigger="change"
-                hx-target="#kecamatan-option"
-                hx-swap="innerHTML"
-              >
-                <option value="">Select Kabupaten/Kota</option>;
-                {listKabKot.map((value) => {
-                  return <option value={value.id}>{value.nama_kabkot}</option>;
-                })}
-              </select>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label>Kecamatan*</label>
-              <select
-                name="kecamatan_id"
-                required
-                class="w-full rounded border px-2 py-1"
-                id="kecamatan-option"
-                hx-get="/app/master/desa"
-                hx-include="[name='kecamatan_id']"
-                hx-swap="innerHTML"
-                hx-target="#desa-option"
-              >
-                <option value="">Select Kecamatan</option>;
-                {listKecamatan.map((value) => {
-                  return (
-                    <option value={value.id}>{value.nama_kecamatan}</option>
-                  );
-                })}
-              </select>
-            </div>
-            <div>
-              <label>Desa*</label>
+              <label class="text-blue text-sm">
+                Lokasi <span class="text-red-500">*</span>
+              </label>
               <select
                 name="lokasi_id"
                 required
                 class="w-full rounded border px-2 py-1"
-                id="desa-option"
+                id="lokasi-option"
               >
                 <option value="">Select Desa</option>;
-                {listDesa.map((value) => {
-                  return <option value={value.id}>{value.nama_desa}</option>;
+                {lokasiOptions.map((value) => {
+                  return <option value={value.id}>{value.alamat}</option>;
                 })}
               </select>
             </div>
@@ -280,6 +212,7 @@ export const ModalStockPestisida = ({
             $('#bahan_aktif').select2();
             $('#komoditas').select2();
             $('#sasaran').select2();
+            $('#lokasi-options').select2();
           });
         </script>`}
       </ModalContent>
