@@ -1,3 +1,8 @@
+import { db } from '.';
+import { Lokasi } from './db/schema/lokasi';
+import { SelectUser } from './db/schema/user';
+import { SelectUserGroup } from './db/schema/user-group';
+
 export function getValidKeyValuePairs<T extends Record<string, string | File>>(
   obj: T
 ) {
@@ -17,4 +22,35 @@ export function containsObject<T extends Object, K extends Array<T>>(
   );
 
   return !!found;
+}
+
+export async function getRelatedLocationsByUser(
+  user: Partial<SelectUser> & { userGroup: SelectUserGroup }
+) {
+  let locations: Lokasi[] | null = null;
+  switch (user.userGroup.group_name) {
+    case 'bptph':
+      locations = await db.query.lokasi.findMany({
+        where: (lokasi, { eq }) => eq(lokasi.bptph_id, user.id),
+      });
+      return locations;
+
+    case 'satpel':
+      locations = await db.query.lokasi.findMany({
+        where: (lokasi, { eq }) => eq(lokasi.satpel_id, user.id),
+      });
+      return locations;
+
+    case 'kortikab':
+      locations = await db.query.lokasi.findMany({
+        where: (lokasi, { eq }) => eq(lokasi.kortikab_id, user.id),
+      });
+      return locations;
+
+    default:
+      locations = await db.query.lokasi.findMany({
+        where: (lokasi, { eq }) => eq(lokasi.pic_id, user.id),
+      });
+      return locations;
+  }
 }

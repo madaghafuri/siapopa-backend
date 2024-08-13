@@ -60,7 +60,8 @@ auth.post(
     // );
     const comparePass = await Bun.password.verify(
       password as string,
-      selectUser.password
+      selectUser.password,
+      'bcrypt'
     );
 
     if (!comparePass) {

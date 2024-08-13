@@ -31,6 +31,8 @@ import { ModalGolonganPestisida } from '../components/stock/modal-golongan-pesti
 import { ModalStockPestisida } from '../components/stock/modal-stock-pestisida.js';
 import { Table } from '../components/table.js';
 import { html } from 'hono/html';
+import { stockAphRoute } from './stock/aph.js';
+import { getRelatedLocationsByUser } from '../../helper.js';
 
 export const stock = new Hono<{
   Variables: {
@@ -147,6 +149,26 @@ stock.get('/stock-pestisida/create', async (c) => {
       point_desa: false,
       area_desa: false,
     },
+  });
+
+  const session = c.get('session');
+  const userId = session.get('user_id') as string;
+
+  const selectedUser = await db.query.user.findFirst({
+    with: { userGroup: true },
+    where: (user, { eq }) => eq(user.id, parseInt(userId)),
+  });
+  const assignedLocations = await getRelatedLocationsByUser(selectedUser);
+  const lokasiOptions = await db.query.lokasi.findMany({
+    where: (lokasi, { inArray, and }) =>
+      and(
+        selectedUser.userGroup.group_name !== 'bptph'
+          ? inArray(
+              lokasi.id,
+              assignedLocations.map((val) => val.id)
+            )
+          : undefined
+      ),
   });
 
   return c.html(
@@ -739,3 +761,4 @@ stock.post(
     });
   }
 );
+stock.route('/', stockAphRoute);

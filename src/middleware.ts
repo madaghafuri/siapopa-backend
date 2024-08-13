@@ -75,7 +75,7 @@ export const checkACL = createMiddleware<{ Variables: { session: Session } }>(
     const access = acl[path as Path];
 
     if (access.includes(selectUser.userGroup.group_name as unknown as Role)) {
-      return next();
+      await next();
     }
 
     return c.redirect('/login');
@@ -83,7 +83,7 @@ export const checkACL = createMiddleware<{ Variables: { session: Session } }>(
 );
 
 export const authorizePopt = createMiddleware<{
-  Variables: { session: Session };
+  Variables: { session: Session; foo: string };
 }>(async (c, next) => {
   const session = c.get('session');
   const userId = session.get('user_id') as string;
@@ -118,7 +118,7 @@ export const authorizePopt = createMiddleware<{
     });
   }
 
-  return next();
+  await next();
 });
 
 export const authorizeStockInput = createMiddleware<{

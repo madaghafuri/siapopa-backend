@@ -94,7 +94,8 @@ export const DefaultLayout = ({
 
         {!!user &&
         (user.userGroup.group_name === 'bptph' ||
-          user.userGroup.group_name === 'brigade') ? (
+          user.userGroup.group_name === 'brigade' ||
+          user.userGroup.group_name === 'satpel') ? (
           <div class="max-w-full rounded-md border">
             <button
               class="flex w-full items-center justify-between gap-5 truncate border-b-2 px-4 py-2 text-left"
@@ -125,6 +126,12 @@ export const DefaultLayout = ({
                 class={`rounded-md px-4 py-2 text-left ${route === 'stock-pestisida' ? 'bg-primary text-white' : ''}`}
               >
                 Stock Pestisida
+              </a>
+              <a
+                href="/app/stock/aph"
+                class={`rounded-md px-4 py-2 text-left ${route === 'stock-aph' ? 'bg-primary text-white' : ''}`}
+              >
+                Stock APH
               </a>
             </div>
           </div>

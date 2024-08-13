@@ -11,11 +11,14 @@ import Modal, { ModalContent, ModalHeader } from '../../components/modal';
 import { html } from 'hono/html';
 import { authorizeWebInput } from '../../../middleware';
 import { validator } from 'hono/validator';
-import { getValidKeyValuePairs } from '../../../helper';
+import {
+  getRelatedLocationsByUser,
+  getValidKeyValuePairs,
+} from '../../../helper';
 import { Table } from '../../components/table';
 import { Fragment } from 'hono/jsx/jsx-runtime';
 import { ModalUserCreate } from '../../components/master/modal-user';
-import { lokasi } from '../../../db/schema/lokasi';
+import { Lokasi, lokasi } from '../../../db/schema/lokasi';
 
 export const userRoute = new Hono<{
   Variables: {
@@ -95,13 +98,21 @@ userRoute.get('/create', async (c) => {
 userRoute.get('/edit/:userId', authorizeWebInput, async (c) => {
   const userId = c.req.param('userId');
   const selectedUser = await db.query.user.findFirst({
-    with: { locations: true },
+    with: { locations: true, userGroup: true },
     where: (user, { eq }) => eq(user.id, parseInt(userId)),
   });
   const userGroupOptions = await db.query.userGroup.findMany({
     orderBy: (user, { asc }) => asc(user.id),
   });
+  const assignedLocations = await getRelatedLocationsByUser(selectedUser);
   const lokasiOptions = await db.query.lokasi.findMany({
+    where: (lokasi, { inArray }) =>
+      assignedLocations.length > 0
+        ? inArray(
+            lokasi.id,
+            assignedLocations.map((val) => val.id)
+          )
+        : undefined,
     limit: 100,
     offset: 0,
   });
@@ -178,7 +189,7 @@ userRoute.get('/edit/:userId', authorizeWebInput, async (c) => {
                   <option
                     value={lokasi.id}
                     class="uppercase"
-                    selected={selectedUser.locations
+                    selected={assignedLocations
                       .map((val) => val.id)
                       .includes(lokasi.id)}
                   >
@@ -236,6 +247,36 @@ userRoute.put(
       keyof SelectUser,
       SelectUser[keyof SelectUser]
     >;
+
+    const selectedUser = await db.query.user.findFirst({
+      with: { userGroup: true },
+      where: (user, { eq }) => eq(user.id, parseInt(userId)),
+    });
+
+    const transformUserId: Partial<
+      Pick<Lokasi, 'bptph_id' | 'satpel_id' | 'kortikab_id' | 'pic_id'>
+    > =
+      selectedUser.userGroup.group_name === 'satpel'
+        ? { satpel_id: parseInt(userId) }
+        : selectedUser.userGroup.group_name === 'bptph'
+          ? { bptph_id: parseInt(userId) }
+          : selectedUser.userGroup.group_name === 'kortikab'
+            ? { kortikab_id: parseInt(userId) }
+            : { pic_id: parseInt(userId) };
+    const lokasiIds = formData['lokasi_id[]'] as string[];
+
+    if (!!lokasiIds && lokasiIds.length > 0) {
+      try {
+        await db.update(lokasi).set(transformUserId);
+      } catch (error) {
+        console.error(error);
+        return c.html(
+          <span class="text-sm text-red-500">
+            Terjadi kesalahan. Silahkan coba lagi
+          </span>
+        );
+      }
+    }
 
     try {
       await db
@@ -338,10 +379,22 @@ userRoute.post(
     } = c.req.valid('form') as unknown as InsertUser;
     const lokasiIds = rest['lokasi_id[]'] as string[];
 
+    const hashedPassword = await Bun.password.hash(password, {
+      algorithm: 'bcrypt',
+      cost: 10,
+    });
+
     try {
       var insertUser = await db
         .insert(user)
-        .values({ email, password, name, phone, photo, usergroup_id })
+        .values({
+          email,
+          password: hashedPassword,
+          name,
+          phone,
+          photo,
+          usergroup_id,
+        })
         .returning();
     } catch (error) {
       console.error(error);

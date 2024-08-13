@@ -104,7 +104,7 @@ export const LokasiPage = ({
             <tr class="">
               {lokasiColumn.map((val) => {
                 return (
-                  <th class="px-2 py-1 text-sm font-semibold capitalize text-blue-500">
+                  <th class="border border-gray-300 p-2 text-sm font-semibold capitalize text-blue-500">
                     {val.headerName}
                   </th>
                 );
@@ -124,7 +124,7 @@ export const LokasiPage = ({
                 <tr class="border-y border-gray-200 hover:bg-zinc-100">
                   {lokasiColumn.map((col) => {
                     return (
-                      <td class="px-4 py-2">
+                      <td class="p-3">
                         {col?.valueGetter?.(row, index) || row[col.field]}
                       </td>
                     );

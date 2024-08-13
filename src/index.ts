@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Hono } from 'hono';
-import { Client } from 'pg';
+import { Client, Pool } from 'pg';
 import api from './api/route';
 import * as user from './db/schema/user';
 import { logger } from 'hono/logger';
@@ -29,6 +29,9 @@ import * as peramalan from './db/schema/peramalan';
 import * as bahanAktif from './db/schema/bahan-aktif';
 import * as golonganPestisida from './db/schema/golongan-pestisida';
 import * as validator from './db/schema/validator';
+import * as stockAph from './db/schema/stock-aph';
+import * as bentukAph from './db/schema/bentuk-stok-aph';
+import * as golonganAph from './db/schema/golongan-aph';
 import web from './web/route';
 import { serveStatic } from 'hono/bun';
 import { CookieStore, Session, sessionMiddleware } from 'hono-sessions';
@@ -40,13 +43,14 @@ import {
 } from '@lucia-auth/adapter-drizzle';
 import { Lucia, TimeSpan } from 'lucia';
 
-export const client = new Client({
+export const client = new Pool({
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   host: process.env.DB_HOST || 'db',
   port: 5432,
   database: process.env.DB_NAME || 'siapopa-dev',
   ssl: false,
+  max: 20,
 });
 
 (async () => await client.connect())();
@@ -78,6 +82,9 @@ export const db = drizzle(client, {
     ...pestisida,
     ...peramalan,
     ...validator,
+    ...stockAph,
+    ...bentukAph,
+    ...golonganAph,
   },
 });
 const adapter = new DrizzlePostgreSQLAdapter(
@@ -138,7 +145,7 @@ app.use(
   sessionMiddleware({
     store,
     encryptionKey: 'password_at_least_32_characters_long',
-    expireAfterSeconds: 3600,
+    expireAfterSeconds: 86400,
     cookieOptions: {
       sameSite: 'Lax',
       path: '/',
@@ -154,6 +161,10 @@ app.route('/', auth);
 
 const port = 3000;
 console.log(`Server is running on port ${port}`);
+
+process.on('SIGINT', async () => {
+  await client.end();
+});
 
 export default {
   port: 3000,

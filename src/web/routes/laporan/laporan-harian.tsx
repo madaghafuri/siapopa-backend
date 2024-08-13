@@ -26,6 +26,7 @@ import Profile from '../../components/profile';
 import { validator } from 'hono/validator';
 import { Fragment } from 'hono/jsx/jsx-runtime';
 import { Session } from 'hono-sessions';
+import { getRelatedLocationsByUser } from '../../../helper';
 
 export const laporanHarianRoute = new Hono<{
   Variables: {
@@ -47,6 +48,8 @@ laporanHarianRoute.get('/', async (c) => {
       locations: true,
     },
   });
+
+  const assignedLocations = await getRelatedLocationsByUser(selectedUser);
 
   const listLaporan = await db
     .select({
@@ -104,7 +107,7 @@ laporanHarianRoute.get('/', async (c) => {
         selectedUser.userGroup.group_name !== 'bptph'
           ? inArray(
               pengamatan.lokasi_id,
-              selectedUser.locations.map((val) => val.id)
+              assignedLocations.map((val) => val.id)
             )
           : undefined
       )

@@ -2,13 +2,14 @@ import { Hono } from 'hono';
 import { authorizeApi } from '../middleware.js';
 import { db } from '../index.js';
 import { opt as optSchema } from '../db/schema/opt.js';
-import { and, eq, ilike } from 'drizzle-orm';
+import { and, asc, eq, ilike, sql } from 'drizzle-orm';
 
 export const opt = new Hono();
 
 opt.use('/opt/*', authorizeApi);
 opt.get('/opt', async (c) => {
   const nama_opt = c.req.query('q');
+  const status = c.req.query('status') as 'mutlak' | 'tidak mutlak';
   const nama = `%${nama_opt}%`;
 
   try {
@@ -18,9 +19,11 @@ opt.get('/opt', async (c) => {
       .where(
         and(
           !!nama_opt ? ilike(optSchema.nama_opt, nama) : undefined,
-          eq(optSchema.jenis, 'opt')
+          eq(optSchema.jenis, 'opt'),
+          !!status ? eq(optSchema.status, status) : undefined
         )
-      );
+      )
+      .orderBy(asc(sql`cast(${optSchema.kode_opt} as int)`));
   } catch (error) {
     console.error(error);
     return c.json(
@@ -61,7 +64,8 @@ opt.get('/opt/ma', async (c) => {
           !!nama_ma ? ilike(optSchema.nama_opt, nama) : undefined,
           eq(optSchema.jenis, 'ma')
         )
-      );
+      )
+      .orderBy(asc(sql`cast(${optSchema.kode_opt} as int)`));
   } catch (error) {
     console.error(error);
     return c.json(

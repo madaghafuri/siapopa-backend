@@ -25,6 +25,7 @@ import { kabupatenKota } from '../../../db/schema/kabupaten-kota';
 import { kecamatan } from '../../../db/schema/kecamatan';
 import { desa } from '../../../db/schema/desa';
 import { opt } from '../../../db/schema/opt';
+import { getRelatedLocationsByUser } from '../../../helper';
 
 export const laporanSbRoute = new Hono<{
   Variables: {
@@ -47,6 +48,8 @@ laporanSbRoute.get('/', async (c) => {
     },
   });
 
+  const assignedLocations = await getRelatedLocationsByUser(selectedUser);
+
   const laporanSbData = await db
     .select()
     .from(laporanSb)
@@ -66,7 +69,7 @@ laporanSbRoute.get('/', async (c) => {
         selectedUser.userGroup.group_name !== 'bptph'
           ? inArray(
               pengamatan.lokasi_id,
-              selectedUser.locations.map((val) => val.id)
+              assignedLocations.map((val) => val.id)
             )
           : undefined
       )

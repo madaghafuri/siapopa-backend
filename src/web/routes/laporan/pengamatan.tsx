@@ -32,6 +32,7 @@ import {
 import { userGroup } from '../../../db/schema/user-group';
 import { PhotoPengamatan } from '../../../db/schema/photo-pengamatan';
 import { hasilPengamatan } from '../../../api/helper';
+import { getRelatedLocationsByUser } from '../../../helper';
 
 export const pengamatanRoute = new Hono<{
   Variables: {
@@ -53,6 +54,8 @@ pengamatanRoute.get('/', async (c) => {
     where: eq(user.id, parseInt(userId)),
   });
 
+  const assignedLocations = await getRelatedLocationsByUser(selectedUser);
+
   const pengamatanList = await db.query.pengamatan.findMany({
     with: {
       tanaman: true,
@@ -73,7 +76,7 @@ pengamatanRoute.get('/', async (c) => {
         selectedUser.userGroup.group_name !== 'bptph'
           ? inArray(
               pengamatan.lokasi_id,
-              selectedUser.locations.map((val) => val.id)
+              assignedLocations.map((val) => val.id)
             )
           : undefined
       ),

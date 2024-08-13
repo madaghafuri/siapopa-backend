@@ -4,10 +4,10 @@ import { ColumnHeader, Table } from '../../components/table.js';
 import { SelectBahanAktif } from '../../../db/schema/bahan-aktif.js';
 
 export const bahanAktifColumn: ColumnHeader<SelectBahanAktif>[] = [
-  { headerName: "no", valueGetter: (_, index) => index + 1, width: "5%"},
-  { headerName: 'nama bahan aktif', field: 'nama_bahan'},
+  { headerName: 'no', valueGetter: (_, index) => index + 1, width: '5%' },
+  { headerName: 'nama bahan aktif', field: 'nama_bahan' },
   { headerName: 'Actions' },
-]
+];
 
 const DataBahanAktif = ({
   listBahanAktif,
@@ -20,7 +20,8 @@ const DataBahanAktif = ({
     <div class="grid p-5 shadow-inner">
       {!!user ? (
         <div>
-          {user.usergroup_id === 5 && (
+          {(user.usergroup_id === 5 ||
+            user.userGroup.group_name === 'bptph') && (
             <button
               class="rounded bg-primary px-2 py-1 text-white"
               hx-get="/app/stock/bahan-aktif/create"
@@ -32,15 +33,21 @@ const DataBahanAktif = ({
           )}
         </div>
       ) : null}
-      <table id="bahanAktifTable" class="border-t-2 border-t-secondary bg-white" style="width:100%">
+      <table
+        id="bahanAktifTable"
+        class="border-t-2 border-t-secondary bg-white"
+        style="width:100%"
+      >
         <thead>
           <tr>
             <th class="border-b border-gray-200 px-4 py-2" style="width: 5%">
               No.
             </th>
             <th class="border-b border-gray-200 px-4 py-2">Bahan Aktif</th>
-            {user && user.usergroup_id === 5 && (
-              <th class="border-b border-gray-200 px-4 py-2" style="width: 10%">Actions</th>
+            {user && user.userGroup.group_name === 'brigade' && (
+              <th class="border-b border-gray-200 px-4 py-2" style="width: 10%">
+                Actions
+              </th>
             )}
           </tr>
         </thead>
@@ -57,10 +64,13 @@ const DataBahanAktif = ({
                 {bahan.nama_bahan}
               </td>
               {user && user.usergroup_id === 5 && (
-                <td class="border-b border-gray-200 px-4 py-2" style="width: 10%">
+                <td
+                  class="border-b border-gray-200 px-4 py-2"
+                  style="width: 10%"
+                >
                   <div class="flex items-center space-x-2">
                     <button
-                      class="text-blue-500 hover:text-blue-700 px-4"
+                      class="px-4 text-blue-500 hover:text-blue-700"
                       hx-get={`/app/stock/bahan-aktif/edit/${bahan.id}`}
                       hx-target="body"
                       hx-swap="beforeend"
@@ -68,7 +78,7 @@ const DataBahanAktif = ({
                       <i class="fa fa-edit"></i>
                     </button>
                     <button
-                      class="ml-2 text-red-500 hover:text-red-700 px-4"
+                      class="ml-2 px-4 text-red-500 hover:text-red-700"
                       hx-delete={`/app/stock/bahan-aktif/delete/${bahan.id}`}
                       hx-target="#bahanAktifTable"
                       hx-swap="outerHTML"
