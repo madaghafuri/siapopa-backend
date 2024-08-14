@@ -2,17 +2,28 @@ import { InsertOPT } from '../../../db/schema/opt.js';
 import { SelectTanaman } from '../../../db/schema/tanaman.js';
 import Modal, { ModalContent, ModalHeader } from '../modal.js';
 
-export const ModalOpt = ({ listTanaman, opt }: { listTanaman: SelectTanaman[], opt?: InsertOPT }) => {
+export const ModalOpt = ({
+  listTanaman,
+  opt,
+}: {
+  listTanaman: SelectTanaman[];
+  opt?: InsertOPT;
+}) => {
   const isEditing = !!opt;
+  const isMa = opt.jenis === 'ma';
   return (
     <Modal>
       <ModalHeader>
-        <h2 class="text-xl font-bold">{isEditing ? 'Edit' : 'Create'} Opt</h2>
+        <h2 class="text-xl font-bold">
+          {isEditing ? 'Edit' : 'Create'} {isMa ? 'MA' : 'OPT'}
+        </h2>
       </ModalHeader>
       <ModalContent>
         <form
           class="flex flex-col gap-3"
-          hx-post={isEditing ? `/app/master/opt/edit/${opt?.id}` : "/app/master/opt"}
+          hx-post={
+            isEditing ? `/app/master/opt/edit/${opt?.id}` : '/app/master/opt'
+          }
           hx-target="#error-message"
           hx-swap="innerHTML"
           hx-trigger="submit"
@@ -21,6 +32,7 @@ export const ModalOpt = ({ listTanaman, opt }: { listTanaman: SelectTanaman[], o
             <label>Jenis</label>
             <select name="jenis" class="rounded border px-2 py-1">
               <option value="opt">OPT</option>
+              <option value="ma">MA</option>
             </select>
           </div>
           <div class="grid grid-cols-[30%,auto]">
@@ -46,8 +58,15 @@ export const ModalOpt = ({ listTanaman, opt }: { listTanaman: SelectTanaman[], o
           <div class="grid grid-cols-[30%,auto]">
             <label>Status </label>
             <select name="status" class="rounded border px-2 py-1">
-              <option value="mutlak" selected={opt?.status === 'mutlak'}>Mutlak</option>
-              <option value="tidak mutlak" selected={opt?.status === 'tidak mutlak'}>Tidak Mutlak</option>
+              <option value="mutlak" selected={opt?.status === 'mutlak'}>
+                Mutlak
+              </option>
+              <option
+                value="tidak mutlak"
+                selected={opt?.status === 'tidak mutlak'}
+              >
+                Tidak Mutlak
+              </option>
             </select>
           </div>
           <div class="grid grid-cols-[30%,auto]">
@@ -55,7 +74,11 @@ export const ModalOpt = ({ listTanaman, opt }: { listTanaman: SelectTanaman[], o
             <select name="tanaman_id" class="rounded border px-2 py-1">
               {listTanaman.map((value) => {
                 return (
-                  <option key={value.id} value={value.id} selected={opt?.tanaman_id === value.id}>
+                  <option
+                    key={value.id}
+                    value={value.id}
+                    selected={opt?.tanaman_id === value.id}
+                  >
                     {value.nama_tanaman}
                   </option>
                 );

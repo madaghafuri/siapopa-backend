@@ -36,19 +36,12 @@ optRoute.get('/', async (c) => {
       console.error(err);
     });
 
-  const selectOpt = await db
-    .select({
-      id: opt.id,
-      kode_opt: opt.kode_opt,
-      nama_opt: opt.nama_opt,
-      status: opt.status,
-      tanaman_id: opt.tanaman_id,
-      nama_tanaman: tanaman.nama_tanaman,
-      jenis: opt.jenis,
-    })
-    .from(opt)
-    .leftJoin(tanaman, eq(tanaman.id, opt.tanaman_id))
-    .where(eq(opt.jenis, 'opt'));
+  const selectOpt = await db.query.opt.findMany({
+    with: {
+      tanaman: true,
+    },
+    where: (opt, { eq }) => eq(opt.jenis, 'opt'),
+  });
 
   if (c.req.header('hx-request')) {
     return c.html(

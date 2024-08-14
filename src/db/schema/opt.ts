@@ -2,6 +2,7 @@
 
 import { integer, pgEnum, pgTable, serial, text } from 'drizzle-orm/pg-core';
 import { tanaman } from './tanaman';
+import { relations } from 'drizzle-orm';
 
 const statusOpt = ['mutlak', 'tidak mutlak'] as const;
 const jenisOpt = ['opt', 'ma'] as const;
@@ -16,6 +17,13 @@ export const opt = pgTable('opt', {
   jenis: jenis_opt('jenis'),
   tanaman_id: integer('tanaman_id').references(() => tanaman.id),
 });
+
+export const optRelations = relations(opt, ({ one }) => ({
+  tanaman: one(tanaman, {
+    fields: [opt.tanaman_id],
+    references: [tanaman.id],
+  }),
+}));
 
 export type SelectOPT = typeof opt.$inferSelect;
 export type InsertOPT = typeof opt.$inferInsert;

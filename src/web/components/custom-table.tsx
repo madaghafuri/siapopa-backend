@@ -34,7 +34,7 @@ export const TableBody = ({
             <tr class="border-y border-gray-200 hover:bg-zinc-100">
               {column.map((col) => {
                 return (
-                  <td class="p-3" style="white-space: nowrap;">
+                  <td class="p-2" style="white-space: nowrap;">
                     {col.valueGetter?.(row, index) || row[col.field]}
                   </td>
                 );
