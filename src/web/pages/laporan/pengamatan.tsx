@@ -9,7 +9,6 @@ import { Provinsi } from '../../../db/schema/provinsi';
 import { KabupatenKota } from '../../../db/schema/kabupaten-kota';
 import { Kecamatan } from '../../../db/schema/kecamatan';
 import { Desa } from '../../../db/schema/desa';
-import { Fragment } from 'hono/jsx/jsx-runtime';
 import { SelectRumpun } from '../../../db/schema/rumpun';
 import { PhotoPengamatan } from '../../../db/schema/photo-pengamatan';
 import { LaporanHarian } from '../../../db/schema/laporan-harian';
@@ -41,6 +40,7 @@ export const pengamatanColumn: ColumnHeader<
   { headerName: 'luas diamati', field: 'luas_diamati' },
   { headerName: 'luas persemaian', field: 'luas_persemaian' },
   { headerName: 'luas hasil panen', field: 'luas_hasil_panen' },
+  { headerName: 'luas spot hopperburn', field: 'luas_spot_hopperburn' },
   { headerName: 'tgl pengamatan', field: 'tanggal_pengamatan' },
   {
     headerName: 'aksi',
@@ -56,7 +56,6 @@ export const rumpunColumn: ColumnHeader<SelectRumpun>[] = [
   { headerName: 'no', valueGetter: (_, index) => index + 1 },
   { field: 'rumpun_ke', headerName: 'rumpun ke' },
   { field: 'jumlah_anakan', headerName: 'jumlah anakan' },
-  { field: 'luas_spot_hopperburn', headerName: 'luas spot hopperburn' },
 ];
 
 export const PengamatanPage = ({

@@ -81,10 +81,9 @@ pengamatan.post(
 
       if (rumpun.length > 0) {
         const rumpunData: InsertRumpun[] = rumpun.map(
-          ({ rumpun_ke, jumlah_anakan, luas_spot_hopperburn }) => ({
+          ({ rumpun_ke, jumlah_anakan }) => ({
             rumpun_ke,
             jumlah_anakan,
-            luas_spot_hopperburn,
             pengamatan_id: insertedData[0].id,
           })
         );

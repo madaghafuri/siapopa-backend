@@ -11,7 +11,6 @@ export const rumpun = pgTable('rumpun', {
   }),
   rumpun_ke: integer('rumpun_ke'),
   jumlah_anakan: integer('jumlah_anakan'),
-  luas_spot_hopperburn: integer('luas_spot_hopperburn'),
 });
 
 export const rumpunRelations = relations(rumpun, ({ one, many }) => ({

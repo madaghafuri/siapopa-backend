@@ -5,6 +5,7 @@ import {
   geometry,
   integer,
   pgTable,
+  real,
   serial,
   text,
 } from 'drizzle-orm/pg-core';
@@ -37,6 +38,7 @@ export const pengamatan = pgTable('pengamatan', {
   tanggal_pengamatan: date('tanggal_pengamatan').defaultNow(),
   point_pengamatan: geometry('point_pengamatan', { type: 'point' }),
   status_laporan_harian: boolean('status_laporan_harian').default(false),
+  luas_spot_hopperburn: real('luas_spot_hopperburn'),
 });
 
 export const pengamatanRelations = relations(pengamatan, ({ one, many }) => ({

@@ -9,6 +9,7 @@ export const photoPengamatan = pgTable('photo_pengamatan', {
     onDelete: 'cascade',
     onUpdate: 'cascade',
   }),
+  description: text('description'),
 });
 
 export const photoPengamatanRelations = relations(
