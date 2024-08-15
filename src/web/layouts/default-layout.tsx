@@ -100,19 +100,47 @@ export const DefaultLayout = ({
 
         {!!user &&
         (user.userGroup.group_name === 'bptph' ||
-          user.userGroup.group_name === 'brigade' ||
           user.userGroup.group_name === 'satpel') ? (
+          <div class="max-w-full rounded-md border">
+            <button
+              class={`flex w-full items-center justify-between gap-5 truncate rounded-md border-b-2 px-4 py-2 text-left ${route.includes('aph') ? 'bg-primary text-white' : ''}`}
+              type="button"
+              _="on click toggle between .hidden and .flex on #aph-dropdown then toggle .rotate-90 on #laporan-stock-icon"
+            >
+              APH
+              <i id="laporan-stock-icon" class="fa-solid fa-caret-right"></i>
+            </button>
+            <div id="aph-dropdown" class="opening hidden flex-col gap-3 p-5">
+              <a
+                href="/app/stock/aph"
+                class={`rounded-md px-4 py-2 text-left ${route === 'stock-aph' ? 'bg-primary text-white' : ''}`}
+              >
+                Stock APH
+              </a>
+              <a
+                href="/app/stock/aph/golongan-aph"
+                class={`rounded-md px-4 py-2 text-left ${route === 'golongan-aph' ? 'bg-primary text-white' : ''}`}
+              >
+                Golongan APH
+              </a>
+            </div>
+          </div>
+        ) : null}
+
+        {!!user &&
+        (user.userGroup.group_name === 'bptph' ||
+          user.userGroup.group_name === 'brigade') ? (
           <div class="max-w-full rounded-md border">
             <button
               class="flex w-full items-center justify-between gap-5 truncate border-b-2 px-4 py-2 text-left"
               type="button"
-              _="on click toggle between .hidden and .flex on #laporan-stock-dropdown then toggle .rotate-90 on #laporan-stock-icon"
+              _="on click toggle between .hidden and .flex on #pestisida-dropdown then toggle .rotate-90 on #laporan-stock-icon"
             >
-              Laporan Stock
+              Pestisida
               <i id="laporan-stock-icon" class="fa-solid fa-caret-right"></i>
             </button>
             <div
-              id="laporan-stock-dropdown"
+              id="pestisida-dropdown"
               class="opening hidden flex-col gap-3 p-5"
             >
               <a
@@ -132,12 +160,6 @@ export const DefaultLayout = ({
                 class={`rounded-md px-4 py-2 text-left ${route === 'stock-pestisida' ? 'bg-primary text-white' : ''}`}
               >
                 Stock Pestisida
-              </a>
-              <a
-                href="/app/stock/aph"
-                class={`rounded-md px-4 py-2 text-left ${route === 'stock-aph' ? 'bg-primary text-white' : ''}`}
-              >
-                Stock APH
               </a>
             </div>
           </div>

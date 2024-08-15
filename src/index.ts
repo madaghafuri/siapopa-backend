@@ -43,14 +43,13 @@ import {
 } from '@lucia-auth/adapter-drizzle';
 import { Lucia, TimeSpan } from 'lucia';
 
-export const client = new Pool({
+export const client = new Client({
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   host: process.env.DB_HOST || 'db',
   port: 5432,
   database: process.env.DB_NAME || 'siapopa-dev',
   ssl: false,
-  max: 20,
 });
 
 (async () => await client.connect())();
@@ -161,10 +160,6 @@ app.route('/', auth);
 
 const port = 3000;
 console.log(`Server is running on port ${port}`);
-
-process.on('SIGINT', async () => {
-  await client.end();
-});
 
 export default {
   port: 3000,

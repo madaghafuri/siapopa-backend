@@ -10,7 +10,10 @@ import { Fragment } from 'hono/jsx/jsx-runtime';
 import { InsertStockAph, stockAph } from '../../../db/schema/stock-aph';
 import { kabupatenKota } from '../../../db/schema/kabupaten-kota';
 import { SelectUser, user } from '../../../db/schema/user';
-import { golonganAph } from '../../../db/schema/golongan-aph';
+import {
+  golonganAph,
+  InsertGolonganAph,
+} from '../../../db/schema/golongan-aph';
 import { bentukStockAph } from '../../../db/schema/bentuk-stok-aph';
 import { provinsi } from '../../../db/schema/provinsi';
 import { kecamatan } from '../../../db/schema/kecamatan';
@@ -18,11 +21,18 @@ import { desa } from '../../../db/schema/desa';
 import Modal, { ModalContent, ModalHeader } from '../../components/modal';
 import { html } from 'hono/html';
 import { validator } from 'hono/validator';
-import { userGroup } from '../../../db/schema/user-group';
+import { SelectUserGroup, userGroup } from '../../../db/schema/user-group';
 import { getRelatedLocationsByUser } from '../../../helper';
+import {
+  golonganAphColumn,
+  GolonganAphPage,
+} from '../../pages/stock/golongan-aph';
 
 export const stockAphRoute = new Hono<{
-  Variables: { session: Session; user: SelectUser };
+  Variables: {
+    session: Session;
+    user: Omit<SelectUser, 'password'> & { userGroup: SelectUserGroup };
+  };
 }>().basePath('/aph');
 
 stockAphRoute.get('/', async (c) => {
@@ -133,7 +143,7 @@ stockAphRoute.get('/', async (c) => {
               <tr class="border-y border-gray-200 hover:bg-zinc-100">
                 {stockAphColumn.map((col) => {
                   return (
-                    <td class="p-3" style="white-space: nowrap;">
+                    <td class="p-2" style="white-space: nowrap;">
                       {col.valueGetter?.(row, index) || row[col.field]}
                     </td>
                   );
@@ -243,6 +253,7 @@ stockAphRoute.get('/create', async (c) => {
           class="grid grid-cols-2 gap-3"
           hx-post="/app/stock/aph"
           hx-trigger="submit"
+          hx-indicator="#loading"
         >
           <div class="flex flex-col gap-1">
             <label class="text-sm text-blue-700">Satpel</label>
@@ -415,10 +426,7 @@ stockAphRoute.get('/create', async (c) => {
               class="rounded border border-gray-200 px-2 py-1"
             />
           </div>
-          <button
-            class="col-span-2 rounded bg-primary px-2 py-1 text-white"
-            hx-indicator="#loading"
-          >
+          <button class="col-span-2 rounded bg-primary px-2 py-1 text-white">
             <div id="loading">
               <p>Buat Stock APH</p>
               <i class="fa-solid fa-spinner"></i>
@@ -489,6 +497,107 @@ stockAphRoute.post(
     return c.text('Success', 200, {
       'HX-Reswap': 'none',
       'HX-Trigger': 'newAph, closeModal',
+    });
+  }
+);
+const golonganAphRoute = stockAphRoute.route('/golongan-aph');
+golonganAphRoute.get('/', async (c) => {
+  const user = c.get('user');
+
+  const golonganAphList = await db.query.golonganAph.findMany({
+    limit: 100,
+  });
+
+  if (c.req.header('hx-request')) {
+    return c.html(
+      <Fragment>
+        {golonganAphList.map((row, index) => {
+          return (
+            <tr class="border-y border-gray-200 hover:bg-zinc-100">
+              {golonganAphColumn.map((col) => (
+                <td class="p-2" style="white-space: nowrap;">
+                  {col.valueGetter?.(row, index) || row[col.field]}
+                </td>
+              ))}
+            </tr>
+          );
+        })}
+      </Fragment>
+    );
+  }
+  return c.html(
+    <DefaultLayout
+      route="golongan-aph"
+      authNavigation={!!user ? <Profile user={user} /> : null}
+      user={user}
+    >
+      <GolonganAphPage golonganAphList={golonganAphList} />
+    </DefaultLayout>
+  );
+});
+
+golonganAphRoute.get('/create', async (c) => {
+  return c.html(
+    <Modal>
+      <ModalHeader>Create Golongan APH</ModalHeader>
+      <ModalContent>
+        <form
+          hx-post="/app/stock/aph/golongan-aph"
+          hx-target="#error-message"
+          hx-swap="innerHTML"
+          hx-trigger="submit"
+          hx-indicator="#loading"
+        >
+          <div class="grid grid-cols-[40%,auto] items-center">
+            <label class="text-blue-700">
+              Jenis <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="jenis"
+              required
+              class="rounded border border-gray-200 px-2 py-1"
+            />
+          </div>
+          <div id="error-message" class="text-sm text-red-500"></div>
+          <button
+            type="submit"
+            class="mt-3 rounded bg-primary px-2 py-1 text-white"
+          >
+            <div id="loading">
+              <p>Tambah Golongan APH</p>
+              <i class="fa-solid fa-spinner"></i>
+            </div>
+          </button>
+        </form>
+      </ModalContent>
+    </Modal>
+  );
+});
+
+golonganAphRoute.post(
+  '/',
+  validator('form', (value, c) => {
+    console.log(value);
+    const data = value;
+    if (!data.jenis) {
+      return c.html(<span>jenis golonga aph belum ada.</span>);
+    }
+
+    return value;
+  }),
+  async (c) => {
+    const formData = c.req.valid('form') as InsertGolonganAph;
+    try {
+      await db.insert(golonganAph).values({ jenis: formData.jenis });
+    } catch (error) {
+      console.error(error);
+      return c.html(<span>Terjadi kesalahan. Silahkan coba lagi</span>);
+    }
+
+    return c.text('Success', 200, {
+      'HX-Reswap': 'none',
+      'HX-Trigger': 'newGolonganAph, closeModal',
     });
   }
 );

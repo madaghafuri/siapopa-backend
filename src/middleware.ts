@@ -20,7 +20,7 @@ export const authorize = createMiddleware<{
   Variables: {
     session: Session;
     session_rotation_key: boolean;
-    user: SelectUser;
+    user: Omit<SelectUser, 'password'>;
   };
 }>(async (c, next) => {
   const session = c.get('session');
@@ -34,6 +34,7 @@ export const authorize = createMiddleware<{
     return c.redirect('/login');
   }
   const selectUser = await db.query.user.findFirst({
+    columns: { password: false },
     with: { userGroup: true, locations: true },
     where: (user, { eq }) => eq(user.id, parseInt(userId)),
   });
@@ -75,6 +76,9 @@ export const checkACL = createMiddleware<{
   const userId = session.get('user_id') as string;
 
   const selectUser = await db.query.user.findFirst({
+    columns: {
+      password: false,
+    },
     with: {
       userGroup: true,
       locations: true,

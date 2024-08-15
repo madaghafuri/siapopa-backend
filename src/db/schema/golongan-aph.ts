@@ -10,7 +10,7 @@ export const jenisAPH = pgEnum('jenis_aph', [
 export const golonganAph = pgTable('golongan_aph', {
   id: serial('id').primaryKey(),
   nama_aph: text('nama_aph'),
-  jenis: jenisAPH('jenis'),
+  jenis: text('jenis'),
   created_at: timestamp('created_at').defaultNow(),
 });
 
