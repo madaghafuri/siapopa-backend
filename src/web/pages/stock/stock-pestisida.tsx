@@ -18,6 +18,7 @@ export type StockPestisida = {
   kecamatan: string;
   desa: string;
   nama_golongan: string;
+  alamat: string;
 };
 
 export const stockPestisidaColumn: ColumnHeader<StockPestisida>[] = [
@@ -30,6 +31,7 @@ export const stockPestisidaColumn: ColumnHeader<StockPestisida>[] = [
   { headerName: 'kabupaten/kota', field: 'kabupatenKota' },
   { headerName: 'kecamatan', field: 'kecamatan' },
   { headerName: 'desa', field: 'desa' },
+  { headerName: 'alamat', field: 'alamat' },
   { headerName: 'volume', field: 'volume' },
   {
     headerName: 'expired date',

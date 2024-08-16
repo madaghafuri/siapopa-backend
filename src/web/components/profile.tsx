@@ -22,7 +22,7 @@ const Profile = ({ user }: { user: AuthenticatedUser }) => {
         {user.photo ? (
           <img alt="" src={user.photo} />
         ) : (
-          <i class="fa-solid fa-user h-10 w-10 rounded-full"></i>
+          <i class="fa-solid fa-user rounded-full border border-gray-200 p-5 text-gray-400"></i>
         )}
         <div>
           <h4 class="font-bold">{user.name}</h4>

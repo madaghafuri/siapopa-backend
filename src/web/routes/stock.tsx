@@ -1,13 +1,13 @@
 import { Hono } from 'hono';
 import { Session } from 'hono-sessions';
 import { db } from '../../index.js';
-import { and, eq, ilike, sql } from 'drizzle-orm';
-import { user } from '../../db/schema/user.js';
+import { and, eq, ilike, inArray, sql } from 'drizzle-orm';
+import { SelectUser, user } from '../../db/schema/user.js';
 import { DefaultLayout } from '../layouts/default-layout.js';
 import Profile, { AuthenticatedUser } from '../components/profile.js';
 import { InsertTanaman, tanaman } from '../../db/schema/tanaman.js';
 import { InsertOPT, opt } from '../../db/schema/opt.js';
-import { lokasi } from '../../db/schema/lokasi.js';
+import { Lokasi, lokasi } from '../../db/schema/lokasi.js';
 import { provinsi } from '../../db/schema/provinsi.js';
 import { kabupatenKota } from '../../db/schema/kabupaten-kota.js';
 import { kecamatan } from '../../db/schema/kecamatan.js';
@@ -33,27 +33,20 @@ import { Table } from '../components/table.js';
 import { html } from 'hono/html';
 import { stockAphRoute } from './stock/aph.js';
 import { getRelatedLocationsByUser } from '../../helper.js';
+import { SelectUserGroup } from '../../db/schema/user-group.js';
 
 export const stock = new Hono<{
   Variables: {
     session: Session;
     session_key_rotation: boolean;
+    user: Omit<SelectUser, 'password'> & {
+      userGroup: SelectUserGroup & Lokasi[];
+    };
   };
 }>();
 stock.get('/stock-pestisida', async (c) => {
-  const session = c.get('session');
-  const userId = session.get('user_id') as string;
-
-  const selectedUser = await db.query.user
-    .findFirst({
-      where: eq(user.id, parseInt(userId)),
-      with: {
-        userGroup: true,
-      },
-    })
-    .catch((err) => {
-      console.error(err);
-    });
+  const selectedUser = c.get('user');
+  const assignedLocations = await getRelatedLocationsByUser(selectedUser);
 
   const selectStockPestisida = await db
     .select({
@@ -72,6 +65,7 @@ stock.get('/stock-pestisida', async (c) => {
       kecamatan: kecamatan.nama_kecamatan,
       desa: desa.nama_desa,
       nama_golongan: golonganPestisida.nama_golongan,
+      alamat: lokasi.alamat,
     })
     .from(pestisida)
     .leftJoin(opt, eq(opt.id, pestisida.opt_id))
@@ -85,6 +79,14 @@ stock.get('/stock-pestisida', async (c) => {
     .leftJoin(
       golonganPestisida,
       eq(golonganPestisida.id, pestisida.golongan_pestisida_id)
+    )
+    .where(
+      selectedUser.userGroup.group_name === 'brigade'
+        ? inArray(
+            lokasi.id,
+            assignedLocations.map((val) => val.id)
+          )
+        : undefined
     );
 
   if (c.req.header('hx-request')) {
@@ -126,30 +128,6 @@ stock.get('/stock-pestisida/create', async (c) => {
   const selectBahanAktif = await db.select().from(bahanAktif);
   const selectOPT = await db.select().from(opt);
   const selectTanaman = await db.select().from(tanaman);
-  const selectProvinsi = await db.query.provinsi.findMany({
-    columns: {
-      point_provinsi: false,
-      area_provinsi: false,
-    },
-  });
-  const selectKabKot = await db.query.kabupatenKota.findMany({
-    columns: {
-      area_kabkot: false,
-      point_kabkot: false,
-    },
-  });
-  const selectKecamatan = await db.query.kecamatan.findMany({
-    columns: {
-      point_kecamatan: false,
-      area_kecamatan: false,
-    },
-  });
-  const selectDesa = await db.query.desa.findMany({
-    columns: {
-      point_desa: false,
-      area_desa: false,
-    },
-  });
 
   const session = c.get('session');
   const userId = session.get('user_id') as string;
