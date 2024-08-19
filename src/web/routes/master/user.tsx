@@ -443,3 +443,24 @@ userRoute.post(
     });
   }
 );
+
+userRoute.get('/:id', async (c) => {
+  const userId = c.req.param('id');
+
+  const findUser = await db.query.user.findFirst({
+    with: { userGroup: true },
+    where: (user, { eq }) => eq(user.id, parseInt(userId)),
+  });
+
+  const assignedLocations = await getRelatedLocationsByUser(findUser);
+
+  if (c.req.header('hx-request')) {
+    return c.html(
+      <Fragment>
+        {assignedLocations.map((lokasi) => {
+          return <option value={lokasi.id}>{lokasi.alamat}</option>;
+        })}
+      </Fragment>
+    );
+  }
+});

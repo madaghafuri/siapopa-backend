@@ -293,7 +293,6 @@ stockAphRoute.get('/create', async (c) => {
             </label>
             <select
               id="lokasi-options"
-              type="month"
               name="lokasi_id"
               class="rounded border border-gray-200 px-2 py-1"
             >
@@ -447,6 +446,14 @@ stockAphRoute.get('/create', async (c) => {
               $('#lokasi-options').select2();
               $('#golongan-options').select2();
               $('#bentuk-options').select2();
+
+              $('#satpel-options').on('change', function (event) {
+                htmx.ajax(
+                  'GET',
+                  '/app/master/user/' + event.target.value,
+                  '#lokasi-options'
+                );
+              });
             });
           </script>
         `}
