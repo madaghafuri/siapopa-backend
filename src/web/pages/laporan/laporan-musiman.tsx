@@ -21,6 +21,12 @@ export const LaporanMusimanPage = ({
       <div class="flex items-center gap-3 text-2xl">
         <i class="fa-solid fa-table"></i>
         <h1>Laporan Musiman</h1>
+        <button
+          id="export-excel"
+          class="rounded bg-primary px-4 py-2 text-sm text-white"
+        >
+          Export to Excel
+        </button>
       </div>
       <Table
         columns={laporanMusimanColumn}
@@ -33,6 +39,13 @@ export const LaporanMusimanPage = ({
           $(document).ready(function () {
             $('#laporan-musiman-table').DataTable({
               scrollX: true,
+            });
+
+            $('#export-excel').click(function () {
+              const wb = XLSX.utils.table_to_book(
+                document.getElementById('laporan-musiman-table')
+              );
+              XLSX.writeFile(wb, 'laporan_musiman.xlsx');
             });
           });
         </script>

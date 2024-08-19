@@ -72,6 +72,12 @@ export const PengamatanPage = ({
       <div class="flex items-center gap-3 text-2xl">
         <i class="fa-solid fa-table"></i>
         <h1>Pengamatan</h1>
+        <button
+          class="rounded bg-primary px-4 py-2 text-sm text-white"
+          id="export-excel"
+        >
+          Export to Excel
+        </button>
       </div>
       <div
         hx-get="/app/laporan/pengamatan/filter"
@@ -117,7 +123,7 @@ export const PengamatanPage = ({
         rowsData={pengamatanList}
         className="hover display nowrap max-w-full rounded-md bg-white"
       />
-      <button id="export-excel">Export to Excel</button>
+
       {html`
         <script>
           $(document).ready(function () {

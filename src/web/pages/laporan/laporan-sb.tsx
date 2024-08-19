@@ -60,6 +60,12 @@ export const LaporanSbPage = ({
       <div class="flex items-center gap-3 text-2xl">
         <i class="fa-solid fa-table"></i>
         <h1>Laporan Setengah Bulan</h1>
+        <button
+          id="export-excel"
+          class="rounded bg-primary px-4 py-2 text-sm text-white"
+        >
+          Export to Excel
+        </button>
       </div>
       <div
         hx-get="/app/laporan/sb/filter"
@@ -122,6 +128,13 @@ export const LaporanSbPage = ({
           $(document).ready(function () {
             $('#laporan-sb-table').DataTable({
               scrollX: true,
+            });
+
+            $('#export-excel').click(function () {
+              const wb = XLSX.utils.table_to_book(
+                document.getElementById('laporan-sb-table')
+              );
+              XLSX.writeFile(wb, 'laporan_setengah_bulan.xlsx');
             });
           });
         </script>

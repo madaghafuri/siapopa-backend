@@ -101,6 +101,12 @@ const LaporanHarianPage = ({
       <div class="flex items-center gap-3 text-2xl">
         <i class="fa-solid fa-table"></i>
         <h1>Laporan Harian</h1>
+        <button
+          id="export-excel"
+          class="rounded bg-primary px-4 py-2 text-sm text-white"
+        >
+          Export to Excel
+        </button>
       </div>
       <div
         hx-get="/app/laporan/harian/filter"
@@ -163,6 +169,13 @@ const LaporanHarianPage = ({
           $(document).ready(function () {
             $('#laporan-harian-table').DataTable({
               scrollX: true,
+            });
+
+            $('#export-excel').click(function (e) {
+              const wb = XLSX.utils.table_to_book(
+                document.getElementById('laporan-harian-table')
+              );
+              XLSX.writeFile(wb, 'laporan_harian.xlsx');
             });
           });
         </script>
