@@ -10,6 +10,7 @@ import { LaporanMusimanPage } from '../pages/laporan/laporan-musiman';
 import { laporanHarianRoute } from './laporan/laporan-harian';
 import { pengamatanRoute } from './laporan/pengamatan';
 import { laporanSbRoute } from './laporan/laporan-sb.js';
+import { laporanBulananRoute } from './laporan/laporan-bulanan.js';
 
 export const laporan = new Hono<{
   Variables: {
@@ -21,35 +22,7 @@ export const laporan = new Hono<{
 laporan.route('/', laporanHarianRoute);
 laporan.route('/', pengamatanRoute);
 laporan.route('/', laporanSbRoute);
-
-const laporanBulananRoute = laporan.route('/bulanan');
-laporanBulananRoute.get('/', async (c) => {
-  const session = c.get('session');
-  const userId = session.get('user_id') as string;
-
-  const selectedUser = await db.query.user
-    .findFirst({
-      with: { userGroup: true },
-      where: eq(user.id, parseInt(userId)),
-    })
-    .catch((err) => {
-      console.error(err);
-    });
-
-  const dataLaporanBulanan = await db.query.laporanBulanan.findMany({
-    orderBy: (laporan, { desc }) => desc(laporan.tanggal_laporan_bulanan),
-  });
-
-  return c.html(
-    <DefaultLayout
-      route="laporan-bulanan"
-      authNavigation={!!selectedUser ? <Profile user={selectedUser} /> : null}
-      user={selectedUser || null}
-    >
-      <LaporanBulananPage laporanBulananData={dataLaporanBulanan} />
-    </DefaultLayout>
-  );
-});
+laporan.route('/', laporanBulananRoute);
 
 const laporanMusimanRoute = laporan.route('/musiman');
 laporanMusimanRoute.get('/', async (c) => {

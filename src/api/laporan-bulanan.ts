@@ -5,12 +5,20 @@ import {
   laporanBulanan as laporanBulananSchema,
 } from '../db/schema/laporan-bulanan.js';
 import { db } from '../index.js';
-import { and, eq, gte, inArray, lte, sql, SQL } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, lte, sql, SQL } from 'drizzle-orm';
 import { laporanSb } from '../db/schema/laporan-sb.js';
 import { user } from '../db/schema/user';
 import { lokasi } from '../db/schema/lokasi';
 import { authorizeApi } from '../middleware';
 import { validasiLaporan } from '../db/schema/validasi-laporan.js';
+import { validator as validatorSchema } from '../db/schema/validator.js';
+import { laporanHarian } from '../db/schema/laporan-harian.js';
+import { pengamatan } from '../db/schema/pengamatan.js';
+import { containsObject } from '../helper.js';
+import { provinsi } from '../db/schema/provinsi.js';
+import { kabupatenKota } from '../db/schema/kabupaten-kota.js';
+import { kecamatan } from '../db/schema/kecamatan.js';
+import { desa } from '../db/schema/desa.js';
 
 export const laporanBulanan = new Hono();
 
@@ -146,100 +154,305 @@ laporanBulanan.delete('/laporan_bulanan/:laporanBulananId', async (c) => {
 laporanBulanan.get('/laporan_bulanan/:laporanBulananId', async (c) => {
   const laporanBulananId = c.req.param('laporanBulananId');
 
-  try {
-    var selectData = await db
-      .select()
-      .from(laporanBulananSchema)
-      .leftJoin(
-        laporanSb,
-        eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id)
-      )
-      .leftJoin(
-        validasiLaporan,
-        eq(validasiLaporan.laporan_bulanan_id, laporanBulananSchema.id)
-      )
-      .where(eq(laporanBulananSchema.id, parseInt(laporanBulananId)));
-  } catch (error) {
-    console.error(error);
-    return c.json(
-      {
-        status: 500,
-        message: 'internal server error',
+  const userValidator = db
+    .select({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      photo: user.photo,
+      validasi: user.validasi,
+      usergroup_id: user.usergroup_id,
+    })
+    .from(user)
+    .leftJoin(validatorSchema, eq(validatorSchema.user_id, user.id))
+    .leftJoin(
+      validasiLaporan,
+      eq(validasiLaporan.id, validatorSchema.validasi_laporan_id)
+    )
+    .leftJoin(
+      laporanBulananSchema,
+      eq(laporanBulananSchema.id, validasiLaporan.laporan_bulanan_id)
+    )
+    .where(eq(laporanBulananSchema.id, parseInt(laporanBulananId)))
+    .as('user_validator');
+
+  const selectDataLaporan = await db
+    .select({
+      laporan_bulanan: {
+        ...laporanBulananSchema,
+        blok: pengamatan.blok,
       },
-      500
-    );
-  }
-
-  if (selectData.length === 0) {
-    return c.json(
-      {
-        status: 404,
-        message: 'Data laporan bulanan tidak ditemukan',
+      validasi_laporan: validasiLaporan,
+      laporan_sb: laporanSb,
+      validator: validatorSchema,
+      user_validator: {
+        id: userValidator.id,
+        name: userValidator.name,
+        email: userValidator.email,
+        phone: userValidator.phone,
+        photo: userValidator.photo,
+        validasi: userValidator.validasi,
+        usergroup_id: userValidator.usergroup_id,
       },
-      404
-    );
-  }
+      lokasi: {
+        ...lokasi,
+        provinsi: {
+          id: provinsi.id,
+          nama_provinsi: provinsi.nama_provinsi,
+        },
+        kabupaten_kota: {
+          id: kabupatenKota.id,
+          nama_kabkot: kabupatenKota.nama_kabkot,
+        },
+        kecamatan: {
+          id: kecamatan.id,
+          nama_kecamatan: kecamatan.nama_kecamatan,
+        },
+        desa: {
+          id: desa.id,
+          nama_desa: desa.nama_desa,
+        },
+      },
+    })
+    .from(laporanBulananSchema)
+    .leftJoin(
+      validasiLaporan,
+      eq(validasiLaporan.laporan_bulanan_id, laporanBulananSchema.id)
+    )
+    .leftJoin(
+      validatorSchema,
+      eq(validatorSchema.validasi_laporan_id, validasiLaporan.id)
+    )
+    .leftJoin(userValidator, eq(userValidator.id, validatorSchema.user_id))
+    .leftJoin(
+      laporanSb,
+      eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id)
+    )
+    .leftJoin(laporanHarian, eq(laporanHarian.id_laporan_sb, laporanSb.id))
+    .leftJoin(pengamatan, eq(pengamatan.id, laporanHarian.pengamatan_id))
+    .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
+    .leftJoin(provinsi, eq(provinsi.id, lokasi.provinsi_id))
+    .leftJoin(kabupatenKota, eq(kabupatenKota.id, lokasi.kabkot_id))
+    .leftJoin(kecamatan, eq(kecamatan.id, lokasi.kecamatan_id))
+    .leftJoin(desa, eq(desa.id, lokasi.desa_id))
+    .where(eq(laporanBulananSchema.id, parseInt(laporanBulananId)));
 
-  return c.json({
-    status: 200,
-    message: 'succes',
-    data: selectData[0],
-  });
-});
-laporanBulanan.get('/laporan_bulanan', async (c) => {
-  const { user_id, location_id, start_date, end_date } =
-    c.req.query() as Record<
-      'user_id' | 'location_id' | 'start_date' | 'end_date',
-      string
-    >;
+  const result = selectDataLaporan.reduce((acc, row) => {
+    const laporanBulanan = row.laporan_bulanan;
+    const laporanSb = row.laporan_sb;
+    const validasiLaporan = row.validasi_laporan;
+    const lokasi = row.lokasi;
+    const validator = !!row.validator
+      ? {
+          ...row.validator,
+          ...(!!row.user_validator ? { user: row.user_validator } : null),
+        }
+      : null;
 
-  try {
-    var selectData = await db
-      .select()
-      .from(laporanBulananSchema)
-      .leftJoin(user, eq(user.id, laporanBulananSchema.pic_id))
-      .leftJoin(
-        laporanSb,
-        eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id)
-      )
-      .leftJoin(
-        validasiLaporan,
-        eq(validasiLaporan.laporan_bulanan_id, laporanBulananSchema.id)
-      )
-      .where(
-        and(
-          !!user_id ? eq(user.id, parseInt(user_id)) : undefined,
-          !!location_id ? eq(lokasi.id, location_id) : undefined,
-          !!start_date
-            ? gte(laporanBulananSchema.start_date, start_date)
-            : undefined,
-          !!end_date ? lte(laporanBulananSchema.end_date, end_date) : undefined
+    const finalRow = {
+      ...laporanBulanan,
+      validasi_laporan: {
+        ...validasiLaporan,
+        validator: validator,
+      },
+      lokasi,
+      laporan_sb: [laporanSb],
+    };
+
+    if (!acc[laporanBulananId]) {
+      acc[laporanBulananId] = finalRow;
+    } else {
+      if (!containsObject(laporanSb, acc[laporanBulananId].laporan_sb)) {
+        acc[laporanBulananId].laporan_sb.push(laporanSb);
+      }
+
+      if (
+        !!validator &&
+        !containsObject(
+          validator,
+          acc[laporanBulananId].validasi_laporan.validator
         )
-      );
-  } catch (error) {
-    console.error(error);
-    return c.json(
-      {
-        status: 500,
-        message: 'internal server error',
-      },
-      500
-    );
-  }
+      ) {
+        acc[laporanBulananId].validasi_laporan.validator.push(validator);
+      }
+    }
 
-  if (selectData.length === 0) {
-    return c.json(
-      {
-        status: 404,
-        message: 'Laporan bulanan tidak ditemukan',
-      },
-      404
-    );
-  }
+    return acc;
+  }, {});
 
   return c.json({
     status: 200,
     message: 'success',
-    data: selectData,
+    data: result[laporanBulananId],
+  });
+});
+laporanBulanan.get('/laporan_bulanan', async (c) => {
+  const { page, per_page, user_id, lokasi_id, start_date, end_date } =
+    c.req.query();
+
+  const validLaporanBulanan = await db
+    .select()
+    .from(laporanBulananSchema)
+    .where(
+      and(
+        !!user_id
+          ? eq(laporanBulananSchema.pic_id, parseInt(user_id))
+          : undefined,
+        !!start_date
+          ? gte(laporanBulananSchema.tanggal_laporan_bulanan, start_date)
+          : undefined,
+        !!end_date
+          ? lte(laporanBulananSchema.tanggal_laporan_bulanan, end_date)
+          : undefined
+      )
+    )
+    .orderBy(asc(laporanBulananSchema.id))
+    .limit(parseInt(per_page || '10'))
+    .offset((parseInt(page || '1') - 1) * parseInt(per_page || '10'));
+
+  if (validLaporanBulanan.length === 0) {
+    return c.json(
+      {
+        status: 404,
+        message: 'Data laporan tidak ditemukan',
+      },
+      404
+    );
+  }
+
+  const userValidator = db
+    .select({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      photo: user.photo,
+      validasi: user.validasi,
+      usergroup_id: user.usergroup_id,
+    })
+    .from(user)
+    .leftJoin(validatorSchema, eq(validatorSchema.user_id, user.id))
+    .leftJoin(
+      validasiLaporan,
+      eq(validasiLaporan.id, validatorSchema.validasi_laporan_id)
+    )
+    .leftJoin(
+      laporanBulananSchema,
+      eq(laporanBulananSchema.id, validasiLaporan.laporan_bulanan_id)
+    )
+    .as('user_validator');
+
+  const selectDataLaporan = await db
+    .select({
+      laporan_bulanan: {
+        ...laporanBulananSchema,
+        blok: pengamatan.blok,
+      },
+      validasi_laporan: validasiLaporan,
+      validator: validatorSchema,
+      user_validator: {
+        id: userValidator.id,
+        name: userValidator.name,
+        email: userValidator.email,
+        phone: userValidator.phone,
+        photo: userValidator.photo,
+        validasi: userValidator.validasi,
+        usergroup_id: userValidator.usergroup_id,
+      },
+      laporan_sb: laporanSb,
+      lokasi: lokasi,
+    })
+    .from(laporanBulananSchema)
+    .leftJoin(
+      validasiLaporan,
+      eq(validasiLaporan.laporan_bulanan_id, laporanBulananSchema.id)
+    )
+    .leftJoin(
+      validatorSchema,
+      eq(validatorSchema.validasi_laporan_id, validasiLaporan.id)
+    )
+    .leftJoin(userValidator, eq(userValidator.id, validatorSchema.user_id))
+    .leftJoin(
+      laporanSb,
+      eq(laporanSb.laporan_bulanan_id, laporanBulananSchema.id)
+    )
+    .leftJoin(laporanHarian, eq(laporanHarian.id_laporan_sb, laporanSb.id))
+    .leftJoin(pengamatan, eq(pengamatan.id, laporanHarian.pengamatan_id))
+    .leftJoin(lokasi, eq(lokasi.id, pengamatan.lokasi_id))
+    .where(
+      and(
+        inArray(
+          laporanBulananSchema.id,
+          validLaporanBulanan.map((val) => val.id)
+        ),
+        !!lokasi_id ? eq(pengamatan.lokasi_id, lokasi_id) : undefined
+      )
+    )
+    .orderBy(asc(laporanBulananSchema.id));
+
+  if (selectDataLaporan.length === 0) {
+    return c.json(
+      {
+        status: 404,
+        message: 'Data laporan tidak ditemukan',
+      },
+      404
+    );
+  }
+
+  const result = selectDataLaporan.reduce((acc, row) => {
+    const laporanBulanan = row.laporan_bulanan;
+    const laporanSb = row.laporan_sb;
+    const validasiLaporan = row.validasi_laporan;
+    const validator = !!row.validator
+      ? {
+          ...row.validator,
+          ...(!!row.user_validator ? { user: row.user_validator } : null),
+        }
+      : null;
+    const lokasi = row.lokasi;
+
+    const laporan = acc.find((value) => {
+      return value.id === laporanBulanan.id;
+    });
+    const finalRow = {
+      ...laporanBulanan,
+      validasi_laporan: {
+        ...validasiLaporan,
+        validator: [validator],
+      },
+      lokasi,
+      laporan_sb: [laporanSb],
+    };
+
+    if (!laporan) {
+      acc.push(finalRow);
+    } else {
+      if (
+        !!laporanSb &&
+        !containsObject(laporanSb, acc[acc.indexOf(laporan)].laporan_sb)
+      ) {
+        acc[acc.indexOf(laporan)].laporan_sb.push(laporanSb);
+      }
+
+      if (
+        !!validator &&
+        !containsObject(
+          validator,
+          acc[acc.indexOf(laporan)].validasi_laporan.validator
+        )
+      ) {
+        acc[acc.indexOf(laporan)].validasi_laporan.validator.push(validator);
+      }
+    }
+
+    return acc;
+  }, []);
+
+  return c.json({
+    status: 200,
+    message: 'success',
+    data: result,
   });
 });

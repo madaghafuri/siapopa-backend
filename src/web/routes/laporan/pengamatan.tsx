@@ -124,6 +124,7 @@ pengamatanRoute.get('/filter', async (c) => {
       luas_diamati: pengamatan.luas_diamati,
       luas_hasil_panen: pengamatan.luas_hasil_panen,
       luas_persemaian: pengamatan.luas_persemaian,
+      luas_spot_hopperburn: pengamatan.luas_spot_hopperburn,
       ph_tanah: pengamatan.ph_tanah,
       komoditas: pengamatan.komoditas,
       varietas: pengamatan.varietas,
