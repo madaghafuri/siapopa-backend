@@ -57,10 +57,15 @@ export function hasilPengamatan(
   }
 }
 
-export const validateFile = (file: File, fileType: 'image' | 'text') => {
+export const validateFile = (
+  file: File,
+  fileType: 'image' | 'text' | 'pdf'
+) => {
   if (fileType === 'image') {
-    return file.type.includes('image')
+    return file.type.includes('image');
   } else if (fileType === 'text') {
-    return file.type.includes('text')
+    return file.type.includes('text');
+  } else if (fileType === 'pdf') {
+    return file.type.includes('pdf');
   }
-}
+};
