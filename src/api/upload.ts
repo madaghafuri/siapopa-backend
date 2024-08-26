@@ -112,3 +112,53 @@ pengamatan.post(
     });
   }
 );
+
+const lampiran = upload.route('/lampiran');
+lampiran.post(
+  '/',
+  validator('form', (value, c) => {
+    const { file } = value;
+    const validatePDF = validateFile(file as File, 'pdf');
+
+    if (!file || !validatePDF) {
+      return c.json(
+        {
+          status: 422,
+          message: 'file type must be pdf',
+        },
+        422
+      );
+    }
+
+    return file as File;
+  }),
+  async (c) => {
+    const file = c.req.valid('form');
+
+    const uploadPath = resolve('uploads', 'lampiran');
+    const arrBuff = await file.arrayBuffer();
+    const buffer = Buffer.from(arrBuff);
+
+    if (!(await Bun.file(uploadPath).exists())) {
+      await mkdir(uploadPath, { recursive: true });
+    }
+
+    try {
+      await Bun.write(resolve(uploadPath, file.name), buffer);
+    } catch (error) {
+      console.error(error);
+      return c.json(
+        {
+          status: 500,
+          message: 'failed to upload file',
+        },
+        500
+      );
+    }
+
+    return c.json({
+      status: 200,
+      message: 'success',
+    });
+  }
+);
