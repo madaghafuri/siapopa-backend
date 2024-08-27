@@ -14,6 +14,7 @@ import { userGroup } from './user-group.js';
 import { upload } from './upload.js';
 import { validasiLaporanRoute } from './validasi-laporan.js';
 import { pengajuanPestisidaRoute } from './pengajuan-pestisida.js';
+import { rekomendasiPOPTRoute } from './rekomendasi-popt.js';
 
 const api = new Hono();
 
@@ -32,5 +33,6 @@ api.route('', userGroup);
 api.route('/upload', upload);
 api.route('/', validasiLaporanRoute);
 api.route('/', pengajuanPestisidaRoute);
+api.route('/', rekomendasiPOPTRoute);
 
 export default api;
