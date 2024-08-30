@@ -12,6 +12,9 @@ import { kabupatenKota } from './kabupaten-kota';
 import { opt } from './opt';
 import { user } from './user';
 import { bahanAktif } from './bahan-aktif';
+import { pengamatan } from './pengamatan';
+import { relations } from 'drizzle-orm';
+import { rincianRekomendasiPOPT } from './rincian-rekomendasi-popt';
 
 export const jenisPengendalian = pgEnum('jenis_pengendalian', [
   'populasi',
@@ -28,11 +31,44 @@ export const rekomendasiPOPT = pgTable('rekomendasi_popt', {
   umur_tanaman: integer('umur_tanaman'),
   jenis_pengendalian: jenisPengendalian('jenis_pengendalian'),
   bahan_aktif_id: integer('bahan_aktif_id').references(() => bahanAktif.id),
-  tanggal_rekomendasi_pengedalian: date('tanggal_rekomendasi_pengendalian'),
+  pengamatan_id: integer('pengamatan_id').references(() => pengamatan.id),
+  tanggal_rekomendasi_pengendalian: date('tanggal_rekomendasi_pengendalian'),
   ambang_lampau_pengendalian: integer('ambang_lampau_pengendalian'),
   sign_popt: text('sign_popt'),
+  surat_rekomendasi_popt: text('surat_rekomendasi_popt'),
   created_at: timestamp('created_at').defaultNow(),
 });
+
+export const rekomendasiPoptRelations = relations(
+  rekomendasiPOPT,
+  ({ one, many }) => ({
+    kecamatan: one(kecamatan, {
+      fields: [rekomendasiPOPT.kecamatan_id],
+      references: [kecamatan.id],
+    }),
+    kabupaten_kota: one(kabupatenKota, {
+      fields: [rekomendasiPOPT.kabkot_id],
+      references: [kabupatenKota.id],
+    }),
+    opt: one(opt, {
+      fields: [rekomendasiPOPT.opt_id],
+      references: [opt.id],
+    }),
+    popt: one(user, {
+      fields: [rekomendasiPOPT.popt_id],
+      references: [user.id],
+    }),
+    bahan_aktif: one(bahanAktif, {
+      fields: [rekomendasiPOPT.bahan_aktif_id],
+      references: [bahanAktif.id],
+    }),
+    pengamatan: one(pengamatan, {
+      fields: [rekomendasiPOPT.pengamatan_id],
+      references: [pengamatan.id],
+    }),
+    rincian_rekomendasi: many(rincianRekomendasiPOPT),
+  })
+);
 
 export type InsertRekomendasiPOPT = typeof rekomendasiPOPT.$inferInsert;
 export type SelectRekomendasiPOPT = typeof rekomendasiPOPT.$inferSelect;

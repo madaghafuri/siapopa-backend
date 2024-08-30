@@ -4,7 +4,14 @@ import { db, lucia } from './index';
 import { eq } from 'drizzle-orm';
 import { SelectUser, user } from './db/schema/user';
 
-type Path = 'dashboard' | 'laporan' | 'master' | 'aph' | 'pestisida' | 'stock';
+type Path =
+  | 'dashboard'
+  | 'laporan'
+  | 'master'
+  | 'aph'
+  | 'pestisida'
+  | 'stock'
+  | 'rekomendasi';
 type Role = 'popt' | 'kortikab' | 'satpel' | 'bptph' | 'brigade';
 
 export const acl: Record<Path, Array<Role>> = {
@@ -14,6 +21,7 @@ export const acl: Record<Path, Array<Role>> = {
   pestisida: ['brigade', 'bptph'],
   stock: ['satpel', 'brigade', 'bptph'],
   master: ['bptph'],
+  rekomendasi: ['bptph', 'brigade'],
 };
 
 export const authorize = createMiddleware<{
