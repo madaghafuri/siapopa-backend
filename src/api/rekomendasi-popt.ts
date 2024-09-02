@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { Session } from 'hono-sessions';
-import { SelectUser } from '../db/schema/user';
+import { SelectUser, user } from '../db/schema/user';
 import { SelectUserGroup } from '../db/schema/user-group';
 import { Lokasi } from '../db/schema/lokasi';
 import { validator } from 'hono/validator';
@@ -16,7 +16,9 @@ import { db } from '..';
 import PDFDocument from 'pdfkit';
 import { createWriteStream } from 'node:fs';
 import { resolve } from 'path';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
+import { pengamatan } from '../db/schema/pengamatan';
+import { opt } from '../db/schema/opt';
 
 export const rekomendasiPOPTRoute = new Hono<{
   Variables: {
@@ -140,25 +142,19 @@ rekomendasiPOPTRoute.post(
         `lampiran_${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).split('/').join('')}_${selectRekomendasiData.id}.pdf`
       )
     );
-    ws.on('finish', async () => {
+    ws.on('close', async () => {
       try {
         await db
           .update(rekomendasiPOPT)
           .set({
             surat_rekomendasi_popt:
               process.env.NODE_ENV === 'production'
-                ? `https://sitampanparat.com/` +
-                  resolve(
-                    path,
-                    `lampiran_${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).split('/').join('')}_${selectRekomendasiData.id}.pdf`
-                  )
-                : `http://localhost:3000/` +
-                  resolve(
-                    path,
-                    `lampiran_${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).split('/').join('')}_${selectRekomendasiData.id}.pdf`
-                  ),
+                ? `https://sitampanparat.com/uploads/lampiran/` +
+                  `lampiran_${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).split('/').join('')}_${insertRekomendasi[0].id}.pdf`
+                : `http://localhost:3000/uploads/lampiran/` +
+                  `lampiran_${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).split('/').join('')}_${insertRekomendasi[0].id}.pdf`,
           })
-          .where(eq(rekomendasiPOPT.id, selectRekomendasiData.id));
+          .where(eq(rekomendasiPOPT.id, insertRekomendasi[0].id));
       } catch (error) {
         console.error(error);
         return c.json(
@@ -282,3 +278,101 @@ rekomendasiPOPTRoute.post(
     });
   }
 );
+rekomendasiPOPTRoute.get('/:id', async (c) => {
+  const rekomendasiId = c.req.param('id');
+
+  const selectRekomendasi = await db.query.rekomendasiPOPT.findFirst({
+    with: {
+      popt: {
+        columns: {
+          password: false,
+        },
+      },
+      opt: true,
+      kecamatan: {
+        columns: {
+          point_kecamatan: false,
+          area_kecamatan: false,
+        },
+      },
+      kabupaten_kota: {
+        columns: {
+          point_kabkot: false,
+          area_kabkot: false,
+        },
+      },
+      bahan_aktif: true,
+      pengamatan: {
+        columns: {
+          point_pengamatan: false,
+        },
+      },
+      rincian_rekomendasi: true,
+    },
+    where: (rekomendasi, { eq }) => eq(rekomendasi.id, parseInt(rekomendasiId)),
+  });
+
+  return c.json({
+    status: 200,
+    message: 'success',
+    data: selectRekomendasi,
+  });
+});
+rekomendasiPOPTRoute.get('/', async (c) => {
+  const { page, per_page, popt_id, lokasi_id } = c.req.query();
+
+  const selectRekomendasi = await db
+    .select({
+      id: rekomendasiPOPT.id,
+      varietas: rekomendasiPOPT.varietas,
+      umur_tanaman: rekomendasiPOPT.umur_tanaman,
+      jenis_pengendalian: rekomendasiPOPT.jenis_pengendalian,
+      tanggal_rekomendasi_pengendalian:
+        rekomendasiPOPT.tanggal_rekomendasi_pengendalian,
+      ambang_lampau_pengendalian: rekomendasiPOPT.ambang_lampau_pengendalian,
+      sign_popt: rekomendasiPOPT.sign_popt,
+      surat_rekomendasi_popt: rekomendasiPOPT.surat_rekomendasi_popt,
+      opt: opt,
+      popt: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        photo: user.photo,
+        validasi: user.validasi,
+        usergroup_id: user.usergroup_id,
+      },
+      pengamatan: {
+        id: pengamatan.id,
+        lokasi_id: pengamatan.lokasi_id,
+      },
+    })
+    .from(rekomendasiPOPT)
+    .leftJoin(pengamatan, eq(pengamatan.id, rekomendasiPOPT.pengamatan_id))
+    .leftJoin(opt, eq(opt.id, rekomendasiPOPT.opt_id))
+    .leftJoin(user, eq(user.id, rekomendasiPOPT.popt_id))
+    .where(
+      and(
+        !!popt_id ? eq(rekomendasiPOPT.popt_id, parseInt(popt_id)) : undefined,
+        !!lokasi_id ? eq(pengamatan.lokasi_id, lokasi_id) : undefined
+      )
+    )
+    .limit(parseInt(per_page || '10'))
+    .offset((parseInt(page || '1') - 1) * parseInt(per_page || '10'));
+
+  if (selectRekomendasi.length === 0) {
+    return c.json(
+      {
+        status: 404,
+        message: 'data not found',
+      },
+      404
+    );
+  }
+
+  return c.json({
+    status: 200,
+    message: 'success',
+    data: selectRekomendasi,
+  });
+});

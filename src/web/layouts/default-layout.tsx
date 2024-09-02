@@ -212,6 +212,31 @@ export const DefaultLayout = ({
             </div>
           </div>
         ) : null}
+        {!!user &&
+        (user.userGroup.group_name === 'bptph' ||
+          user.userGroup.group_name === 'brigade') ? (
+          <div class="max-w-full rounded-md border">
+            <button
+              class="flex w-full items-center justify-between gap-5 truncate border-b-2 px-4 py-2 text-left"
+              type="button"
+              _="on click toggle between .hidden and .flex on #rekomendasi-dropdown then toggle .rotate-90 on #laporan-icon"
+            >
+              Rekomendasi
+              <i id="laporan-icon" class="fa-solid fa-caret-right"></i>
+            </button>
+            <div
+              id="rekomendasi-dropdown"
+              class="opening hidden flex-col gap-3 p-5"
+            >
+              <a
+                href="/app/rekomendasi/popt"
+                class={`truncate rounded-md px-4 py-2 text-left ${route === 'rekomendasi' ? 'bg-primary text-white' : ''}`}
+              >
+                Rekomendasi POPT
+              </a>
+            </div>
+          </div>
+        ) : null}
       </section>
       <div id="main-content" class="w-10/12 bg-background">
         {children}
