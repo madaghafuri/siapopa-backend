@@ -288,8 +288,17 @@ laporanBulanan.get('/laporan_bulanan/:laporanBulananId', async (c) => {
   });
 });
 laporanBulanan.get('/laporan_bulanan', async (c) => {
-  const { page, per_page, user_id, lokasi_id, start_date, end_date } =
-    c.req.query();
+  const {
+    page,
+    per_page,
+    user_id,
+    lokasi_id,
+    start_date,
+    end_date,
+    kabkot_id,
+    kecamatan_id,
+    desa_id,
+  } = c.req.query();
 
   const validLaporanBulanan = await db
     .select()
@@ -386,7 +395,10 @@ laporanBulanan.get('/laporan_bulanan', async (c) => {
           laporanBulananSchema.id,
           validLaporanBulanan.map((val) => val.id)
         ),
-        !!lokasi_id ? eq(pengamatan.lokasi_id, lokasi_id) : undefined
+        !!lokasi_id ? eq(pengamatan.lokasi_id, lokasi_id) : undefined,
+        !!kabkot_id ? eq(lokasi.kabkot_id, kabkot_id) : undefined,
+        !!kecamatan_id ? eq(lokasi.kecamatan_id, kecamatan_id) : undefined,
+        !!desa_id ? eq(lokasi.desa_id, desa_id) : undefined
       )
     )
     .orderBy(asc(laporanBulananSchema.id));

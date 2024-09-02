@@ -379,11 +379,28 @@ laporanSb.get('/laporan_sb/:laporanSbId', async (c) => {
   });
 });
 laporanSb.get('/laporan_sb', async (c) => {
-  const { user_id, lokasi_id, start_date, end_date, page, per_page } =
-    c.req.query() as Record<
-      'user_id' | 'lokasi_id' | 'start_date' | 'end_date' | 'page' | 'per_page',
-      string
-    >;
+  const {
+    user_id,
+    lokasi_id,
+    start_date,
+    end_date,
+    page,
+    per_page,
+    kabkot_id,
+    kecamatan_id,
+    desa_id,
+  } = c.req.query() as Record<
+    | 'user_id'
+    | 'lokasi_id'
+    | 'start_date'
+    | 'end_date'
+    | 'page'
+    | 'per_page'
+    | 'kabkot_id'
+    | 'kecamatan_id'
+    | 'desa_id',
+    string
+  >;
   const foo = await db
     .select({
       id: laporanSbSchema.id,
@@ -505,7 +522,10 @@ laporanSb.get('/laporan_sb', async (c) => {
           laporanSbSchema.id,
           foo.map((val) => val.id)
         ),
-        !!lokasi_id ? eq(pengamatan.lokasi_id, lokasi_id) : undefined
+        !!lokasi_id ? eq(pengamatan.lokasi_id, lokasi_id) : undefined,
+        !!kabkot_id ? eq(kabupatenKota.id, kabkot_id) : undefined,
+        !!kecamatan_id ? eq(kecamatan.id, kecamatan_id) : undefined,
+        !!desa_id ? eq(desa.id, desa_id) : undefined
       )
     )
     .orderBy(asc(laporanSbSchema.id));

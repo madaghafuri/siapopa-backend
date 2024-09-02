@@ -428,7 +428,10 @@ laporanHarian.get(
       | 'start_date'
       | 'end_date'
       | 'page'
-      | 'per_page',
+      | 'per_page'
+      | 'kabkot_id'
+      | 'kecamatan_id'
+      | 'desa_id',
       string
     >;
     return query;
@@ -442,6 +445,9 @@ laporanHarian.get(
       user_id,
       page,
       per_page,
+      kabkot_id,
+      kecamatan_id,
+      desa_id,
     } = c.req.valid('query');
 
     const validLaporanHarian = await db
@@ -609,6 +615,9 @@ laporanHarian.get(
       .where(
         and(
           !!lokasi_id ? eq(lokasi.id, lokasi_id) : undefined,
+          !!kabkot_id ? eq(lokasi.kabkot_id, kabkot_id) : undefined,
+          !!kecamatan_id ? eq(lokasi.kecamatan_id, kecamatan_id) : undefined,
+          !!desa_id ? eq(lokasi.desa_id, desa_id) : undefined,
           inArray(
             laporanHarianSchema.id,
             validLaporanHarian.map((val) => val.id)

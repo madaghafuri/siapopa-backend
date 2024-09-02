@@ -242,16 +242,28 @@ laporanMusiman.get('/laporan_musiman/:laporanMusimanId', async (c) => {
   });
 });
 laporanMusiman.get('/laporan_musiman', async (c) => {
-  const { user_id, location_id, start_date, end_date, per_page, page } =
-    c.req.query() as Record<
-      | 'user_id'
-      | 'location_id'
-      | 'start_date'
-      | 'end_date'
-      | 'per_page'
-      | 'page',
-      string
-    >;
+  const {
+    user_id,
+    location_id,
+    start_date,
+    end_date,
+    per_page,
+    page,
+    kabkot_id,
+    kecamatan_id,
+    desa_id,
+  } = c.req.query() as Record<
+    | 'user_id'
+    | 'location_id'
+    | 'kabkot_id'
+    | 'kecamatan_id'
+    | 'desa_id'
+    | 'start_date'
+    | 'end_date'
+    | 'per_page'
+    | 'page',
+    string
+  >;
 
   const limit = parseInt(per_page || '10');
   const offset = (parseInt(page || '1') - 1) * limit;
@@ -272,6 +284,9 @@ laporanMusiman.get('/laporan_musiman', async (c) => {
         and(
           !!user_id ? eq(user.id, parseInt(user_id)) : undefined,
           !!location_id ? eq(lokasi.id, location_id) : undefined,
+          !!kabkot_id ? eq(lokasi.kabkot_id, kabkot_id) : undefined,
+          !!kecamatan_id ? eq(lokasi.kecamatan_id, kecamatan_id) : undefined,
+          !!desa_id ? eq(lokasi.desa_id, desa_id) : undefined,
           !!start_date
             ? gte(laporanMusimanSchema.start_date, start_date)
             : undefined,

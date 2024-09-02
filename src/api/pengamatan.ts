@@ -353,6 +353,9 @@ pengamatan.get('/pengamatan', async (c) => {
     tanggal_pengamatan,
     start_date,
     end_date,
+    kabkot_id,
+    kecamatan_id,
+    desa_id,
   } = c.req.query() as Record<
     | 'lokasi_id'
     | 'user_id'
@@ -360,7 +363,10 @@ pengamatan.get('/pengamatan', async (c) => {
     | 'page'
     | 'per_page'
     | 'start_date'
-    | 'end_date',
+    | 'end_date'
+    | 'kabkot_id'
+    | 'kecamatan_id'
+    | 'desa_id',
     string
   >;
 
@@ -465,6 +471,9 @@ pengamatan.get('/pengamatan', async (c) => {
     .where(
       and(
         !!lokasi_id ? eq(pengamatanSchema.lokasi_id, lokasi_id) : undefined,
+        !!kabkot_id ? eq(kabupatenKota.id, kabkot_id) : undefined,
+        !!kecamatan_id ? eq(kecamatan.id, kecamatan_id) : undefined,
+        !!desa_id ? eq(desa.id, desa_id) : undefined,
         !!user_id ? eq(pengamatanSchema.pic_id, parseInt(user_id)) : undefined,
         !!tanggal_pengamatan
           ? eq(pengamatanSchema.tanggal_pengamatan, tanggal_pengamatan)
