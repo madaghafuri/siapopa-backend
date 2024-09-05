@@ -15,6 +15,7 @@ import { bahanAktif } from './bahan-aktif';
 import { pengamatan } from './pengamatan';
 import { relations } from 'drizzle-orm';
 import { rincianRekomendasiPOPT } from './rincian-rekomendasi-popt';
+import { pengajuanPestisida } from './pengajuan-pestisida';
 
 export const jenisPengendalian = pgEnum('jenis_pengendalian', [
   'populasi',
@@ -32,6 +33,9 @@ export const rekomendasiPOPT = pgTable('rekomendasi_popt', {
   jenis_pengendalian: jenisPengendalian('jenis_pengendalian'),
   bahan_aktif_id: integer('bahan_aktif_id').references(() => bahanAktif.id),
   pengamatan_id: integer('pengamatan_id').references(() => pengamatan.id),
+  pengajuan_pestisida_id: integer('pengajuan_pestisida_id').references(
+    () => pengajuanPestisida.id
+  ),
   tanggal_rekomendasi_pengendalian: date('tanggal_rekomendasi_pengendalian'),
   ambang_lampau_pengendalian: integer('ambang_lampau_pengendalian'),
   sign_popt: text('sign_popt'),
@@ -67,6 +71,10 @@ export const rekomendasiPoptRelations = relations(
       references: [pengamatan.id],
     }),
     rincian_rekomendasi: many(rincianRekomendasiPOPT),
+    pengajuan_pestisida: one(pengajuanPestisida, {
+      fields: [rekomendasiPOPT.pengajuan_pestisida_id],
+      references: [pengajuanPestisida.id],
+    }),
   })
 );
 

@@ -34,6 +34,7 @@ import * as bentukAph from './db/schema/bentuk-stok-aph';
 import * as golonganAph from './db/schema/golongan-aph';
 import * as rekomendasiPOPT from './db/schema/rekomendasi-popt';
 import * as rincianRekomendasi from './db/schema/rincian-rekomendasi-popt';
+import * as pengajuanPestisida from './db/schema/pengajuan-pestisida';
 import web from './web/route';
 import { serveStatic } from 'hono/bun';
 import { CookieStore, Session, sessionMiddleware } from 'hono-sessions';
@@ -88,6 +89,7 @@ export const db = drizzle(client, {
     ...golonganAph,
     ...rekomendasiPOPT,
     ...rincianRekomendasi,
+    ...pengajuanPestisida,
   },
 });
 const adapter = new DrizzlePostgreSQLAdapter(
