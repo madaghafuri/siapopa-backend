@@ -15,8 +15,11 @@ import { upload } from './upload.js';
 import { validasiLaporanRoute } from './validasi-laporan.js';
 import { pengajuanPestisidaRoute } from './pengajuan-pestisida.js';
 import { rekomendasiPOPTRoute } from './rekomendasi-popt.js';
+import { bahanAktifRoute } from './bahan-aktif.js';
+import { authorizeApi } from '../middleware.js';
 
 const api = new Hono();
+api.use('*', authorizeApi);
 
 api.route('', auth);
 api.route('', rumpun);
@@ -34,5 +37,6 @@ api.route('/upload', upload);
 api.route('/', validasiLaporanRoute);
 api.route('/', pengajuanPestisidaRoute);
 api.route('/', rekomendasiPOPTRoute);
+api.route('/', bahanAktifRoute);
 
 export default api;
