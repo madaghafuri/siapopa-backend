@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { Session } from 'hono-sessions';
-import { SelectUser } from '../db/schema/user';
+import { SelectUser, user } from '../db/schema/user';
 import { SelectUserGroup } from '../db/schema/user-group';
 import { Lokasi } from '../db/schema/lokasi';
 import { validator } from 'hono/validator';
@@ -14,6 +14,7 @@ import { eq, inArray, sql } from 'drizzle-orm';
 import { kecamatan } from '../db/schema/kecamatan';
 import { opt } from '../db/schema/opt';
 import { generateSuratPengajuanPestisida } from './helper/pengajuan-pestisida';
+import { rincianRekomendasiPOPT } from '../db/schema/rincian-rekomendasi-popt';
 
 export const pengajuanPestisidaRoute = new Hono<{
   Variables: {
@@ -89,35 +90,94 @@ pengajuanPestisidaRoute.post(
       );
     }
 
-    const foo = await db
+    const validRekomendasiPopt = db
       .select({
-        id: pengajuanPestisida.id,
-        tanggal_pengajuan: pengajuanPestisida.tanggal_pengajuan,
-        sign_brigade: pengajuanPestisida.sign_brigade,
-        lampiran: pengajuanPestisida.lampiran,
-        surat_pengajuan: pengajuanPestisida.surat_pengajuan,
-        rekomendasi_popt: {
-          ...rekomendasiPOPT,
-          kecamatan: kecamatan,
-          opt: opt,
+        id: rekomendasiPOPT.id,
+        varietas: rekomendasiPOPT.varietas,
+        umur_tanaman: rekomendasiPOPT.umur_tanaman,
+        total_luas_serangan:
+          sql`sum(${rincianRekomendasiPOPT.luas_serangan})`.as(
+            'total_luas_serangan'
+          ),
+        jenis_pengendalian: rekomendasiPOPT.jenis_pengendalian,
+        tanggal_rekomendasi_pengendalian:
+          rekomendasiPOPT.tanggal_rekomendasi_pengendalian,
+        ambang_lampau_pengendalian: rekomendasiPOPT.ambang_lampau_pengendalian,
+        sign_popt: rekomendasiPOPT.sign_popt,
+        surat_rekomendasi_popt: rekomendasiPOPT.surat_rekomendasi_popt,
+        kabkot_id: rekomendasiPOPT.kabkot_id,
+        popt_id: rekomendasiPOPT.popt_id,
+        bahan_aktif_id: rekomendasiPOPT.bahan_aktif_id,
+        pengajuan_pestisida_id: rekomendasiPOPT.pengajuan_pestisida_id,
+        pengamatan_id: rekomendasiPOPT.pengamatan_id,
+        created_at: rekomendasiPOPT.created_at,
+        kecamatan: {
+          // id: kecamatan.id,
+          nama_kecamatan: kecamatan.nama_kecamatan,
+        },
+        opt: {
+          // id: opt.id,
+          nama_opt: opt.nama_opt,
         },
       })
-      .from(pengajuanPestisida)
-      .leftJoin(
-        rekomendasiPOPT,
-        eq(rekomendasiPOPT.pengajuan_pestisida_id, pengajuanPestisida.id)
-      )
-      .leftJoin(kecamatan, eq(rekomendasiPOPT.kecamatan_id, kecamatan.id))
+      .from(rekomendasiPOPT)
+      .leftJoin(kecamatan, eq(kecamatan.id, rekomendasiPOPT.kecamatan_id))
       .leftJoin(opt, eq(opt.id, rekomendasiPOPT.opt_id))
+      .leftJoin(
+        rincianRekomendasiPOPT,
+        eq(rincianRekomendasiPOPT.rekomendasi_popt_id, rekomendasiPOPT.id)
+      )
+      .where(eq(rekomendasiPOPT.pengajuan_pestisida_id, insertData[0].id))
+      .groupBy(rekomendasiPOPT.id, kecamatan.id, opt.id)
+      .as('rekomendasi_popt');
+
+    const foo = await db
+      .select({
+        pengajuan_pestisida: pengajuanPestisida,
+        rekomendasi_popt: {
+          id: validRekomendasiPopt.id,
+          varietas: validRekomendasiPopt.varietas,
+          umur_tanaman: validRekomendasiPopt.umur_tanaman,
+          total_luas_serangan: validRekomendasiPopt.total_luas_serangan,
+          jenis_pengendalian: validRekomendasiPopt.jenis_pengendalian,
+          tanggal_rekomendasi_pengendalian:
+            validRekomendasiPopt.tanggal_rekomendasi_pengendalian,
+          ambang_lampau_pengendalian:
+            validRekomendasiPopt.ambang_lampau_pengendalian,
+          sign_popt: validRekomendasiPopt.sign_popt,
+          surat_rekomendasi_popt: validRekomendasiPopt.surat_rekomendasi_popt,
+          kabkot_id: validRekomendasiPopt.kabkot_id,
+          popt_id: validRekomendasiPopt.popt_id,
+          bahan_aktif_id: validRekomendasiPopt.bahan_aktif_id,
+          pengajuan_pestisida_id: validRekomendasiPopt.pengajuan_pestisida_id,
+          pengamatan_id: validRekomendasiPopt.pengamatan_id,
+          kecamatan: validRekomendasiPopt.kecamatan.nama_kecamatan,
+          opt: validRekomendasiPopt.opt.nama_opt,
+          created_at: validRekomendasiPopt.created_at,
+        },
+        brigade: user,
+      })
+      .from(pengajuanPestisida)
+      .leftJoin(user, eq(user.id, pengajuanPestisida.brigade_id))
+      .leftJoin(
+        validRekomendasiPopt,
+        eq(validRekomendasiPopt.pengajuan_pestisida_id, pengajuanPestisida.id)
+      )
       .where(eq(pengajuanPestisida.id, insertData[0].id));
 
     const result = foo.reduce((acc, row) => {
+      const pengajuanPestisida = row.pengajuan_pestisida;
       const rekomendasi = row.rekomendasi_popt;
+      const brigade = row.brigade;
 
-      if (!acc[row.id]) {
-        acc[row.id] = { ...row, rekomendasi_popt: [rekomendasi] };
+      if (!acc[pengajuanPestisida.id]) {
+        acc[pengajuanPestisida.id] = {
+          ...pengajuanPestisida,
+          brigade,
+          rekomendasi_popt: [rekomendasi],
+        };
       } else {
-        acc[row.id].rekomendasi_popt.push(rekomendasi);
+        acc[pengajuanPestisida.id].rekomendasi_popt.push(rekomendasi);
       }
       return acc;
     }, {});
