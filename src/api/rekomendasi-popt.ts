@@ -19,6 +19,7 @@ import { resolve } from 'path';
 import { and, eq, sql } from 'drizzle-orm';
 import { pengamatan } from '../db/schema/pengamatan';
 import { opt } from '../db/schema/opt';
+import { authorizeApi } from '../middleware';
 
 export const rekomendasiPOPTRoute = new Hono<{
   Variables: {
@@ -29,6 +30,7 @@ export const rekomendasiPOPTRoute = new Hono<{
     };
   };
 }>().basePath('/rekomendasi-popt');
+rekomendasiPOPTRoute.use('*', authorizeApi);
 
 rekomendasiPOPTRoute.post(
   '/',
@@ -243,13 +245,6 @@ rekomendasiPOPTRoute.post(
       )
       .text('Pengendali OPT', { align: 'right' });
 
-    doc.image(`uploads/signature/${validUrl[3]}`, 450, 510, {
-      width: 100,
-      height: 100,
-      fit: [100, 100],
-      align: 'right',
-      link: signUrl.toString(),
-    });
     doc.moveDown();
     doc.moveDown();
     doc.moveDown();

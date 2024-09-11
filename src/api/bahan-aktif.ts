@@ -4,6 +4,7 @@ import { SelectUser } from '../db/schema/user';
 import { SelectUserGroup } from '../db/schema/user-group';
 import { Lokasi } from '../db/schema/lokasi';
 import { db } from '..';
+import { authorizeApi } from '../middleware';
 
 export const bahanAktifRoute = new Hono<{
   Variables: {
@@ -14,6 +15,7 @@ export const bahanAktifRoute = new Hono<{
     };
   };
 }>().basePath('bahan-aktif');
+bahanAktifRoute.use('*', authorizeApi);
 
 bahanAktifRoute.get('/', async (c) => {
   const selectBahanAktif = await db.query.bahanAktif.findMany({ limit: 100 });

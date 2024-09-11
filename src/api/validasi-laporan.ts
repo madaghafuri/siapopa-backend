@@ -5,10 +5,12 @@ import { validasiLaporan } from '../db/schema/validasi-laporan';
 import { eq } from 'drizzle-orm';
 import { validator } from 'hono/validator';
 import { validator as validatorSchema } from '../db/schema/validator';
+import { authorizeApi } from '../middleware';
 
 export const validasiLaporanRoute = new Hono<{
   Variables: { session: Session };
 }>().basePath('/validasi_laporan');
+validasiLaporanRoute.use('*', authorizeApi);
 
 validasiLaporanRoute.put(
   '/:validasiId',

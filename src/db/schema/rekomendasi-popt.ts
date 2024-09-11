@@ -40,6 +40,7 @@ export const rekomendasiPOPT = pgTable('rekomendasi_popt', {
   ambang_lampau_pengendalian: integer('ambang_lampau_pengendalian'),
   sign_popt: text('sign_popt'),
   surat_rekomendasi_popt: text('surat_rekomendasi_popt'),
+  lampiran: text('lampiran'),
   created_at: timestamp('created_at').defaultNow(),
 });
 
