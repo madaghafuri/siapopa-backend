@@ -11,14 +11,28 @@ import { resolve } from 'path';
 import { mkdir } from 'node:fs/promises';
 import PdfMake from 'pdfmake';
 import { createWriteStream } from 'node:fs';
+import { eq } from 'drizzle-orm';
 
 export const pengeluaranRoute = new Hono().basePath('pengeluaran');
 pengeluaranRoute.post(
   '/',
   validator('json', (value, c) => {
-    return value as InsertPengeluaranBarang & {
-      rincian_barang: InsertBarang[];
-    };
+    const { rincian_barang, bptph_id, ...rest } =
+      value as InsertPengeluaranBarang & {
+        rincian_barang: InsertBarang[];
+      };
+
+    if (!rincian_barang || rincian_barang.length === 0 || !bptph_id) {
+      return c.json(
+        {
+          status: 401,
+          message: 'missing required data',
+        },
+        401
+      );
+    }
+
+    return { ...rest, rincian_barang, bptph_id };
   }),
   async (c) => {
     const { rincian_barang, ...data } = c.req.valid('json');
@@ -45,7 +59,7 @@ pengeluaranRoute.post(
     }));
 
     try {
-      await db.insert(pengeluaranBarang).values(validRincianBarang);
+      await db.insert(barang).values(validRincianBarang);
     } catch (error) {
       console.error(error);
       return c.json(
@@ -64,9 +78,42 @@ pengeluaranRoute.post(
             brigade: true,
           },
         },
-        barang: true,
+        barang: {
+          with: {
+            pestisida: {
+              columns: {
+                merk_dagang: true,
+              },
+            },
+          },
+        },
+        bptph: {
+          columns: {
+            password: false,
+          },
+        },
       },
       where: (pengeluaran, { eq }) => eq(pengeluaran.id, insertData[0].id),
+    });
+
+    const filteredKeys = [
+      'id',
+      'pengeluaran_id',
+      'jenis_barang',
+      'pestisida_id',
+      'aph_id',
+      'created_at',
+    ];
+
+    const mappedBarang = selectData.barang.map((val, index) => {
+      const foo = Object.entries(val)
+        .filter(([key]) => !filteredKeys.includes(key))
+        .map(([key, value]) => {
+          if (key === 'pestisida') return value['merk_dagang'];
+
+          return value;
+        });
+      return [(index + 1).toString(), ...foo];
     });
 
     const uploadPath = resolve('uploads', 'pengeluaran', 'pestisida');
@@ -83,12 +130,36 @@ pengeluaranRoute.post(
       await mkdir(uploadPath, { recursive: true });
     }
     const ws = createWriteStream(resolve(uploadPath, fileName));
+    const urlPath =
+      process.env.NODE_ENV === 'production'
+        ? 'https://sitampanparat.com'
+        : 'http://localhost:3000';
+    ws.on('finish', async () => {
+      try {
+        await db
+          .update(pengeluaranBarang)
+          .set({
+            surat_pengeluaran: `${urlPath}/uploads/pengeluaran/pestisida/${fileName}`,
+          })
+          .where(eq(pengeluaranBarang.id, insertData[0].id));
+      } catch (error) {
+        console.error(error);
+        return c.json(
+          {
+            status: 500,
+            message: error,
+          },
+          500
+        );
+      }
+      console.log(`${urlPath}/uploads/pengeluaran/pestisida/${fileName}`);
+    });
 
     const docDefinition = {
       content: [
         { text: 'SURAT PERINTAH PENGELUARAN BARANG', style: 'header' },
         {
-          text: 'Menindak lanjuti surat dari POKTAN, maka diperintahkan kepada Brigade untuk mengeluarkan Pestisida sebagai bantuan pada gerakan pengendalian OPT PBP pada tanaman Padi serta berpartisipasi aktif pada kegiatan tersebut',
+          text: `Menindak lanjuti surat dari POKTAN, maka diperintahkan kepada Brigade ${selectData.pengajuan_pestisida.brigade.name} untuk mengeluarkan Pestisida sebagai bantuan pada gerakan pengendalian OPT PBP pada tanaman Padi serta berpartisipasi aktif pada kegiatan tersebut`,
           style: 'paragraph',
         },
         {
@@ -104,25 +175,54 @@ pengeluaranRoute.post(
                 { text: 'Merk Barang', bold: true },
                 { text: 'Satuan', bold: true },
                 { text: 'Angka', bold: true },
-                { text: 'Huruf', bold: true },
                 { text: 'Keterangan', bold: true },
               ],
-              ['1', 'Panadol', 'Kg', '20', 'Dua Puluh', 'Lorem ipsum dolor'],
+              ...mappedBarang,
             ],
           },
+          margin: [20, 20, 0, 20],
+        },
+        { text: 'Catatan:', style: 'paragraph' },
+        {
+          ul: [
+            'Setiap pengeluaran barang harus dibuat berita acara serah terima oleh BPT.',
+            'Setiap penerimaan barang agar dibuat laporan hasil pengendalian.',
+            'Apabila barang tidak diambil dalam waktu 7 hari terhitung sejak terbitnysa SPPB ini dianggap batal.',
+          ],
+          style: 'catatan',
+        },
+        {
+          text: `Bandung, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
+          alignment: 'right',
+          margin: [0, 0, 0, 20],
+        },
+        {
+          text: 'KEPALA BALAI PERLINDUNGAN TANAMAN PANGAN DAN HORTIKULTURA PROVINSI JAWA BARAT',
+          alignment: 'right',
+          margin: [0, 0, 0, 90],
+          width: 100,
+        },
+        {
+          text: selectData.bptph.name,
+          decoration: 'underline',
+          alignment: 'right',
         },
       ],
       styles: {
         header: {
           fontSize: 16,
           alignment: 'center',
-          margin: [0, 100, 0, 20],
+          margin: [0, 150, 0, 20],
           bold: true,
+          decoration: 'underline',
         },
         paragraph: {
           fontSize: 12,
           alignment: 'justify',
           margin: [0, 10],
+        },
+        catatan: {
+          margin: [20, 10, 0, 50],
         },
       },
       defaultStyle: {
@@ -146,8 +246,6 @@ pengeluaranRoute.post(
     const doc = pdf.createPdfKitDocument(docDefinition);
     doc.pipe(ws);
     doc.end();
-
-    console.log(fileName);
 
     return c.json({
       status: 200,

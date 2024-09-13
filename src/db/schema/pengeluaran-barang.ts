@@ -23,6 +23,8 @@ export const pengeluaranBarang = pgTable('pengeluaran_barang', {
   ),
   pengajuan_aph_id: integer('pengajuan_aph_id').default(null),
   bptph_id: integer('bptph_id').references(() => user.id),
+  lampiran: text('lampiran'),
+  surat_pengeluaran: text('surat_pengeluaran'),
   created_at: timestamp('created_at').defaultNow(),
 });
 
@@ -63,6 +65,10 @@ export const barangRelations = relations(barang, ({ one }) => ({
   pengeluaran_barang: one(pengeluaranBarang, {
     fields: [barang.pengeluaran_id],
     references: [pengeluaranBarang.id],
+  }),
+  pestisida: one(pestisida, {
+    fields: [barang.pestisida_id],
+    references: [pestisida.id],
   }),
 }));
 
