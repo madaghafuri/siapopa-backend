@@ -1,182 +1,175 @@
 import { SelectPengajuanPestisida } from '../../db/schema/pengajuan-pestisida';
 import { SelectRekomendasiPOPT } from '../../db/schema/rekomendasi-popt';
 import { resolve } from 'path';
-import { Kecamatan } from '../../db/schema/kecamatan';
 import { SelectOPT } from '../../db/schema/opt';
-import { mkdirSync } from 'node:fs';
-import { html, raw } from 'hono/html';
+import { mkdirSync, createWriteStream } from 'node:fs';
 import { SelectUser } from '../../db/schema/user';
+import PdfMake from 'pdfmake';
 
 export const generateSuratPengajuanPestisida = async (
   data: SelectPengajuanPestisida & {
     rekomendasi_popt: (SelectRekomendasiPOPT & {
-      kecamatan: Kecamatan;
+      kecamatan: string;
       opt: SelectOPT;
       total_luas_serangan: number;
     })[];
     brigade: Omit<SelectUser, 'password'>;
   }
 ) => {
-  // const browser = await puppeteer.launch({
-  //   headless: true,
-  //   args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  // });
-  // const page = await browser.newPage();
-  // const SuratPengajuan = () => html`
-  //   <html lang="id">
-  //     <head>
-  //       <meta charset="UTF-8" />
-  //       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  //       <title>BRIGADE PERLINDUNGAN TANAMAN SABILULUNGAN</title>
-  //       <style>
-  //         body {
-  //           font-family: Arial, sans-serif;
-  //           line-height: 1.6;
-  //           padding: 20px;
-  //           max-width: 800px;
-  //           margin: 0 20px 0 20px;
-  //         }
-  //         h2 {
-  //           text-align: center;
-  //           margin-bottom: 5px;
-  //         }
-  //         p {
-  //           margin: 10px 0;
-  //         }
-  //         table {
-  //           width: 100%;
-  //           border-collapse: collapse;
-  //           margin-bottom: 20px;
-  //         }
-  //         th,
-  //         td {
-  //           border: 1px solid black;
-  //           padding: 5px;
-  //           text-align: left;
-  //         }
-  //         .header-table {
-  //           border: none;
-  //         }
-  //         .header-table td {
-  //           border: none;
-  //           vertical-align: top;
-  //         }
-  //         .right-align {
-  //           text-align: right;
-  //         }
-  //         .center {
-  //           text-align: center;
-  //         }
-  //         .signature {
-  //           object-fit: contain;
-  //         }
-  //       </style>
-  //     </head>
-  //     <body>
-  //       <h2>BRIGADE PERLINDUNGAN TANAMAN SABILULUNGAN<br />(BRIPERTASA)</h2>
-  //       <p class="center">
-  //         Desa Nagrak Kec. ${data.rekomendasi_popt[0].kecamatan.nama_kecamatan}
-  //         Kab. Bandung
-  //       </p>
-  //       <table class="header-table">
-  //         <tr>
-  //           <td>Nomor</td>
-  //           <td>: 008/BTS/03</td>
-  //           <td rowspan="3" class="right-align">
-  //             Kepada Yth :<br />
-  //             Kepala Dinas Tanaman Pangan Dan<br />
-  //             Hortikultura Propinsi Jawa Barat<br />
-  //             Cq. BPTPH Propinsi Jawa Barat<br />
-  //             Di Tempat
-  //           </td>
-  //         </tr>
-  //         <tr>
-  //           <td>Sifat</td>
-  //           <td>: Penting</td>
-  //         </tr>
-  //         <tr>
-  //           <td>Perihal</td>
-  //           <td>: Permohonan Bantuan Pestisida</td>
-  //         </tr>
-  //       </table>
-  //       <p>
-  //         Sehubungan dengan surat rekomendasi Pengendalian OPT
-  //         ${new Date(
-  //           data.rekomendasi_popt[0].tanggal_rekomendasi_pengendalian
-  //         ).toLocaleDateString('id-ID', {
-  //           weekday: 'long',
-  //           day: 'numeric',
-  //           month: 'long',
-  //           year: 'numeric',
-  //         })}
-  //         Dari POPT Kecamatan ${data.rekomendasi_popt[0].kecamatan} Pada Tanaman
-  //         Padi yang tersesang oleh OPT di bawah ini :
-  //       </p>
-  //       <table>
-  //         <tr>
-  //           <th>No</th>
-  //           <th>Jenis Tanaman / Varietas</th>
-  //           <th>Umur Tanaman (Hst)</th>
-  //           <th>Jenis OPT</th>
-  //           <th>Luas Serangan (HA)</th>
-  //           <th>Intensitas (%)</th>
-  //           <th>Kepadatan Populasi</th>
-  //         </tr>
-  //         ${data.rekomendasi_popt.map((val, index) =>
-  //           raw(`<tr>
-  //               <td>${index + 1}</td>
-  //               <td>${val.varietas}</td>
-  //               <td>${val.umur_tanaman}</td>
-  //               <td>${val.opt}</td>
-  //               <td>${val.total_luas_serangan}</td>
-  //               <td>${val.ambang_lampau_pengendalian}</td>
-  //               <td>-</td>
-  //           </tr>`)
-  //         )}
-  //       </table>
-  //       <p>
-  //         OPT Diatas telah melampaui ambang pengendalian. Untuk Itu kami
-  //         mengajukan permohonan bantuan pestisida. ( Jadwal pengendalian
-  //         terlampir ).
-  //       </p>
-  //       <p>Demikian disampaikan, atas perhatiannya kami ucapkan terimakasih</p>
-  //       <p class="right-align">
-  //         ${data.rekomendasi_popt[0].kecamatan.nama_kecamatan}
-  //         ${new Date().toLocaleDateString('id-ID', {
-  //           day: 'numeric',
-  //           month: 'long',
-  //           year: 'numeric',
-  //         })}<br />
-  //         Ketua Brigade Kecamatan ${data.rekomendasi_popt[0].kecamatan}<br /><br />
-  //         <br></br>
-  //         <br></br>
-  //         <br></br>
-  //         <br></br>
-  //         ${data.brigade.name}
-  //       </p>
-  //       <p>
-  //         Tembusan :<br />
-  //         - Korsatpel Wilayah IV Bandung ( Sebagai Laporan )<br />
-  //         - Arsip
-  //       </p>
-  //     </body>
-  //   </html>
-  // `;
-  // await page.setContent(SuratPengajuan() as string);
-  // const path = resolve('uploads', 'lampiran', 'pengajuan');
-  // const fileName = `surat_${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).split('/').join('')}_${data.id}.pdf`;
-  // if (!(await Bun.file(path).exists())) {
-  //   mkdirSync(path, { recursive: true });
-  // }
-  // await page.pdf({
-  //   path: resolve(path, fileName),
-  //   format: 'A4',
-  //   printBackground: true,
-  // });
-  // await browser.close();
-  // const imageURL =
-  //   // Bun.env.NODE_ENV === 'production'
-  //   // ? `https://sitampanparat.com` + `/uploads/lampiran/pengajuan/${fileName}`
-  //   `http://localhost:3000/uploads/lampiran/pengajuan/${fileName}`;
-  // return imageURL;
+  const uploadPath = resolve('uploads', 'pengajuan', 'pestisida');
+  const [day, month, year] = new Date(data.tanggal_pengajuan)
+    .toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+    })
+    .split('/');
+  const fileName = `PBP_${year}${month}${day}_${data.id}.pdf`;
+  const baseUrl =
+    process.env.NODE_ENV === 'production'
+      ? 'https://sitampanparat.com'
+      : 'http://localhost:3000';
+  const fileUrlPath = baseUrl + '/uploads/pengajuan/pestisida/' + fileName;
+
+  if (!(await Bun.file(uploadPath).exists())) {
+    mkdirSync(uploadPath, { recursive: true });
+  }
+  const ws = createWriteStream(resolve(uploadPath, fileName));
+
+  const filteredKeys = [
+    'varietas',
+    'umur_tanaman',
+    'opt',
+    'total_luas_serangan',
+    'ambang_lampau_pengendalian',
+  ];
+
+  const mappedRekomendasi = data.rekomendasi_popt.map((rekomendasi, index) => {
+    const foo = Object.entries(rekomendasi).filter(([key]) =>
+      filteredKeys.includes(key)
+    );
+    const obj = Object.fromEntries(foo);
+    const final = filteredKeys.map((val) => obj[val].toString());
+    return [(index + 1).toString(), ...final, '-'];
+  });
+
+  const fonts = {
+    Times: {
+      normal: resolve('fonts', 'Times-Regular.ttf'),
+      bold: resolve('fonts', 'Times-Bold.ttf'),
+      italics: resolve('fonts', 'Times-Italic.ttf'),
+    },
+    Roboto: {
+      normal: resolve('fonts', 'Roboto-Regular.ttf'),
+      bold: resolve('fonts', 'Roboto-Bold.ttf'),
+      italics: resolve('fonts', 'Roboto-Italic.ttf'),
+    },
+  };
+
+  const docDefinition = {
+    content: [
+      {
+        text: 'BRIGADE PERLINDUNGAN TANAMAN SABILULUNGAN (BRIPERTASA)',
+        bold: true,
+        lineHeight: 2,
+        fontSize: 15,
+        alignment: 'center',
+      },
+      {
+        columns: [
+          {
+            stack: [
+              {
+                columns: [
+                  { text: 'Nomor', width: 50 },
+                  { text: ': 123123/123123', width: 150 },
+                ],
+              },
+              {
+                columns: [
+                  { text: 'Sifat', width: 50 },
+                  { text: ': Penting', width: 150 },
+                ],
+              },
+              {
+                columns: [
+                  { text: 'Perihal', width: 50 },
+                  { text: ': Permohonan Bantuan Pestisida', width: 150 },
+                ],
+              },
+            ],
+          },
+
+          {
+            text: 'Kepada Yth: Kepala Dinas Tanaman Pangan Dan Hortikultura Propinsi Jawa Barat Cq. BPTPH Provinsi Jawa Barat Di-Tempat',
+            bold: true,
+            width: 200,
+          },
+        ],
+        margin: [0, 0, 0, 30],
+      },
+
+      {
+        text: `Sehubungan dengan surat rekomendasi Pengendalian OPT pada tanggal ${new Date(data.rekomendasi_popt[0].tanggal_rekomendasi_pengendalian).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} dari POPT Kecamatan ${data.rekomendasi_popt[0].kecamatan} Pada tanaman Padi yang terserang oleh OPT di bawah ini:`,
+        margin: [0, 0, 0, 20],
+        lineHeight: 2,
+      },
+      {
+        table: {
+          headerRows: 1,
+          body: [
+            [
+              { text: 'No', bold: true },
+              { text: 'Jenis Tanaman / Varietas', bold: true },
+              { text: 'Umur Tanaman (Hst)', bold: true },
+              { text: 'Jenis OPT', bold: true },
+              { text: 'Luas Serangan (HA)', bold: true },
+              { text: 'Intensitas (%)', bold: true },
+              { text: 'Kepadatan Populasi', bold: true },
+            ],
+            ...mappedRekomendasi,
+          ],
+        },
+        margin: [20, 0, 20, 20],
+      },
+      {
+        text: 'OPT Diatas telah melampau ambang pengendalian. Untuk itu kami mengajukan permohonan bantuan pestisida. (Jadwal pengendalian terlampir).',
+        lineHeight: 2,
+      },
+      {
+        text: 'Demikian disampaikan, atas perhatiannya kami ucapkan terimakasih.',
+        margin: [20, 20, 0, 20],
+      },
+      {
+        text: `${data.rekomendasi_popt[0].kecamatan}, ${new Date(data.tanggal_pengajuan).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
+        alignment: 'right',
+      },
+      {
+        text: `Ketua Brigade Kec. ${data.rekomendasi_popt[0].kecamatan}`,
+        alignment: 'right',
+        bold: true,
+        margin: [0, 0, 0, 90],
+      },
+      {
+        text: data.brigade.name,
+        bold: true,
+        decoration: 'underline',
+        alignment: 'right',
+        margin: [0, 0, 0, 100],
+      },
+      { text: 'Tembusan:' },
+      { ul: ['Korsatpel Wilayah Bandung', 'Arsip'], margin: [20, 0, 0, 0] },
+    ],
+    styles: {},
+    defaultStyle: {
+      font: 'Times',
+    },
+  };
+
+  const pdf = new PdfMake(fonts);
+  const doc = pdf.createPdfKitDocument(docDefinition);
+  doc.pipe(ws);
+  doc.end();
+
+  return fileUrlPath;
 };

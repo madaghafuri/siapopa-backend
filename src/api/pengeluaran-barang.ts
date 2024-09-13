@@ -152,7 +152,6 @@ pengeluaranRoute.post(
           500
         );
       }
-      console.log(`${urlPath}/uploads/pengeluaran/pestisida/${fileName}`);
     });
 
     const docDefinition = {

@@ -184,25 +184,26 @@ pengajuanPestisidaRoute.post(
       return acc;
     }, {});
 
-    // const suratPengajuan = await generateSuratPengajuanPestisida(
-    //   result[insertData[0].id]
-    // );
+    const suratPengajuan = await generateSuratPengajuanPestisida(
+      result[insertData[0].id]
+    );
 
-    // try {
-    //   await db
-    //     .update(pengajuanPestisida)
-    //     .set({ surat_pengajuan: suratPengajuan })
-    //     .where(eq(pengajuanPestisida.id, insertData[0].id));
-    // } catch (error) {
-    //   console.error(error);
-    //   return c.json(
-    //     {
-    //       status: 500,
-    //       message: error,
-    //     },
-    //     500
-    //   );
-    // }
+    console.log(suratPengajuan);
+    try {
+      await db
+        .update(pengajuanPestisida)
+        .set({ surat_pengajuan: suratPengajuan })
+        .where(eq(pengajuanPestisida.id, insertData[0].id));
+    } catch (error) {
+      console.error(error);
+      return c.json(
+        {
+          status: 500,
+          message: error,
+        },
+        500
+      );
+    }
 
     return c.json({
       status: 200,
