@@ -82,7 +82,7 @@ export const generateSuratPengajuanPestisida = async (
               {
                 columns: [
                   { text: 'Nomor', width: 50 },
-                  { text: ': 123123/123123', width: 150 },
+                  { text: ': ---/---/---', width: 150 },
                 ],
               },
               {

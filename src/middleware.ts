@@ -149,17 +149,11 @@ export const authorizeStockInput = createMiddleware<{
   const session = c.get('session');
   const userId = session.get('user_id') as string;
 
-  console.log('authorizeWebInput middleware triggered');
-  console.log('Session:', session);
-  console.log('User ID:', userId);
-
   if (!userId && c.req.header('HX-Request')) {
-    console.log('User not authorized via HX-Request');
     return c.text('Unauthorized', 302, {
       'HX-Redirect': '/login',
     });
   } else if (!userId) {
-    console.log('User not authorized');
     return c.redirect('/login');
   }
 
@@ -170,16 +164,12 @@ export const authorizeStockInput = createMiddleware<{
     where: eq(user.id, parseInt(userId)),
   });
 
-  console.log('Selected User:', selectUser);
-
   if (!selectUser && c.req.header('hx-request')) {
-    console.log('Selected user not found via HX-Request');
     return c.text('Unauthorized', 302, {
       'HX-Reswap': 'none',
       'HX-Redirect': '/login',
     });
   } else if (!selectUser) {
-    console.log('Selected user not found');
     return c.redirect('/app/dashboard');
   }
 
@@ -188,7 +178,6 @@ export const authorizeStockInput = createMiddleware<{
     selectUser.userGroup.group_name !== 'brigade' &&
     selectUser.userGroup.group_name !== 'bptph'
   ) {
-    console.log('User group not authorized via HX-Request');
     return c.text('Unauthorized', 302, {
       'HX-Reswap': 'none',
       'HX-Redirect': '/login',
@@ -197,7 +186,6 @@ export const authorizeStockInput = createMiddleware<{
     selectUser.userGroup.group_name !== 'brigade' &&
     selectUser.userGroup.group_name !== 'bptph'
   ) {
-    console.log('User group not authorized');
     return c.redirect('/app/dashboard');
   }
 

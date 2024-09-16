@@ -89,6 +89,36 @@ stock.get('/stock-pestisida', async (c) => {
         : undefined
     );
 
+  const newUrl = new URLSearchParams(c.req.query());
+
+  if (c.req.header('hx-request')) {
+    return c.html(
+      <Fragment>
+        {selectStockPestisida.length > 0 ? (
+          selectStockPestisida.map((row, index) => {
+            return (
+              <tr class="border-y border-gray-200 hover:bg-zinc-100">
+                {stockPestisidaColumn.map((col) => {
+                  return (
+                    <td class="p-2" style="white-space: nowrap;">
+                      {col.valueGetter?.(row, index) || row[col?.field]}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })
+        ) : (
+          <tr colspan={100} class="p-2 text-center">
+            No Data Available
+          </tr>
+        )}
+      </Fragment>,
+      200,
+      { 'HX-Push-Url': '/app/stock/stock-pestisida?' + newUrl.toString() }
+    );
+  }
+
   if (c.req.header('hx-request')) {
     return c.html(
       <Fragment>

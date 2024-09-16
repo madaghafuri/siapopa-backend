@@ -143,9 +143,6 @@ export const StockAphPage = ({
       {html`
         <script>
           $(document).ready(function () {
-            $('#table-stock-aph').DataTable({
-              scrollX: true,
-            });
             $('#kabkot-options').select2();
           });
         </script>

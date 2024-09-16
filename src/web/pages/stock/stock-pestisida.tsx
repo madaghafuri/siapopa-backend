@@ -1,6 +1,11 @@
 import { html } from 'hono/html';
 import { AuthenticatedUser } from '../../components/profile.js';
 import { ColumnHeader, Table } from '../../components/table.js';
+import {
+  CustomTable,
+  TableBody,
+  TableHeader,
+} from '../../components/custom-table.js';
 
 export type StockPestisida = {
   id: number;
@@ -76,26 +81,20 @@ const DataStockPestisida = ({
           )}
         </div>
       ) : null}
-      <div
-        hx-get="/app/stock/stock-pestisida"
-        hx-trigger="newPestisida from:body"
-        hx-swap="innerHTML"
-        hx-target="this"
-      >
-        <Table
-          columns={stockPestisidaColumn}
-          rowsData={listStockPestisida}
-          className="hover display nowrap max-w-full rounded-md bg-white"
-          id="stockPestisidaTable"
+      <CustomTable>
+        <TableHeader column={stockPestisidaColumn} />
+        <TableBody
+          id="table-body"
+          column={stockPestisidaColumn}
+          rowData={listStockPestisida}
+          //@ts-ignore
+          class="bg-white"
+          hx-get="/app/stock/stock-pestisida"
+          hx-trigger="newPestisida from:body"
+          hx-target="this"
+          hx-swap="innerHTML"
         />
-        {html`
-          <script>
-            $(document).ready(function () {
-              $('#stockPestisidaTable').DataTable({ scrollX: true });
-            });
-          </script>
-        `}
-      </div>
+      </CustomTable>
     </div>
   );
 };
