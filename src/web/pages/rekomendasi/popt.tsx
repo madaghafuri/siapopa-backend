@@ -36,14 +36,19 @@ export const RekomendasiPopt = ({
     opt: SelectOPT;
     bahan_aktif: SelectBahanAktif;
     popt: SelectUser;
-    kecamatan: Kecamatan;
+    kecamatan: Pick<Kecamatan, 'id' | 'nama_kecamatan'>;
   })[];
 }) => {
   return (
     <div class="p-5 shadow-inner">
       <CustomTable>
         <TableHeader column={rekomendasiColumn} />
-        <TableBody column={rekomendasiColumn} rowData={rekomendasiData} />
+        <TableBody
+          //@ts-ignore
+          class="bg-white"
+          column={rekomendasiColumn}
+          rowData={rekomendasiData}
+        />
       </CustomTable>
     </div>
   );

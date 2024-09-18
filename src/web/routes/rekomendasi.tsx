@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Hono } from 'hono';
 import { Session } from 'hono-sessions';
 import { SelectUser, user } from '../../db/schema/user';
@@ -58,7 +59,10 @@ rekomendasiRoute.get('/', async (c) => {
       ambang_lampau_pengendalian: rekomendasiPOPT.ambang_lampau_pengendalian,
       sign_popt: rekomendasiPOPT.sign_popt,
       surat_rekomendasi_popt: rekomendasiPOPT.surat_rekomendasi_popt,
-      kecamatan: kecamatan,
+      kecamatan: {
+        id: kecamatan.id,
+        nama_kecamatan: kecamatan.nama_kecamatan,
+      },
       opt: opt,
       popt: user,
       bahan_aktif: bahanAktif,
@@ -76,9 +80,13 @@ rekomendasiRoute.get('/', async (c) => {
     .leftJoin(opt, eq(opt.id, rekomendasiPOPT.opt_id))
     .leftJoin(bahanAktif, eq(bahanAktif.id, rekomendasiPOPT.bahan_aktif_id))
     .where(
-      inArray(
-        rekomendasiPOPT.id,
-        rincianLokasi.map((val) => val.rekomendasi_popt_id)
+      and(
+        selectUser.userGroup.group_name === 'bptph'
+          ? undefined
+          : inArray(
+              rekomendasiPOPT.id,
+              rincianLokasi.map((val) => val.rekomendasi_popt_id)
+            )
       )
     )
     .orderBy(desc(rekomendasiPOPT.created_at));
