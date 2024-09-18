@@ -11,7 +11,7 @@ FROM base AS prerelease
 WORKDIR /app
 COPY --from=install /temp/dev/node_modules ./node_modules
 COPY --from=install /temp/dev/package.json ./package.json
-COPY . .
+COPY src ./src
 
 # PROD
 RUN bun run build:css:prod
@@ -19,17 +19,17 @@ RUN bun run build:css:prod
 FROM base AS release
 WORKDIR /app
 COPY --from=install /temp/dev/node_modules ./node_modules
-COPY --from=prerelease /app/src ./src
-COPY --from=prerelease /app/package.json ./package.json
+COPY --from=install /temp/dev/package.json ./package.json
+COPY fonts ./fonts
+COPY src ./src
 COPY --from=prerelease /app/dist ./dist
-COPY --from=prerelease /app/tsconfig.json ./tsconfig.json
-COPY --from=prerelease /app/assets ./assets
-COPY --from=prerelease /app/tailwind.config.js ./tailwind.config.js
-COPY --from=prerelease /app/postcss.config.js ./postcss.config.js
-COPY --from=prerelease /app/drizzle ./drizzle
-COPY --from=prerelease /app/drizzle.config.ts ./drizzle.config.ts
-COPY --from=prerelease /app/run.sh ./run.sh
-COPY --from=prerelease /app/fonts ./fonts
+COPY tsconfig.json ./tsconfig.json
+COPY assets ./assets
+COPY tailwind.config.js ./tailwind.config.js
+COPY postcss.config.js ./postcss.config.js
+COPY drizzle ./drizzle
+COPY drizzle.config.ts ./drizzle.config.ts
+COPY run.sh ./run.sh
 
 RUN adduser --system --uid 1001 hono
 RUN mkdir -p /app/uploads
