@@ -188,7 +188,6 @@ pengajuanPestisidaRoute.post(
       result[insertData[0].id]
     );
 
-    console.log(suratPengajuan);
     try {
       await db
         .update(pengajuanPestisida)
