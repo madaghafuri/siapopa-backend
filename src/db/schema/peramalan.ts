@@ -1,7 +1,6 @@
 import {
   date,
   integer,
-  interval,
   pgEnum,
   pgTable,
   serial,
@@ -10,6 +9,7 @@ import {
 import { opt } from './opt';
 import { kabupatenKota } from './kabupaten-kota';
 import { relations } from 'drizzle-orm';
+import { peramalanKecamatan } from './peramalan-kecamatan';
 
 export const musimTanam = pgEnum('mt', ['mk', 'mh']);
 
@@ -32,7 +32,7 @@ export const peramalan = pgTable('peramalan', {
   updated_date: date('updated_date').defaultNow(),
 });
 
-export const peramalanRelations = relations(peramalan, ({ one }) => ({
+export const peramalanRelations = relations(peramalan, ({ one, many }) => ({
   kabupaten_kota: one(kabupatenKota, {
     fields: [peramalan.kabkot_id],
     references: [kabupatenKota.id],
@@ -41,6 +41,7 @@ export const peramalanRelations = relations(peramalan, ({ one }) => ({
     fields: [peramalan.kode_opt],
     references: [opt.kode_opt],
   }),
+  peramalan_kecamatan: many(peramalanKecamatan),
 }));
 
 export type SelectPeramalan = typeof peramalan.$inferSelect;
