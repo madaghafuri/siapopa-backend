@@ -18,6 +18,7 @@ export const lokasi = pgTable('lokasi', {
   satpel_id: integer('satpel_id'),
   kortikab_id: integer('kortikab_id'),
   bptph_id: integer('bptph_id'),
+  brigade_id: integer('brigade_id'),
 });
 
 export const lokasiRelations = relations(lokasi, ({ one }) => ({
