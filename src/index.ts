@@ -36,6 +36,7 @@ import * as rekomendasiPOPT from './db/schema/rekomendasi-popt';
 import * as rincianRekomendasi from './db/schema/rincian-rekomendasi-popt';
 import * as pengajuanPestisida from './db/schema/pengajuan-pestisida';
 import * as pengeluaranBarang from './db/schema/pengeluaran-barang';
+import * as peramalanKecamatan from './db/schema/peramalan-kecamatan';
 import web from './web/route';
 import { serveStatic } from 'hono/bun';
 import { CookieStore, Session, sessionMiddleware } from 'hono-sessions';
@@ -92,6 +93,7 @@ export const db = drizzle(client, {
     ...rincianRekomendasi,
     ...pengajuanPestisida,
     ...pengeluaranBarang,
+    ...peramalanKecamatan,
   },
 });
 const adapter = new DrizzlePostgreSQLAdapter(

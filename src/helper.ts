@@ -47,6 +47,11 @@ export async function getRelatedLocationsByUser(
       });
       return locations;
 
+    case 'brigade':
+      locations = await db.query.lokasi.findMany({
+        where: (lokasi, { eq }) => eq(lokasi.brigade_id, user.id),
+      });
+
     default:
       locations = await db.query.lokasi.findMany({
         where: (lokasi, { eq }) => eq(lokasi.pic_id, user.id),

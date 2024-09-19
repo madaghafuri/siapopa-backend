@@ -2,7 +2,7 @@ import { integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
 import { opt } from './opt';
 import { peramalan } from './peramalan';
 import { kecamatan } from './kecamatan';
-import { relations, sql } from 'drizzle-orm';
+import { relations } from 'drizzle-orm';
 
 export const peramalanKecamatan = pgTable('peramalan_kecamatan', {
   id: serial('id').primaryKey(),
@@ -15,10 +15,7 @@ export const peramalanKecamatan = pgTable('peramalan_kecamatan', {
   klts_sebelumnya: integer('klts_sebelumnya'),
   klts_antara: integer('klts_antara'),
   klts_prakiraan: integer('klts'),
-  proporsi: integer('proporsi').$defaultFn(
-    () =>
-      sql`${peramalanKecamatan.klts_sebelumnya} + ${peramalanKecamatan.klts_antara}`
-  ),
+  proporsi: integer('proporsi'),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(
     () => new Date()
