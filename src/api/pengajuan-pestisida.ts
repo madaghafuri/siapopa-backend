@@ -210,3 +210,60 @@ pengajuanPestisidaRoute.post(
     });
   }
 );
+
+pengajuanPestisidaRoute.get('/', async (c) => {
+  const { page, per_page } = c.req.query();
+
+  const dataPengajuan = await db.query.pengajuanPestisida.findMany({
+    with: {
+      brigade: true,
+      rekomendasi_popt: true,
+    },
+    limit: parseInt(per_page || '10'),
+    offset: (parseInt(page || '1') - 1) * parseInt(per_page || '10'),
+  });
+
+  if (dataPengajuan.length === 0) {
+    return c.json(
+      {
+        status: 404,
+        message: 'data tidak ditemukan',
+      },
+      404
+    );
+  }
+
+  return c.json({
+    status: 200,
+    message: 'success',
+    data: dataPengajuan,
+  });
+});
+
+pengajuanPestisidaRoute.get('/:id', async (c) => {
+  const pengajuanId = c.req.param('id');
+
+  const dataPengajuan = await db.query.pengajuanPestisida.findFirst({
+    with: {
+      brigade: true,
+      rekomendasi_popt: true,
+    },
+    where: (pengajuan, { eq }) => eq(pengajuan.id, parseInt(pengajuanId)),
+  });
+
+  if (!dataPengajuan) {
+    return c.json(
+      {
+        status: 404,
+        message: 'data tidak ditemukan',
+      },
+      404
+    );
+  }
+
+  return c.json({
+    status: 200,
+    message: 'success',
+    data: dataPengajuan,
+  });
+});

@@ -114,7 +114,12 @@ rekomendasiPOPTRoute.post(
             tanggal_pengamatan: true,
           },
         },
-        kecamatan: true,
+        kecamatan: {
+          columns: {
+            point_kecamatan: false,
+            area_kecamatan: false,
+          },
+        },
         kabupaten_kota: {
           columns: {
             point_kabkot: false,
