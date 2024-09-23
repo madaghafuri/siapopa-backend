@@ -8,7 +8,7 @@ import { authorizeWebInput } from '../../../middleware';
 import { validator } from 'hono/validator';
 import { kabupatenKota } from '../../../db/schema/kabupaten-kota';
 import { sql } from 'drizzle-orm';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 
 export const kabkotRoute = new Hono<{
   Variables: {
@@ -49,12 +49,12 @@ kabkotRoute.get('/', async (c) => {
 
   if (c.req.header('hx-request')) {
     return c.html(
-      <Fragment>
+      <>
         <option value="">Select Kabupaten/Kota</option>;
         {dataKabKot.map((kabkot) => {
           return <option value={kabkot.id}>{kabkot.nama_kabkot}</option>;
         })}
-      </Fragment>
+      </>
     );
   }
 

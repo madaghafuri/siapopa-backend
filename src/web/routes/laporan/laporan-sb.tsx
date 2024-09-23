@@ -19,7 +19,7 @@ import {
   LaporanSbDetailPage,
   LaporanSbPage,
 } from '../../pages/laporan/laporan-sb';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 import { luasKerusakanSb } from '../../../db/schema/luas-kerusakan-sb';
 import { kabupatenKota } from '../../../db/schema/kabupaten-kota';
 import { kecamatan } from '../../../db/schema/kecamatan';
@@ -172,7 +172,7 @@ laporanSbRoute.get('/filter', async (c) => {
   !!provinsiId && newUrl.append('provinsi_id', provinsiId);
 
   return c.html(
-    <Fragment>
+    <>
       {laporanSbData.map((row) => {
         return (
           <tr key={row.id}>
@@ -186,7 +186,7 @@ laporanSbRoute.get('/filter', async (c) => {
           </tr>
         );
       }) || null}
-    </Fragment>,
+    </>,
     200,
     {
       'HX-Replace-Url': `/app/laporan/sb?` + newUrl.toString(),

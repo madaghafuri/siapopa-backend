@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { Session } from 'hono-sessions';
 import { db } from '../../..';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 import { lokasiColumn, LokasiPage } from '../../pages/master/lokasi';
 import { DefaultLayout } from '../../layouts/default-layout';
 import Profile from '../../components/profile';
@@ -74,7 +74,7 @@ lokasiRoute.get('/', async (c) => {
 
   if (c.req.header('hx-request') && c.req.header('hx-target') == 'table-body') {
     return c.html(
-      <Fragment>
+      <>
         {lokasiData.map((row, index) => {
           return (
             <tr class="border-y border-gray-200 hover:bg-zinc-100">
@@ -88,7 +88,7 @@ lokasiRoute.get('/', async (c) => {
             </tr>
           );
         })}
-      </Fragment>,
+      </>,
       200,
       {
         'HX-Push-Url': '/app/master/lokasi?' + newUrl.toString(),

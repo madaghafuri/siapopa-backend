@@ -10,7 +10,7 @@ import DataUserGroup, { userGroupColumn } from '../../pages/master/usergroup';
 import { ModalUserGroup } from '../../components/master/modal-usergroup';
 import { authorizeWebInput } from '../../../middleware';
 import { validator } from 'hono/validator';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 import Modal, { ModalContent, ModalHeader } from '../../components/modal';
 import { Table } from '../../components/table';
 import { html } from 'hono/html';
@@ -39,7 +39,7 @@ userGroupRoute.get('/', async (c) => {
 
   if (c.req.header('hx-request')) {
     return c.html(
-      <Fragment>
+      <>
         <Table
           id="user-group-table"
           columns={userGroupColumn}
@@ -53,7 +53,7 @@ userGroupRoute.get('/', async (c) => {
             });
           </script>
         `}
-      </Fragment>
+      </>
     );
   }
 
@@ -104,7 +104,7 @@ userGroupRoute.get('/reload', async (c) => {
   });
 
   return c.html(
-    <Fragment>
+    <>
       {selectUserGroup.map((userGroup, index) => {
         return (
           <tr key={userGroup.id}>
@@ -137,7 +137,7 @@ userGroupRoute.get('/reload', async (c) => {
           </tr>
         );
       })}
-    </Fragment>
+    </>
   );
 });
 userGroupRoute.get('/delete/:id', async (c) => {

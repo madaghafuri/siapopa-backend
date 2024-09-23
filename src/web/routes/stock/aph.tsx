@@ -6,7 +6,6 @@ import Profile from '../../components/profile';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { lokasi } from '../../../db/schema/lokasi';
 import { stockAphColumn, StockAphPage } from '../../pages/stock/stock-aph';
-import { Fragment } from 'hono/jsx/jsx-runtime';
 import { InsertStockAph, stockAph } from '../../../db/schema/stock-aph';
 import { kabupatenKota } from '../../../db/schema/kabupaten-kota';
 import { SelectUser, user } from '../../../db/schema/user';
@@ -27,6 +26,7 @@ import {
   golonganAphColumn,
   GolonganAphPage,
 } from '../../pages/stock/golongan-aph';
+import {} from 'hono/jsx/jsx-runtime';
 
 export const stockAphRoute = new Hono<{
   Variables: {
@@ -136,7 +136,7 @@ stockAphRoute.get('/', async (c) => {
 
   if (c.req.header('hx-request')) {
     return c.html(
-      <Fragment>
+      <>
         {selectStockAph.length > 0 ? (
           selectStockAph.map((row, index) => {
             return (
@@ -158,7 +158,7 @@ stockAphRoute.get('/', async (c) => {
             </td>
           </tr>
         )}
-      </Fragment>,
+      </>,
       200,
       {
         'HX-Push-Url': '/app/stock/aph?' + newUrl.toString(),
@@ -267,12 +267,12 @@ stockAphRoute.get('/create', async (c) => {
                   {selectUser.name}
                 </option>
               ) : (
-                <Fragment>
+                <>
                   <option value="">Pilih Satpel</option>
                   {satpelOptions.map((val) => (
                     <option value={val.users.id}>{val.users.name}</option>
                   ))}
-                </Fragment>
+                </>
               )}
             </select>
           </div>
@@ -517,7 +517,7 @@ golonganAphRoute.get('/', async (c) => {
 
   if (c.req.header('hx-request')) {
     return c.html(
-      <Fragment>
+      <>
         {golonganAphList.map((row, index) => {
           return (
             <tr class="border-y border-gray-200 hover:bg-zinc-100">
@@ -529,7 +529,7 @@ golonganAphRoute.get('/', async (c) => {
             </tr>
           );
         })}
-      </Fragment>
+      </>
     );
   }
   return c.html(

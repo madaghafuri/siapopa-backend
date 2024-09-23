@@ -11,7 +11,7 @@ import { user } from '../../../db/schema/user';
 import { authorizeWebInput } from '../../../middleware';
 import { validator } from 'hono/validator';
 import { ModalOpt } from '../../components/master/modal-opt';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 import Modal, { ModalContent, ModalHeader } from '../../components/modal';
 import { Table } from '../../components/table';
 import { html } from 'hono/html';
@@ -45,7 +45,7 @@ optRoute.get('/', async (c) => {
 
   if (c.req.header('hx-request')) {
     return c.html(
-      <Fragment>
+      <>
         <Table
           id="opt-table"
           columns={optColumn}
@@ -61,7 +61,7 @@ optRoute.get('/', async (c) => {
             });
           </script>
         `}
-      </Fragment>
+      </>
     );
   }
 
@@ -132,7 +132,7 @@ optRoute.get('/reload', async (c) => {
     .where(eq(opt.jenis, 'opt'))
     .orderBy(tanaman.id);
   return c.html(
-    <Fragment>
+    <>
       {selectOpt.map((opt, index) => {
         return (
           <tr key={opt.kode_opt}>
@@ -171,7 +171,7 @@ optRoute.get('/reload', async (c) => {
           </tr>
         );
       })}
-    </Fragment>
+    </>
   );
 });
 optRoute.get('/delete/:id', async (c) => {

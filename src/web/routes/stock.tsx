@@ -26,7 +26,7 @@ import { bahanAktif, InsertBahanAktif } from '../../db/schema/bahan-aktif.js';
 import { ModalBahanAktif } from '../components/stock/modal-bahan-aktif.js';
 import { authorizeStockInput } from '../../middleware.js';
 import { validator } from 'hono/validator';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 import { ModalGolonganPestisida } from '../components/stock/modal-golongan-pestisida.js';
 import { ModalStockPestisida } from '../components/stock/modal-stock-pestisida.js';
 import { Table } from '../components/table.js';
@@ -93,7 +93,7 @@ stock.get('/stock-pestisida', async (c) => {
 
   if (c.req.header('hx-request')) {
     return c.html(
-      <Fragment>
+      <>
         {selectStockPestisida.length > 0 ? (
           selectStockPestisida.map((row, index) => {
             return (
@@ -113,7 +113,7 @@ stock.get('/stock-pestisida', async (c) => {
             No Data Available
           </tr>
         )}
-      </Fragment>,
+      </>,
       200,
       { 'HX-Push-Url': '/app/stock/stock-pestisida?' + newUrl.toString() }
     );
@@ -121,7 +121,7 @@ stock.get('/stock-pestisida', async (c) => {
 
   if (c.req.header('hx-request')) {
     return c.html(
-      <Fragment>
+      <>
         <Table
           columns={stockPestisidaColumn}
           rowsData={selectStockPestisida}
@@ -135,7 +135,7 @@ stock.get('/stock-pestisida', async (c) => {
             });
           </script>
         `}
-      </Fragment>
+      </>
     );
   }
 
@@ -268,7 +268,7 @@ stock.get('/stock-pestisida/reload', async (c) => {
     .from(pestisida)
     .orderBy(pestisida.id);
   return c.html(
-    <Fragment>
+    <>
       {selectPestisida.map((pestisida, index) => {
         return (
           <tr key={pestisida.id}>
@@ -300,7 +300,7 @@ stock.get('/stock-pestisida/reload', async (c) => {
           </tr>
         );
       })}
-    </Fragment>
+    </>
   );
 });
 stock.delete('/stock-pestisida/delete/:id', async (c) => {
@@ -463,7 +463,7 @@ stock.get('/golongan-pestisida/reload', async (c) => {
     .from(golonganPestisida)
     .orderBy(golonganPestisida.id);
   return c.html(
-    <Fragment>
+    <>
       {selectGolonganPestisida.map((golonganPestisida, index) => {
         return (
           <tr key={golonganPestisida.id}>
@@ -495,7 +495,7 @@ stock.get('/golongan-pestisida/reload', async (c) => {
           </tr>
         );
       })}
-    </Fragment>
+    </>
   );
 });
 
@@ -652,7 +652,7 @@ stock.get('/bahan-aktif/reload', async (c) => {
     .from(bahanAktif)
     .orderBy(bahanAktif.id);
   return c.html(
-    <Fragment>
+    <>
       {selectBahanAktif.map((bahanAktif, index) => {
         return (
           <tr key={bahanAktif.id}>
@@ -684,7 +684,7 @@ stock.get('/bahan-aktif/reload', async (c) => {
           </tr>
         );
       })}
-    </Fragment>
+    </>
   );
 });
 

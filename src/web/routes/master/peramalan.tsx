@@ -1,7 +1,7 @@
 import { asc, eq, sql } from 'drizzle-orm';
 import { db } from '../../..';
 import { peramalan } from '../../../db/schema/peramalan';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 import {
   PeramalanByKabKotPage,
   PeramalanPage,
@@ -94,7 +94,7 @@ peramalanRoute.get('/', async (c) => {
     .orderBy(asc(sql`cast(${peramalan.kabkot_id} as int)`));
 
   if (c.req.header('hx-request')) {
-    return c.html(<Fragment></Fragment>, 200, {
+    return c.html(<></>, 200, {
       'HX-Push-Url': '/app/master/peramalan?' + newUrl.toString(),
     });
   }

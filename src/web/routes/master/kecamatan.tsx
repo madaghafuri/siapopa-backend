@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { db } from '../../..';
 import { asc, sql } from 'drizzle-orm';
 import { kecamatan } from '../../../db/schema/kecamatan';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 
 export const kecamatanRoute = new Hono().basePath('/kecamatan');
 
@@ -21,12 +21,12 @@ kecamatanRoute.get('/', async (c) => {
 
   if (c.req.header('hx-request')) {
     return c.html(
-      <Fragment>
+      <>
         <option>Pilih Kecamatan</option>
         {kecamatanData.map((value) => {
           return <option value={value.id}>{value.nama_kecamatan}</option>;
         })}
-      </Fragment>
+      </>
     );
   }
 

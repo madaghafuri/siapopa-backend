@@ -24,7 +24,7 @@ import LaporanHarianPage, {
 import { DefaultLayout } from '../../layouts/default-layout';
 import Profile from '../../components/profile';
 import { validator } from 'hono/validator';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 import { Session } from 'hono-sessions';
 import { getRelatedLocationsByUser } from '../../../helper';
 
@@ -279,7 +279,7 @@ laporanHarianRoute.get(
     !!provinsi_id && newUrl.append('provinsi_id', provinsi_id);
 
     return c.html(
-      <Fragment>
+      <>
         {result.map((row, index) => {
           return (
             <tr key={row.id}>
@@ -293,7 +293,7 @@ laporanHarianRoute.get(
             </tr>
           );
         }) || null}
-      </Fragment>,
+      </>,
       200,
       {
         'HX-Replace-Url': `/app/laporan/harian?` + newUrl.toString(),

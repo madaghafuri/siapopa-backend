@@ -15,7 +15,7 @@ import { Pengamatan, pengamatan } from '../../../db/schema/pengamatan';
 import { Lokasi, lokasi } from '../../../db/schema/lokasi';
 import { SelectTanaman, tanaman } from '../../../db/schema/tanaman';
 import { Provinsi, provinsi } from '../../../db/schema/provinsi';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 import { rumpun } from '../../../db/schema/rumpun';
 import { detailRumpun, Kerusakan } from '../../../db/schema/detail-rumpun';
 import { opt } from '../../../db/schema/opt';
@@ -173,7 +173,7 @@ pengamatanRoute.get('/filter', async (c) => {
     tanamanIds.forEach((val) => newUrl.append('tanaman_id[]', val.toString()));
 
   return c.html(
-    <Fragment>
+    <>
       {pengamatanList.map((val, index) => {
         return (
           <tr key={val.id}>
@@ -185,7 +185,7 @@ pengamatanRoute.get('/filter', async (c) => {
           </tr>
         );
       })}
-    </Fragment>,
+    </>,
     200,
     { 'HX-Replace-Url': '/app/laporan/pengamatan?' + newUrl.toString() }
   );

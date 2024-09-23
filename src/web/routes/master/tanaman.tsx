@@ -10,7 +10,7 @@ import Profile, { AuthenticatedUser } from '../../components/profile';
 import { authorizeWebInput } from '../../../middleware';
 import { validator } from 'hono/validator';
 import { ModalTanaman } from '../../components/master/modal-tanaman';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 import { getValidKeyValuePairs } from '../../../helper';
 import { Table } from '../../components/table';
 import { html } from 'hono/html';
@@ -44,7 +44,7 @@ tanamanRoute.get('/', async (c) => {
 
   if (c.req.header('HX-Request')) {
     return c.html(
-      <Fragment>
+      <>
         <Table
           id="tanaman-table"
           className="display hover nowrap max-w-full rounded bg-white"
@@ -60,7 +60,7 @@ tanamanRoute.get('/', async (c) => {
             });
           </script>
         `}
-      </Fragment>
+      </>
     );
   }
 

@@ -16,7 +16,7 @@ import {
   getValidKeyValuePairs,
 } from '../../../helper';
 import { Table } from '../../components/table';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 import { ModalUserCreate } from '../../components/master/modal-user';
 import { Lokasi, lokasi } from '../../../db/schema/lokasi';
 
@@ -56,7 +56,7 @@ userRoute.get('/', async (c) => {
 
   if (c.req.header('HX-Request')) {
     return c.html(
-      <Fragment>
+      <>
         <Table
           id="user-table"
           columns={userColumn}
@@ -70,7 +70,7 @@ userRoute.get('/', async (c) => {
             });
           </script>
         `}
-      </Fragment>
+      </>
     );
   }
 
@@ -456,11 +456,11 @@ userRoute.get('/:id', async (c) => {
 
   if (c.req.header('hx-request')) {
     return c.html(
-      <Fragment>
+      <>
         {assignedLocations.map((lokasi) => {
           return <option value={lokasi.id}>{lokasi.alamat}</option>;
         })}
-      </Fragment>
+      </>
     );
   }
 });

@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { db } from '../../..';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 
 export const desaRoute = new Hono().basePath('/desa');
 desaRoute.get('/', async (c) => {
@@ -17,12 +17,12 @@ desaRoute.get('/', async (c) => {
 
   if (c.req.header('hx-request')) {
     return c.html(
-      <Fragment>
+      <>
         <option>Pilih Desa</option>
         {desaData.map((value) => {
           return <option value={value.id}>{value.nama_desa}</option>;
         })}
-      </Fragment>
+      </>
     );
   }
 

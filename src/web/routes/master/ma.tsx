@@ -7,7 +7,7 @@ import { db } from '../../..';
 import { DefaultLayout } from '../../layouts/default-layout';
 import Profile from '../../components/profile';
 import { maColumn, MaPage } from '../../pages/master/ma';
-import { Fragment } from 'hono/jsx/jsx-runtime';
+import {} from 'hono/jsx/jsx-runtime';
 import Modal, { ModalContent, ModalHeader } from '../../components/modal';
 import { validator } from 'hono/validator';
 import { InsertOPT, opt } from '../../../db/schema/opt';
@@ -38,7 +38,7 @@ maRoute.get('/', async (c) => {
 
   if (c.req.header('hx-request')) {
     return c.html(
-      <Fragment>
+      <>
         {selectMa.map((row, index) => {
           return (
             <tr class="border-y border-gray-200 hover:bg-zinc-100">
@@ -50,7 +50,7 @@ maRoute.get('/', async (c) => {
             </tr>
           );
         })}
-      </Fragment>,
+      </>,
       200,
       { 'HX-Push-Url': '/app/master/ma?' + newUrl.toString() }
     );
