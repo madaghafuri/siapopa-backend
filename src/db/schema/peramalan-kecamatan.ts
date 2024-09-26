@@ -6,7 +6,10 @@ import { relations } from 'drizzle-orm';
 
 export const peramalanKecamatan = pgTable('peramalan_kecamatan', {
   id: serial('id').primaryKey(),
-  opt_id: integer('opt_id').references(() => opt.id),
+  opt_id: integer('opt_id').references(() => opt.id, {
+    onDelete: 'cascade',
+    onUpdate: 'cascade',
+  }),
   peramalan_id: integer('peramalan_id').references(() => peramalan.id),
   kecamatan_id: text('kecamatan_id').references(() => kecamatan.id),
   mt_sebelumnya: integer('mt_sebelumnya'),

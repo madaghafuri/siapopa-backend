@@ -146,6 +146,37 @@ const DashboardPage = ({
                         layer.bindTooltip(data.nama_kabkot).openTooltip();
                       })
                       .on('click', function ({ layer }) {
+                        $.ajax({
+                          url: '/app/dashboard/peramalan/' + data.kabkot_id,
+                          method: 'GET',
+                          data: {
+                            kode_opt: kodeOptList,
+                          },
+                          success: (res) => {
+                            console.log('success');
+                            const kecamatanLayer = [];
+                            res.data.forEach((data) => {
+                              const multipoly = L.geoJSON(data.area_kecamatan, {
+                                style: {
+                                  fillColor: getColor(data.klts_prakiraan),
+                                  weight: 2,
+                                  fillOpacity: 0.7,
+                                  color: 'white',
+                                },
+                              }).on('mouseover', function ({ layer }) {
+                                layer
+                                  .bindToolTip(data.nama_kecamatan)
+                                  .openTooltip();
+                              });
+                              kecamatanLayer.push(multipoly);
+                            });
+                            const districts =
+                              L.featureGroup(kecamatanLayer).addTo(map);
+                          },
+                          error: (res) => {
+                            console.log(res);
+                          },
+                        });
                         map.fitBounds(layer.getBounds());
                       });
                     layerGroup.push(poly);

@@ -15,7 +15,10 @@ export const musimTanam = pgEnum('mt', ['mk', 'mh']);
 
 export const peramalan = pgTable('peramalan', {
   id: serial('id').primaryKey(),
-  kode_opt: text('kode_opt').references(() => opt.kode_opt),
+  kode_opt: text('kode_opt').references(() => opt.kode_opt, {
+    onDelete: 'cascade',
+    onUpdate: 'cascade',
+  }),
   kabkot_id: text('kabkot_id').references(() => kabupatenKota.id),
   tahun_sebelumnya: integer('tahun_sebelumnya'),
   klts_sebelumnya: integer('klts_sebelumnya'),

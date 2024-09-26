@@ -11,6 +11,7 @@ import { laporan } from './routes/laporan.js';
 import { stock } from './routes/stock.js';
 import { authorize, checkACL } from '../middleware.js';
 import { rekomendasiRoute } from './routes/rekomendasi.js';
+import { peramalanRoute } from './routes/peramalan.js';
 
 const web = new Hono<{
   Variables: {
@@ -58,5 +59,8 @@ web.route('/stock', stock);
 
 web.use('/rekomendasi/*', authorize, checkACL);
 web.route('/rekomendasi', rekomendasiRoute);
+
+web.use('/peramalan/*', authorize, checkACL);
+web.route('/', peramalanRoute);
 
 export default web;

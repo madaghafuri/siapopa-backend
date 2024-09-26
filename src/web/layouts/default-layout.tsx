@@ -219,10 +219,10 @@ export const DefaultLayout = ({
             <button
               class="flex w-full items-center justify-between gap-5 truncate border-b-2 px-4 py-2 text-left"
               type="button"
-              _="on click toggle between .hidden and .flex on #rekomendasi-dropdown then toggle .rotate-90 on #laporan-icon"
+              _="on click toggle between .hidden and .flex on #rekomendasi-dropdown then toggle .rotate-90 on #rekomendasi-icon"
             >
               Rekomendasi
-              <i id="laporan-icon" class="fa-solid fa-caret-right"></i>
+              <i id="rekomendasi-icon" class="fa-solid fa-caret-right"></i>
             </button>
             <div
               id="rekomendasi-dropdown"
@@ -233,6 +233,29 @@ export const DefaultLayout = ({
                 class={`truncate rounded-md px-4 py-2 text-left ${route === 'rekomendasi' ? 'bg-primary text-white' : ''}`}
               >
                 Rekomendasi POPT
+              </a>
+            </div>
+          </div>
+        ) : null}
+        {!!user && user.userGroup.group_name === 'bptph' ? (
+          <div class="max-w-full rounded-md border">
+            <button
+              class={`flex w-full items-center justify-between gap-5 truncate border-b-2 px-4 py-2 text-left ${route.includes('peramalan') ? 'rounded-md bg-primary text-white' : ''}`}
+              type="button"
+              _="on click toggle between .hidden and .flex on #peramalan-dropdown then toggle .rotate-90 on #peramalan-icon"
+            >
+              Peramalan
+              <i id="peramalan-icon" class="fa solid fa-caret-right"></i>
+            </button>
+            <div
+              id="peramalan-dropdown"
+              class="opening hidden flex-col gap-3 p-5"
+            >
+              <a
+                href="/app/peramalan/kecamatan"
+                class={`truncate rounded-md px-4 py-2 text-left ${route === 'peramalan' ? 'bg-primary text-white' : ''}`}
+              >
+                Peramalan per Kecamatan
               </a>
             </div>
           </div>

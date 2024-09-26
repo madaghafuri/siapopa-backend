@@ -2,6 +2,8 @@ import { geometry, pgTable, text } from 'drizzle-orm/pg-core';
 import { provinsi } from './provinsi';
 import { kabupatenKota } from './kabupaten-kota';
 import { geom } from '../custom-type';
+import { relations } from 'drizzle-orm';
+import { desa } from './desa';
 
 export const kecamatan = pgTable('kecamatan', {
   id: text('id').primaryKey(),
@@ -13,3 +15,11 @@ export const kecamatan = pgTable('kecamatan', {
 });
 
 export type Kecamatan = typeof kecamatan.$inferSelect;
+
+export const kecamatanRelations = relations(kecamatan, ({ one, many }) => ({
+  kabupaten_kota: one(kabupatenKota, {
+    fields: [kecamatan.kabkot_id],
+    references: [kabupatenKota.id],
+  }),
+  desa: many(desa),
+}));

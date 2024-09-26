@@ -11,7 +11,8 @@ type Path =
   | 'aph'
   | 'pestisida'
   | 'stock'
-  | 'rekomendasi';
+  | 'rekomendasi'
+  | 'peramalan';
 type Role = 'popt' | 'kortikab' | 'satpel' | 'bptph' | 'brigade';
 
 export const acl: Record<Path, Array<Role>> = {
@@ -22,6 +23,7 @@ export const acl: Record<Path, Array<Role>> = {
   stock: ['satpel', 'brigade', 'bptph'],
   master: ['bptph'],
   rekomendasi: ['bptph', 'brigade'],
+  peramalan: ['bptph'],
 };
 
 export const authorize = createMiddleware<{
