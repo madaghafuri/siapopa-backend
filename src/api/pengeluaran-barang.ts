@@ -255,13 +255,21 @@ pengeluaranRoute.post(
 
 pengeluaranRoute.get('/', async (c) => {
   const { per_page, page } = c.req.query();
-  const selectData = await db
-    .select()
-    .from(pengeluaranBarang)
-    .limit(parseInt(per_page || '10'))
-    .offset((parseInt(page || '1') - 1) * parseInt(per_page || '10'));
 
-  if (selectData.length === 0) {
+  const dataPengeluaranBarang = await db.query.pengeluaranBarang.findMany({
+    with: {
+      barang: true,
+      pengajuan_pestisida: {
+        with: {
+          rekomendasi_popt: true,
+        }
+      }
+    },
+    limit: parseInt(per_page || '10'),
+    offset: (parseInt(page || '1') - 1) * parseInt(per_page || '10')
+  })
+
+  if (dataPengeluaranBarang.length === 0) {
     return c.json(
       {
         status: 404,
@@ -274,6 +282,6 @@ pengeluaranRoute.get('/', async (c) => {
   return c.json({
     status: 200,
     message: 'success',
-    data: selectData,
+    data: dataPengeluaranBarang,
   });
 });

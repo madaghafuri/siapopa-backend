@@ -12,6 +12,7 @@ import { tanaman } from './tanaman';
 import { lokasi } from './lokasi';
 import { golonganPestisida } from './golongan-pestisida';
 import { bahanAktif } from './bahan-aktif';
+import { relations } from 'drizzle-orm';
 
 export const satuanPestisida = pgEnum('satuan_pestisida', [
   'kg',
@@ -36,6 +37,21 @@ export const pestisida = pgTable('pestisida', {
     () => golonganPestisida.id
   ),
 });
+
+export const pestisidaRelations = relations(pestisida, ({ one, many }) => ({
+  bahan_aktif: one(bahanAktif, {
+    fields: [pestisida.bahan_aktif_id],
+    references: [bahanAktif.id]
+  }),
+  opt: one(opt, {
+    fields: [pestisida.opt_id],
+    references: [opt.id]
+  }),
+  tanaman: one(tanaman, {
+    fields: [pestisida.tanaman_id],
+    references: [tanaman.id]
+  })
+}))
 
 export type InsertPestisida = typeof pestisida.$inferInsert;
 export type SelectPestisida = typeof pestisida.$inferSelect;

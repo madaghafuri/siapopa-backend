@@ -17,6 +17,7 @@ import { pengajuanPestisidaRoute } from './pengajuan-pestisida.js';
 import { rekomendasiPOPTRoute } from './rekomendasi-popt.js';
 import { bahanAktifRoute } from './bahan-aktif.js';
 import { pengeluaranRoute } from './pengeluaran-barang.js';
+import { pestisidaRoute } from './pestisida.js';
 
 const api = new Hono();
 
@@ -38,5 +39,6 @@ api.route('/', pengajuanPestisidaRoute);
 api.route('/', rekomendasiPOPTRoute);
 api.route('/', bahanAktifRoute);
 api.route('/', pengeluaranRoute);
+api.route('/', pestisidaRoute)
 
 export default api;
