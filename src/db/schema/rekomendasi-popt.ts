@@ -3,6 +3,7 @@ import {
   integer,
   pgEnum,
   pgTable,
+  real,
   serial,
   text,
   timestamp,
@@ -36,6 +37,7 @@ export const rekomendasiPOPT = pgTable('rekomendasi_popt', {
   pengajuan_pestisida_id: integer('pengajuan_pestisida_id').references(
     () => pengajuanPestisida.id
   ),
+  qty: real('qty'),
   tanggal_rekomendasi_pengendalian: date('tanggal_rekomendasi_pengendalian'),
   ambang_lampau_pengendalian: integer('ambang_lampau_pengendalian'),
   sign_popt: text('sign_popt'),

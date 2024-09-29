@@ -140,9 +140,15 @@ rekomendasiPOPTRoute.post(
     });
 
     const signUrl = new URL(selectRekomendasiData.sign_popt);
-    const validUrl = signUrl.pathname.split('/');
     const doc = new PDFDocument();
     const path = resolve('uploads', 'lampiran');
+    const fileName = `lampiran_${new Date().toLocaleString('id-ID', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).split('/').join('')}_${selectRekomendasiData.id}.pdf`
+    const baseUrl = process.env.NODE_ENV == 'production' ? 'https://sitampanparat.com' : 'http://localhost';
+    const filePath = baseUrl + '/uploads/lampiran/' + fileName;
     const ws = createWriteStream(
       resolve(
         path,
@@ -155,11 +161,7 @@ rekomendasiPOPTRoute.post(
           .update(rekomendasiPOPT)
           .set({
             surat_rekomendasi_popt:
-              process.env.NODE_ENV === 'production'
-                ? `https://sitampanparat.com/uploads/lampiran/` +
-                  `lampiran_${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).split('/').join('')}_${insertRekomendasi[0].id}.pdf`
-                : `http://localhost:3000/uploads/lampiran/` +
-                  `lampiran_${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).split('/').join('')}_${insertRekomendasi[0].id}.pdf`,
+              filePath
           })
           .where(eq(rekomendasiPOPT.id, insertRekomendasi[0].id));
       } catch (error) {
@@ -332,6 +334,8 @@ rekomendasiPOPTRoute.get('/', async (c) => {
       ambang_lampau_pengendalian: rekomendasiPOPT.ambang_lampau_pengendalian,
       sign_popt: rekomendasiPOPT.sign_popt,
       surat_rekomendasi_popt: rekomendasiPOPT.surat_rekomendasi_popt,
+      lampiran: rekomendasiPOPT.lampiran,
+      qty: rekomendasiPOPT.qty,
       opt: opt,
       popt: {
         id: user.id,
