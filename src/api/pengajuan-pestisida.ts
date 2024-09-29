@@ -112,6 +112,8 @@ pengajuanPestisidaRoute.post(
         bahan_aktif_id: rekomendasiPOPT.bahan_aktif_id,
         pengajuan_pestisida_id: rekomendasiPOPT.pengajuan_pestisida_id,
         pengamatan_id: rekomendasiPOPT.pengamatan_id,
+        qty: rekomendasiPOPT.qty,
+        lampiran: rekomendasiPOPT.lampiran,
         created_at: rekomendasiPOPT.created_at,
         kecamatan: {
           // id: kecamatan.id,
@@ -216,7 +218,11 @@ pengajuanPestisidaRoute.get('/', async (c) => {
 
   const dataPengajuan = await db.query.pengajuanPestisida.findMany({
     with: {
-      brigade: true,
+      brigade: {
+        columns: {
+          password: false,
+        }
+      },
       rekomendasi_popt: true,
     },
     limit: parseInt(per_page || '10'),
@@ -245,7 +251,11 @@ pengajuanPestisidaRoute.get('/:id', async (c) => {
 
   const dataPengajuan = await db.query.pengajuanPestisida.findFirst({
     with: {
-      brigade: true,
+      brigade: {
+        columns: {
+          password: false,
+        }
+      },
       rekomendasi_popt: true,
     },
     where: (pengajuan, { eq }) => eq(pengajuan.id, parseInt(pengajuanId)),
